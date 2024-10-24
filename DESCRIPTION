@@ -18,6 +18,15 @@ Description: cd2030 is a comprehensive R package designed to streamline
     analysis and interpretation.
 License: AGPL (>= 3)
 Encoding: UTF-8
-Roxygen: list(markdown = TRUE, keywords = c("data management", "data
-    validation", "Countdown 2030", "RMNCAH+N", "Excel"))
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+Imports: 
+    dplyr,
+    ggplot2,
+    purrr,
+    readxl,
+    rlang,
+    stats,
+    stringr,
+    tibble,
+    tidyr
