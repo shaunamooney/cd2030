@@ -13,6 +13,7 @@
 #' @importFrom stats as.formula
 #' @importFrom stats lm
 #' @importFrom stringr str_detect
+#' @importFrom stringr str_replace
 #' @importFrom stringr str_replace_all
 #' @importFrom stringr str_to_lower
 #' @importFrom tibble new_tibble

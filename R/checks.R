@@ -592,7 +592,7 @@ check_ratios <- function(data) {
 
   data_summary <- data$merged_data %>%
     summarise(
-      across(everything(), mean, na.rm = TRUE),
+      across(c(anc1,bcg, instlivebirths, penta1, penta3, pcv1, pcv3, opv1, opv3, rota1, rota2, ipv1,ipv2), mean, na.rm = TRUE),
       .by = c(district, year)
     ) %>%
     mutate(
@@ -648,9 +648,10 @@ check_ratios <- function(data) {
     ) %>%
     select(-starts_with("adeq_"))
 
-  structure(c(data, data_collapsed), class = "cd_check_ratios")
-
-  return(data_collapsed)
+  new_tibble(
+    data_collapsed,
+    class = "cd_check_ratios"
+  )
 }
 
 #' Check for Missing Values by Year
@@ -711,11 +712,17 @@ check_no_missing_year <- function(data) {
 
   if (!inherits(data, "cd_data")) stop("The data object must be of class 'cd_data'.")
 
+  # Mark Missing Values
+  dt <- data$merged_data %>%
+    mutate(
+      !!paste0("mis_", var) := ifelse(is.na(!!sym(var)), 1, 0)
+    )
+
   # Step 1: Identify missing data indicators
-  missing_data_vars <- names(data$merged_data)[grepl("^mis_", names(data$merged_data))]
+  missing_data_vars <- names(dt)[grepl("^mis_", names(dt))]
 
   # Calculate percentage of non-missing data by year
-  mis_summary_by_year <- data$merged_data %>%
+  mis_summary_by_year <- dt %>%
     select(year, all_of(missing_data_vars)) %>%
     mutate(across(all_of(missing_data_vars), as.numeric)) %>%
     summarise(
