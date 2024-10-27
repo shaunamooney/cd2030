@@ -2,24 +2,30 @@
 % Please edit documentation in R/checks_outlier.R
 \name{check_extreme_outlier}
 \alias{check_extreme_outlier}
-\title{Check for Extreme Outliers}
+\title{Check for Extreme Outliers at District Level}
 \usage{
-check_extreme_outlier(data)
+check_extreme_outlier(.data)
 }
 \arguments{
-\item{data}{A data frame containing indicator data.}
+\item{.data}{A data frame containing the processed indicator data with outlier flags (e.g., \verb{*_outlier5std}).}
 }
 \value{
-A data frame summarizing the percentage of districts without extreme
-outliers, by year.
+A \code{cd_extreme_outliers} object summarizing the percentage of districts without extreme
+outliers by year. The output includes each indicator's percentage and an overall yearly mean
+percentage for non-outliers across all indicators.
 }
 \description{
-This function identifies extreme outliers by calculating the maximum outlier
-value for each indicator in each district and year.
+This function identifies and aggregates extreme outlier counts for various indicators
+by calculating the maximum outlier flag for each indicator within each district and year.
+An extreme outlier for an indicator in a given district is flagged when the value lies
+more than five standard deviations from the median, based on the Hampel X84 method.
+This function outputs the percentage of districts without extreme outliers per indicator,
+summarized by year.
 }
 \examples{
 \dontrun{
-
+  # Summarize the proportion of districts without extreme outliers
   check_extreme_outlier(data)
 }
+
 }
