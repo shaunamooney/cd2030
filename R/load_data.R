@@ -469,10 +469,8 @@ calculate_quality_metrics <- function(.data, call = caller_env()) {
       # Flag missing values
       across(allindicators,
              ~ case_when(
-               is.na(.) ~ 'Missing',
-               .default = 'Non-Missing',
-               .ptype = factor(levels = c('Missing',
-                                          'Non-Missing'))),
+               is.na(.) ~ 1,
+               .default = 0),
              .names = "mis_{.col}"),
 
       .by = district
