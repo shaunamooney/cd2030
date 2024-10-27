@@ -19,5 +19,6 @@
 #' @importFrom stringr str_replace_all
 #' @importFrom stringr str_to_lower
 #' @importFrom tibble new_tibble
+#' @importFrom tibble tbl_sum
 ## usethis namespace: end
 NULL
