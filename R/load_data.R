@@ -60,13 +60,13 @@ load_excel_data <- function(filename,
     merge_data(sheet_names, sheet_ids) %>%
     data_preparation()
 
-  check_indicator <- final_data %>%
-    create_indicator()
+  quality_metrics <- final_data %>%
+    calculate_quality_metrics()
 
   # Assign new class 'cd_data'
   structure(
     list(
-      check_indicator = check_indicator,
+      quality_metrics = quality_metrics,
       merged_data = final_data),
     class = 'cd_data')
 }
@@ -99,13 +99,13 @@ load_data <- function(path) {
   }
   final_data <- readRDS(file = path)
 
-  check_indicator <- final_data %>%
-    create_indicator()
+  quality_metrics <- final_data %>%
+    calculate_quality_metrics()
 
   # Assign new class 'cd_data'
   structure(
     list(
-      check_indicator = check_indicator,
+      quality_metrics = quality_metrics,
       merged_data = final_data),
     class = 'cd_data')
 }
@@ -340,7 +340,7 @@ data_preparation <- function(.data, call = caller_env()) {
     rename(
       adminlevel_1 = any_of('first_admin_level'),
       ideliv = any_of('instdelivery'),
-      pnc48 = any_of('pnc_48h'),
+      pnc48h = any_of('pnc_48h'),
       pop_rate = any_of('pop_growth_rate'),
       total_pop = any_of('total_population'),
       under5_pop = any_of('population_ under_5years'),
@@ -367,7 +367,28 @@ data_preparation <- function(.data, call = caller_env()) {
     arrange(district, year, month)
 }
 
-# Function to replace special characters with base letters
+#' Replace Special Characters in Text
+#'
+#' This function replaces special characters in a text string with their standard ASCII equivalents, helping to normalize text containing diacritics or symbols for easier processing or comparison.
+#'
+#' @param text A character string or vector of character strings containing special characters.
+#'
+#' @details
+#' This function specifically targets and replaces diacritic characters commonly found in various languages, along with some other symbols, converting them to their simpler ASCII equivalents:
+#' - **Characters replaced with 'a'**: `á`, `ã`, `à`, `Á`, `À`, `Ã`, `â`, `Â`
+#' - **Characters replaced with 'e'**: `é`, `É`, `ê`, `è`, `È`, `Ê`, `&`
+#' - **Characters replaced with 'i'**: `í`, `Í`, `ï`, `ì`, `Ï`, `Ì`
+#' - **Characters replaced with 'o'**: `ó`, `ö`, `õ`, `ò`, `Ó`, `Õ`, `Ò`, `ô`, `Ô`, `Ö`, `¢`
+#' - **Characters replaced with 'u'**: `ú`, `ù`, `û`, `ü`, `Ù`, `Ú`, `Ü`, `Û`
+#' - **Character replaced with 'n'**: `ñ`
+#'
+#' @return A character string or vector of character strings with the special characters replaced by their ASCII equivalents.
+#'
+#' @examples
+#' replace_special_chars("áéíóúñÁÉÍÓÚÑ")  # Returns "aeiounAEIOUN"
+#' replace_special_chars("Hëllò Wörld")   # Returns "Hello World"
+#'
+#' @noRd
 replace_special_chars <- function(text) {
   str_replace_all(text, c(
     '[\u00E1\u00E3\u00E0\u00C1\u00C0\u00C3\u00E2\u00C2]' = 'a',  # áãàÁÀÃâÂ
@@ -379,17 +400,49 @@ replace_special_chars <- function(text) {
   ))
 }
 
-create_indicator <- function(.data, call = caller_env()) {
+
+#' Calculate Quality Metrics for Health Indicators
+#'
+#' This function calculates data quality metrics, such as outlier detection and missingness, for a range of health indicators across districts and years.
+#' The calculations involve determining bounds for outliers using Hampel's X84 method based on median absolute deviation (MAD), flagging outliers and missing values, and storing results in a summary data frame.
+#'
+#' @param .data A data frame containing health indicator data. Must include columns for `district` and `year`, as well as columns for each indicator in the predefined groups.
+#' @param call The calling environment for error checking. Defaults to `caller_env()`.
+#'
+#' @details
+#' - **Indicator Groups**:
+#'   The function groups indicators into categories (e.g., ANC, IDelivery, Vaccination) and calculates MAD and median values up to the `lastyear` for each indicator in `allindicators`.
+#' - **Outlier Detection**:
+#'   Outliers are determined based on Hampel's X84 method, where outlier bounds are defined as 5 standard deviations from the median.
+#' - **Missingness Check**:
+#'   Missing values are flagged as "Missing" and non-missing as "Non-Missing."
+#'
+#' @return A data frame (`outliers_summary`) containing:
+#' - Outlier flags for each indicator, suffixed with `_outlier5std`.
+#' - Missingness status for each indicator, prefixed with `mis_`.
+#' - `district` and `year` columns to maintain grouping information.
+#'
+#' @examples
+#' \dontrun{
+#' # Assuming `.data` is a data frame with necessary indicator columns
+#' quality_metrics <- calculate_quality_metrics(.data)
+#' }
+#'
+#' @noRd
+calculate_quality_metrics <- function(.data, call = caller_env()) {
 
   district = year = NULL
 
   check_required(.data, call = call)
 
   # Define variable groups
-  ancvargroup <- c('anc1')
-  idelvvargroup <- c('ideliv', 'instlivebirths')
+  ancvargroup <- c('anc1', 'anc4', 'ipt2')
+  idelvvargroup <- c('ideliv', 'instlivebirths', 'csection', 'total_stillbirth', 'stillbirth_f', 'stillbirth_m', 'maternal_deaths')
   vaccvargroup <- c('opv1', 'opv2', 'opv3', 'penta1', 'penta2', 'penta3', 'measles1', 'pcv1', 'pcv2', 'pcv3', 'measles2', 'bcg', 'rota1', 'rota2', 'ipv1', 'ipv2')
-  allindicators <- c(ancvargroup, idelvvargroup, vaccvargroup)
+  pncvargroup <- 'pnc48h'
+  opdvargroup <- c('opd_total', 'opd_under5')
+  ipdvargroup <- c('ipd_total', 'ipd_under5')
+  allindicators <- c(ancvargroup, idelvvargroup, vaccvargroup, pncvargroup, opdvargroup, ipdvargroup)
 
   lastyear <- max(.data$year, na.rm = TRUE)
 
@@ -397,27 +450,34 @@ create_indicator <- function(.data, call = caller_env()) {
     select(district, year, allindicators) %>%
     mutate(
       # Calculate `_mad` and `_med` for each indicator in `allindicators` up to `lastyear`
-      across(allindicators, ~ mad(ifelse(year < lastyear, ., NA_real_), na.rm = TRUE),
-             .names = "{.col}_mad"),
-      across(allindicators, ~ median(ifelse(year < lastyear, ., NA_real_), na.rm = TRUE),
-             .names = "{.col}_med"),
+      across(allindicators, ~ mad(ifelse(year < lastyear, ., NA_real_), na.rm = TRUE), .names = "{.col}_mad"),
+      # across(ends_with('_mad'), ~ ifelse(is.na(.), max(., na.rm = TRUE), .)),
+      across(allindicators, ~ median(ifelse(year < lastyear, ., NA_real_), na.rm = TRUE), .names = "{.col}_med"),
+      # across(ends_with('_med'), ~ ifelse(is.na(.), max(., na.rm = TRUE), .x)),
 
-      # Calculate lower and upper bounds for outliers
-      across(allindicators, ~ get(paste0(cur_column(), "_med")) - 5 * get(paste0(cur_column(), "_mad")),
-             .names = "{.col}_outlb5std"),
-      across(allindicators, ~ get(paste0(cur_column(), "_med")) + 5 * get(paste0(cur_column(), "_mad")),
-             .names = "{.col}_outub5std"),
+      # Calculate lower and upper bounds for outliers using Hampel's X84 method
+      across(allindicators, ~ get(paste0(cur_column(), "_med")) - 5 * get(paste0(cur_column(), "_mad")), .names = "{.col}_outlb5std"),
+      across(allindicators, ~ get(paste0(cur_column(), "_med")) + 5 * get(paste0(cur_column(), "_mad")), .names = "{.col}_outub5std"),
 
       # Flag values as outliers if they fall outside the calculated bounds
-      across(allindicators, ~ ifelse(!is.na(.) & (. < get(paste0(cur_column(), "_outlb5std")) | . > get(paste0(cur_column(), "_outub5std"))), 1, 0),
+      across(allindicators,
+             ~ ifelse(!is.na(.) & (. < get(paste0(cur_column(), "_outlb5std")) | . > get(paste0(cur_column(), "_outub5std"))),
+                1, 0
+              ),
              .names = "{.col}_outlier5std"),
 
       # Flag missing values
-      across(allindicators, ~ ifelse(is.na(.), 1, 0),
+      across(allindicators,
+             ~ case_when(
+               is.na(.) ~ 'Missing',
+               .default = 'Non-Missing',
+               .ptype = factor(levels = c('Missing',
+                                          'Non-Missing'))),
              .names = "mis_{.col}"),
 
       .by = district
-    )
+    ) %>%
+    select(district, year, ends_with('_outlier5std'), starts_with('mis_'))
 
   return(outliers_summary)
 }
