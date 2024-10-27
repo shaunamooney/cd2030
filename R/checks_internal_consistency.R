@@ -41,8 +41,6 @@
 #'                   facet_ncol = 2, plot_theme = theme_minimal())
 #' }
 #'
-#' @rdname internal_consistency
-#'
 #' @export
 plot_comparison.cd_data <- function(.data, x_var, y_var, title = NULL, x_label = NULL, y_label = NULL,
                                     call = caller_env(), ...) {
@@ -127,12 +125,6 @@ plot_comparison.cd_data <- function(.data, x_var, y_var, title = NULL, x_label =
 #' faceted by year, to assess internal consistency. Each function compares a specific pair of indicators,
 #' with options for customizing titles, labels, and displaying R-squared values per year.
 #'
-#' @section Functions:
-#' - `plot_comparison`: Generic function for creating comparison plots based on indicator pairs.
-#' - `plot_comparison_penta1_anc1`: Compares Penta1 and ANC1 indicators.
-#' - `plot_comparison_penta1_penta2`: Compares Penta1 and Penta3 indicators.
-#' - `plot_comparison_opv1_opv3`: Compares OPV1 and OPV3 indicators.
-#'
 #' @param .data A data frame of class `cd_data`.
 #' @param x_var Name of the x-axis variable.
 #' @param y_var Name of the y-axis variable.
@@ -173,18 +165,7 @@ plot_comparison <- function(.data, x_var, y_var, title = NULL, x_label = NULL, y
 
 #' Plot Comparison of Penta1 and ANC1
 #'
-#' This function compares Penta1 and ANC1 indicators across different years
-#'   using a scatter plot with a linear fit.
-#'
-#' @param .data A data frame containing Penta1 and ANC1 data.
-#'
-#' @return A ggplot object comparing Penta1 and ANC1.
-#'
-#' @examples
-#' \dontrun{
-#'
-#'   plot_comparison_penta1_anc1(data)
-#' }
+#' `plot_comparison_penta1_anc1` compares Penta1 and ANC1 indicators across.
 #'
 #' @rdname internal_consistency
 #'
@@ -202,18 +183,7 @@ plot_comparison_penta1_anc1 <- function(.data) {
 
 #' Plot Comparison of Penta1 and Penta2
 #'
-#' This function compares Penta1 and Penta2 indicators across different years
-#'   using a scatter plot with a linear fit.
-#'
-#' @param .data A data frame containing Penta1 and Penta2 data.
-#'
-#' @return A ggplot object comparing Penta1 and Penta2
-#'
-#' @examples
-#' \dontrun{
-#'
-#'   plot_comparison_penta1_penta2(data)
-#' }
+#' `plot_comparison_penta1_penta2` compares Penta1 and Penta2 indicators.
 #'
 #' @rdname internal_consistency
 #'
@@ -231,18 +201,7 @@ plot_comparison_penta1_penta2 <- function(.data) {
 
 #' Plot Comparison of OPV1 and OPV3
 #'
-#' This function compares OPV1 and OPV3 indicators across different years
-#'   using a scatter plot with a linear fit.
-#'
-#' @param .data A data frame containing OPV1 and OPV3 data.
-#'
-#' @return A ggplot object comparing OPV1 and OPV3
-#'
-#' @examples
-#' \dontrun{
-#'
-#'   plot_comparison_opv1_opv3(data)
-#' }
+#' `plot_comparison_opv1_opv3` compares OPV1 and OPV3 indicators.
 #'
 #' @rdname internal_consistency
 #'
@@ -260,18 +219,7 @@ plot_comparison_opv1_opv3 <- function(.data) {
 
 #' Plot Comparison of OPV1 and ANC1
 #'
-#' This function compares OPV1 and ANC1 indicators across different years
-#'   using a scatter plot with a linear fit.
-#'
-#' @param .data A data frame containing OPV1 and ANC1 data.
-#'
-#' @return A ggplot object comparing OPV1 and ANC1
-#'
-#' @examples
-#' \dontrun{
-#'
-#'   plot_comparison_opv1_anc1(data)
-#' }
+#' `plot_comparison_opv1_anc1` compares OPV1 and ANC1 indicators.
 #'
 #' @rdname internal_consistency
 #'
@@ -289,18 +237,7 @@ plot_comparison_opv1_anc1 <- function(.data) {
 
 #' Plot Comparison of PCV1 and PCV3
 #'
-#' This function compares PCV1 and PCV3 indicators across different years
-#'   using a scatter plot with a linear fit.
-#'
-#' @param .data A data frame containing PCV1 and PCV3 data.
-#'
-#' @return A ggplot object comparing PCV1 and PCV3
-#'
-#' @examples
-#' \dontrun{
-#'
-#'   plot_comparison_pcv1_pcv3(data)
-#' }
+#' `plot_comparison_pcv1_pcv3` compares PCV1 and PCV3 indicators.
 #'
 #' @rdname internal_consistency
 #'
@@ -318,18 +255,7 @@ plot_comparison_pcv1_pcv3 <- function(.data) {
 
 #' Plot Comparison of ROTA1 and ROTA2
 #'
-#' This function compares ROTA1 and ROTA2 indicators across different years
-#'   using a scatter plot with a linear fit.
-#'
-#' @param .data A data frame containing ROTA1 and ROTA2 data.
-#'
-#' @return A ggplot object comparing ROTA1 and ROTA2
-#'
-#' @examples
-#' \dontrun{
-#'
-#'   plot_comparison_rota1_rota2(data)
-#' }
+#' `plot_comparison_rota1_rota2` compares ROTA1 and ROTA2 indicators.
 #'
 #' @rdname internal_consistency
 #'
@@ -347,18 +273,7 @@ plot_comparison_rota1_rota2 <- function(.data) {
 
 #' Plot Comparison of IPV1 and IPV2
 #'
-#' This function compares IPV1 and IPV2 indicators across different years
-#'   using a scatter plot with a linear fit.
-#'
-#' @param .data A data frame containing IPV1 and IPV2 data.
-#'
-#' @return A ggplot object comparing IPV1 and IPV2
-#'
-#' @examples
-#' \dontrun{
-#'
-#'   plot_comparison_ipv1_ipv2(data)
-#' }
+#' `plot_comparison_ipv1_ipv2` compares IPV1 and IPV2 indicators.
 #'
 #' @rdname internal_consistency
 #'
@@ -376,18 +291,7 @@ plot_comparison_ipv1_ipv2 <- function(.data) {
 
 #' Plot Comparison of Penta1 and PCV1
 #'
-#' This function compares Penta1 and PCV1 indicators across different years
-#'   using a scatter plot with a linear fit.
-#'
-#' @param .data A data frame containing Penta1 and PCV1 data.
-#'
-#' @return A ggplot object comparing Penta1 and PCV1
-#'
-#' @examples
-#' \dontrun{
-#'
-#'   plot_comparison_penta1_pcv1(data)
-#' }
+#' `plot_comparison_penta1_pcv1` compares Penta1 and PCV1 indicators.
 #'
 #' @rdname internal_consistency
 #'
@@ -405,18 +309,7 @@ plot_comparison_penta1_pcv1 <- function(.data) {
 
 #' Plot Comparison of PCV3 and Penta3
 #'
-#' This function compares PCV3 and Penta3 indicators across different years
-#'   using a scatter plot with a linear fit.
-#'
-#' @param .data A data frame containing PCV3 and Penta3 data.
-#'
-#' @return A ggplot object comparing PCV3 and Penta3
-#'
-#' @examples
-#' \dontrun{
-#'
-#'   plot_comparison_pcv3_penta3(data)
-#' }
+#' `plot_comparison_pcv3_penta3` compares PCV3 and Penta3 indicators.
 #'
 #' @rdname internal_consistency
 #'
@@ -434,18 +327,7 @@ plot_comparison_pcv3_penta3 <- function(.data) {
 
 #' Plot Comparison of OPV1 and Penta1
 #'
-#' This function compares OPV1 and Penta1 indicators across different years
-#'   using a scatter plot with a linear fit.
-#'
-#' @param .data A data frame containing OPV1 and Penta1 data.
-#'
-#' @return A ggplot object comparing OPV1 and Penta1
-#'
-#' @examples
-#' \dontrun{
-#'
-#'   plot_comparison_opv1_penta1(data)
-#' }
+#' `plot_comparison_opv1_penta1` compares OPV1 and Penta1 indicators.
 #'
 #' @rdname internal_consistency
 #'
@@ -463,18 +345,7 @@ plot_comparison_opv1_penta1 <- function(.data) {
 
 #' Plot Comparison of OPV3 and Penta3
 #'
-#' This function compares OPV3 and Penta3 indicators across different years
-#'   using a scatter plot with a linear fit.
-#'
-#' @param .data A data frame containing OPV3 and Penta3 data.
-#'
-#' @return A ggplot object comparing OPV3 and Penta3.
-#'
-#' @examples
-#' \dontrun{
-#'
-#'   plot_comparison_opv3_penta3(data)
-#' }
+#' `plot_comparison_opv3_penta3` compares OPV3 and Penta3 indicators.
 #'
 #' @rdname internal_consistency
 #'
