@@ -6,26 +6,26 @@
 \usage{
 load_excel_data(
   filename,
-  admin_data = "Admin_data",
-  population_data = "Population_data",
-  reporting_completeness = "Reporting_completeness",
-  service_data = c("Service_data_1", "Service_data_2", "Service_data_3",
+  admin_sheet_name = "Admin_data",
+  population_sheet_name = "Population_data",
+  reporting_sheet_name = "Reporting_completeness",
+  service_sheet_names = c("Service_data_1", "Service_data_2", "Service_data_3",
     "Vaccine_stock_data")
 )
 }
 \arguments{
 \item{filename}{A string. The path to the Excel file to be loaded.}
 
-\item{admin_data}{A string. The name of the sheet containing administrative
-data. Default is "Admin_data".}
+\item{admin_sheet_name}{A string. The name of the sheet containing administrative
+data. Default is 'Admin_data'.}
 
-\item{population_data}{A string. The name of the sheet containing population
-data. Default is "Population_data".}
+\item{population_sheet_name}{A string. The name of the sheet containing population
+data. Default is 'Population_data'.}
 
-\item{reporting_completeness}{A string. The name of the sheet containing
-reporting completeness data. Default is "Reporting_completeness".}
+\item{reporting_sheet_name}{A string. The name of the sheet containing
+reporting completeness data. Default is 'Reporting_completeness'.}
 
-\item{service_data}{A vector of strings. The names of the sheets containing
+\item{service_sheet_names}{A vector of strings. The names of the sheets containing
 service data. Default is \code{Service_data_1}, \code{Service_data_2}, \code{Service_data_3},
 \code{Vaccine_stock_data}.}
 }
@@ -44,16 +44,16 @@ The function performs several cleaning steps, including:
 \item Removing header rows
 \item Converting column types appropriately (e.g., converting characters to numeric)
 \item Removing entirely missing rows and columns
-\item Renaming columns (e.g., renaming "District" or "District_name" to "district")
+\item Renaming columns (e.g., renaming 'District' or 'District_name' to 'district')
 \item Checking for duplicate entries based on key columns
 \item Calculating reporting rates if necessary using expected and received values
-\item Replacing special characters in the "Month" column and standardizing month names
+\item Replacing special characters in the 'Month' column and standardizing month names
 }
 }
 \examples{
 \dontrun{
   # Load and clean data from a Countdown 2030 Excel file
-  data <- load_excel_data("countdown2030_data.xlsx")
+  data <- load_excel_data('countdown2030_data.xlsx')
 }
 
 }

@@ -6,9 +6,11 @@
 "_PACKAGE"
 
 ## usethis namespace: start
+#' @importFrom purrr imap
 #' @importFrom purrr map
 #' @importFrom purrr map_df
 #' @importFrom purrr reduce
+#' @importFrom readxl excel_sheets
 #' @importFrom readxl read_excel
 #' @importFrom stats as.formula
 #' @importFrom stats lm

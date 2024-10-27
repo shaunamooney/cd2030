@@ -4,10 +4,10 @@
 \alias{load_data}
 \title{Load Processed Countdown 2030 Data from RDS File}
 \usage{
-load_data(file)
+load_data(path)
 }
 \arguments{
-\item{file}{A string. The path to the RDS file containing the processed data.}
+\item{path}{A string. The path to the RDS file containing the processed data.}
 }
 \value{
 A list of class \code{cd_data} containing the merged data.
@@ -18,7 +18,7 @@ This function loads processed Countdown 2030 data from an RDS file.
 \examples{
 \dontrun{
   # Load previously processed data from an RDS file
-  data <- load_data("processed_cd2030_data.rds")
+  data <- load_data('processed_cd2030_data.rds')
 }
 
 }
