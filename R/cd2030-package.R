@@ -7,9 +7,13 @@
 
 ## usethis namespace: start
 #' @importFrom purrr imap
+#' @importFrom purrr imap_chr
+#' @importFrom purrr imap_dfc
 #' @importFrom purrr map
 #' @importFrom purrr map_df
+#' @importFrom purrr map_lgl
 #' @importFrom purrr reduce
+#' @importFrom purrr set_names
 #' @importFrom readxl excel_sheets
 #' @importFrom readxl read_excel
 #' @importFrom stats as.formula

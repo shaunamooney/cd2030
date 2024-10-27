@@ -2,25 +2,38 @@
 % Please edit documentation in R/checks_ratio.R
 \name{check_ratios}
 \alias{check_ratios}
-\title{Check Indicator Ratios}
+\title{Check Indicator Ratios Dynamically}
 \usage{
-check_ratios(data)
+check_ratios(
+  .data,
+  ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3"),
+    ratioOO = c("opv1", "opv3"), ratioPPcv = c("pcv1", "pcv3"), ratioRR = c("rota1",
+    "rota2"), ratioII = c("ipv1", "ipv2"), ratioPenta1Rota1 = c("penta1", "rota1"),
+    ratioPenta1PCV1 = c("penta1", "pcv1"), ratiobcgbirth = c("bcg", "instlivebirths"),
+    ratioopv3ipv = c("opv3", "ipv1")),
+  adequate_range = c(1, 1.5)
+)
 }
 \arguments{
-\item{data}{A data frame containing indicator data for districts and years.}
+\item{.data}{A data frame containing indicator data for districts and years.}
+
+\item{ratio_pairs}{A list of pairs of indicators for which ratios should be
+calculated (default: common pairs).}
+
+\item{adequate_range}{A numeric vector of length two specifying the lower and
+upper bounds for the adequate range (default: c(1, 1.5)).}
 }
 \value{
 A data frame summarizing the calculated ratios and adequacy checks by
 year.
 }
 \description{
-This function calculates various ratios between indicators
-(e.g., ANC1/Penta1, Penta1/Penta3) and checks if they fall within an
-adequate range.
+This function calculates ratios dynamically between specified indicators and
+checks if they fall within an adequate range.
 }
 \examples{
 \dontrun{
-
   check_ratios(data)
 }
+
 }

@@ -1,87 +1,92 @@
-#' Check Indicator Ratios
+#' Check Indicator Ratios Dynamically
 #'
-#' This function calculates various ratios between indicators
-#'   (e.g., ANC1/Penta1, Penta1/Penta3) and checks if they fall within an
-#'   adequate range.
+#' This function calculates ratios dynamically between specified indicators and
+#'   checks if they fall within an adequate range.
 #'
-#' @param data A data frame containing indicator data for districts and years.
+#' @param .data A data frame containing indicator data for districts and years.
+#' @param ratio_pairs A list of pairs of indicators for which ratios should be
+#'   calculated (default: common pairs).
+#' @param adequate_range A numeric vector of length two specifying the lower and
+#'   upper bounds for the adequate range (default: c(1, 1.5)).
+#'
 #' @return A data frame summarizing the calculated ratios and adequacy checks by
 #'   year.
+#'
 #' @examples
 #' \dontrun{
-#'
 #'   check_ratios(data)
 #' }
+#'
 #' @export
-check_ratios <- function(data) {
+check_ratios <- function(.data,
+                         ratio_pairs = list(
+                           "ratioAP" = c("anc1", "penta1"),
+                           "ratioPP" = c("penta1", "penta3"),
+                           "ratioOO" = c("opv1", "opv3"),
+                           "ratioPPcv" = c("pcv1", "pcv3"),
+                           "ratioRR" = c("rota1", "rota2"),
+                           "ratioII" = c("ipv1", "ipv2"),
+                           "ratioPenta1Rota1" = c("penta1", "rota1"),
+                           "ratioPenta1PCV1" = c("penta1", "pcv1"),
+                           "ratiobcgbirth" = c("bcg", "instlivebirths"),
+                           "ratioopv3ipv" = c("opv3", "ipv1")
+                         ),
+                         adequate_range = c(1, 1.5)) {
 
-  district = year = anc1 = penta1 = penta3 = opv1 = opv3 = pcv1 = pcv3 = rota1 =
-    rota2 = ipv1 = ipv2 = bcg = instlivebirths = ratioAP = ratioPP = ratioPPcv =
-    ratioRR = ratioII = ratioPenta1Rota1 = ratioPenta1PCV1 = ratiobcgbirth =
-    ratioopv3ipv = ratioOO = adeq_ratioAP = adeq_ratioPP = adeq_ratioPPcv =
-    adeq_ratioRR = adeq_ratioII = adeq_ratioPenta1Rota1 = adeq_ratioPenta1PCV1 =
-    adeq_ratiobcgbirth = adeq_ratioopv3ipv = NULL
+  district = year = NULL
 
-  data_summary <- data$merged_data %>%
+  check_cd_data(.data)
+  check_ratio_pairs(ratio_pairs)
+  # Check that adequate_range is a numeric vector of length 2
+  if (!is.numeric(adequate_range) || length(adequate_range) != 2){
+    cd_abort(c('x' = '{.arg caller_arg(adequate_range)} is invalid.'), call = call)
+  }
+
+  data_summary <- .data$merged_data %>%
+    # Calculate the average of indicators by district and year
     summarise(
-      across(c(anc1,bcg, instlivebirths, penta1, penta3, pcv1, pcv3, opv1, opv3, rota1, rota2, ipv1,ipv2), mean, na.rm = TRUE),
+      across(unname(unlist(ratio_pairs)), mean, na.rm = TRUE),
       .by = c(district, year)
     ) %>%
-    mutate(
-      ratioAP = anc1 / penta1,
-      ratioPP = penta1 / penta3,
-      ratioOO = opv1 / opv3,
-      ratioPPcv = pcv1 / pcv3,
-      ratioRR = rota1 / rota2,
-      ratioII = ipv1 / ipv2,
-      ratioPenta1Rota1 = penta1 / rota1,
-      ratioPenta1PCV1 = penta1 / pcv1,
-      ratiobcgbirth = bcg / instlivebirths,
-      ratioopv3ipv = opv3 / ipv1,
-
-      # Adequacy checks
-      adeq_ratioAP = as.integer(ratioAP >= 1 & ratioAP <= 1.5),
-      adeq_ratioPP = as.integer(ratioPP >= 1 & ratioPP <= 1.5),
-      adeq_ratioPPcv = as.integer(ratioPPcv >= 1 & ratioPPcv <= 1.5),
-      adeq_ratioRR = as.integer(ratioRR >= 1 & ratioRR <= 1.5),
-      adeq_ratioII = as.integer(ratioII >= 1 & ratioII <= 1.5),
-      adeq_ratioPenta1Rota1 = as.integer(ratioPenta1Rota1 >= 1 & ratioPenta1Rota1 <= 1.5),
-      adeq_ratioPenta1PCV1 = as.integer(ratioPenta1PCV1 >= 1 & ratioPenta1PCV1 <= 1.5),
-      adeq_ratiobcgbirth = as.integer(ratiobcgbirth >= 1 & ratiobcgbirth <= 1.5),
-      adeq_ratioopv3ipv = as.integer(ratioopv3ipv >= 1 & ratioopv3ipv <= 1.5)
+    bind_cols(
+      imap_dfc(ratio_pairs, ~ data_summary[[.x[1]]] / data_summary[[.x[2]]] %>% set_names(.y))
+    ) %>%
+    # Calculate adequacy checks
+    mutate(across(names(ratio_pairs), ~ as.integer(.x >= adequate_range[1] & .x <= adequate_range[2]), .names = "adeq_{.col}")) %>%
+    # Summarize adequacy checks by year
+    summarise(across(starts_with('adeq_'), mean, na.rm = TRUE), .by = year) %>%
+    mutate(across(starts_with('adeq_'), ~ round(.x * 100, 1))) %>%
+    # Rename columns dynamically
+    rename_with(
+      ~ map_chr(.x, function(name) {
+        ratio_name <- str_replace(name, '^adeq_', '')
+        pair <- ratio_pairs[[ratio_name]]
+        paste0('Ratio ', pair[1], '/', pair[2])
+      }),
+      starts_with("adeq_")
     )
 
-  # Collapse data by year and summarise
-  data_collapsed <- data_summary %>%
-    group_by(year) %>%
-    summarise(
-      across(c(anc1, penta1, penta3, opv1, opv3, pcv1, pcv3, rota1, rota2, ipv1, ipv2, bcg, instlivebirths), sum, na.rm = TRUE),
-      ratioAP = round(mean(ratioAP, na.rm = TRUE) * 100, 1),
-      ratioPP = mean(ratioPP, na.rm = TRUE),
-      ratioOO = mean(ratioOO, na.rm = TRUE),
-      ratioPPcv = mean(ratioPPcv, na.rm = TRUE),
-      ratioPenta1Rota1 = mean(ratioPenta1Rota1, na.rm = TRUE),
-      ratioPenta1PCV1 = mean(ratioPenta1PCV1, na.rm = TRUE),
-      ratiobcgbirth = mean(ratiobcgbirth, na.rm = TRUE),
-      ratioopv3ipv = mean(ratioopv3ipv, na.rm = TRUE),
-      adeq_ratioAP = mean(adeq_ratioAP, na.rm = TRUE),
-      adeq_ratioPP = mean(adeq_ratioPP, na.rm = TRUE),
-      adeq_ratioPPcv = mean(adeq_ratioPPcv, na.rm = TRUE),
-      adeq_ratioRR = mean(adeq_ratioRR, na.rm = TRUE),
-      adeq_ratioII = mean(adeq_ratioII, na.rm = TRUE),
-      adeq_ratioPenta1Rota1 = mean(adeq_ratioPenta1Rota1, na.rm = TRUE),
-      adeq_ratioPenta1PCV1 = mean(adeq_ratioPenta1PCV1, na.rm = TRUE),
-      adeq_ratiobcgbirth = mean(adeq_ratiobcgbirth, na.rm = TRUE),
-      adeq_ratioopv3ipv = mean(adeq_ratioopv3ipv, na.rm = TRUE)
-    ) %>%
-    mutate(
-      across(starts_with('adeq_'), ~ round(.x * 100, 1)),
-      across(c(anc1, penta1, penta3, opv1, opv3, pcv1, pcv3, rota1, rota2, ipv1, ipv2, bcg), round, 1)
-    ) %>%
-    select(-starts_with('adeq_'))
-
   new_tibble(
-    data_collapsed,
+    data_summary,
     class = 'cd_check_ratios'
+  )
+}
+
+#' Summary for cd_check_ratios
+#'
+#' Provides a custom summary for the `cd_check_ratios` object, displaying
+#' a message indicating the data shows Percentage of districts with adequate ratios
+#' by year for all indicators.
+#'
+#' @param x A `cd_check_ratios` object containing reporting rate data.
+#' @param ... Additional arguments for compatibility with S3 method.
+#'
+#' @return A character vector summarizing the content and purpose of the data.
+#'
+#' @export
+tbl_sum.cd_check_ratios <- function(x, ...) {
+  c(
+    'Table' = 'Percentage of districts with adequate ratios (between 1.0 and 1.5)',
+    NextMethod()
   )
 }
