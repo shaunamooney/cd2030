@@ -54,6 +54,16 @@
 #' @export
 calculate_population_metrics <- function(.data, country_name) {
 
+  adminlevel_1 = allbirths_dhis2 = country = countrycode = district = iso2 =
+    iso3 = live_births = livebirths_dhis2 = national = pop_dhis2 =
+    tot_allbirths_dhis2 = tot_livebirths_dhis2 = tot_pop_dhis2 = tot_under1_dhis2 =
+    tot_under5_dhis2 = tot_wom15_49_dhis2 = total_births = total_pop =
+    totcbr_dhis2 = totlivebirths_dhis2 = totpop_dhis2 = totpopgrowth =
+    totunder1_dhis2 = totunder5_dhis2 = totwom15_49_dhis2 = un_births = un_cbr =
+    un_popgrowth = un_population = un_under1y = un_under5y = un_wom15_49 =
+    under1_dhis2 = under1_pop = under5_dhis2 = under5_pop = wom15_49_dhis2 =
+    women15_49 = year = NULL
+
   check_cd_data(.data)
   check_required(country_name)
 
