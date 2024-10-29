@@ -28,7 +28,7 @@
 #' # Output: Percentage of monthly values that are not extreme outliers, by year
 #'
 #' @export
-check_outliers <- function(.data) {
+check_outlier_summary <- function(.data) {
 
   year = . = NULL
 
@@ -89,7 +89,7 @@ tbl_sum.cd_outliers_summary <- function(x, ...) {
 #' }
 #'
 #' @export
-check_extreme_outlier <- function(.data) {
+check_outlier_district <- function(.data) {
 
   district = year = . = NULL
 

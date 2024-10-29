@@ -1,0 +1,180 @@
+---
+title: "Checks Report"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  word_document: default
+params:
+  data:
+    label: "Dataset to analyze"
+    value: data
+  threshold:
+    value: 90
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE)
+```
+
+```{r}
+library(cd2030)
+library(gt)
+```
+
+### Reporting Rate
+
+#### Average RR by year
+
+```{r}
+params$data %>% 
+  check_average_reporting_rate() %>% 
+  gt() %>% 
+  tab_header(title = 'Table 1 - average reporting rates for all indicators, by year')
+```
+
+#### Reporting Rate District {.tabset}
+
+##### RR >= `r params$threshold` (districts)
+
+```{r}
+dt <- params$data %>% 
+  check_district_reporting_summary(threshold = params$threshold) 
+
+dt %>% 
+  gt() %>% 
+  tab_header(title = paste0('Table 2 - Percentage of districts with reporting rates >=', params$threshold, ' by year'))
+```
+
+##### Low RR districts (graph)
+
+```{r}
+plot(dt)
+```
+
+##### {-}
+
+### Internal Consitency {.tabset}
+
+#### IPV1 vs IPV2 ratio
+
+```{r}
+plot_comparison_ipv1_ipv2(params$data)
+```
+
+#### OPV1 vs OPV3 ratio
+
+```{r}
+plot_comparison_opv1_opv3(params$data)
+```
+
+#### OPV1 vs ANC1 ratio
+
+```{r}
+plot_comparison_opv1_anc1(params$data)
+```
+
+#### OPV1 vs Penta1 ratio
+
+```{r}
+plot_comparison_opv1_penta1(params$data)
+```
+
+#### OPV3 vs Penta3 ratio
+
+```{r}
+plot_comparison_opv3_penta3(params$data)
+```
+
+#### PCV1 vs PCV3 ratio
+
+```{r}
+plot_comparison_pcv1_pcv3(params$data)
+```
+
+#### PCV3 vs Penta3 ratio
+
+```{r}
+plot_comparison_pcv3_penta3(params$data)
+```
+
+#### Penta1 vs ANC1 ratio
+
+```{r}
+plot_comparison_penta1_anc1(params$data)
+```
+
+#### Penta1 vs PCV1 ratio
+
+```{r}
+plot_comparison_penta1_pcv1(params$data)
+```
+
+#### Penta1 vs Penta2 ratio
+
+```{r}
+plot_comparison_penta1_penta2(params$data)
+```
+
+#### Rota1 vs Rota2 ratio
+
+```{r}
+plot_comparison_rota1_rota2(params$data)
+```
+
+#### {-}
+
+### Adequate ratios
+
+```{r}
+params$data %>% 
+  check_ratios() %>% 
+  gt() %>% 
+  tab_header(title = 'Table 3 - Percentage of districts with adequate ratios (between 1.0 and 1.5)')
+```
+
+### Outliers
+
+#### Outliers by year
+
+```{r}
+params$data %>% 
+  check_outlier_summary() %>% 
+  gt() %>% 
+  tab_header(title = 'Table 4 - Percentage of monthly values that are not extreme outliers, by year')
+```
+
+#### Outliers (Districts)
+
+```{r}
+params$data %>% 
+  check_outlier_district() %>% 
+  gt() %>% 
+  tab_header(title = 'Table 5 - Percentage of districts with no extreme outliers, by year')
+```
+
+### Missings
+
+#### Missing by years
+
+```{r}
+params$data %>% 
+  check_missing_summary() %>% 
+  gt() %>% 
+  tab_header(title = 'Table 6 - Percentage of monthly values that are not missing, by year')
+```
+
+#### Missings (districts)
+
+```{r}
+params$data %>% 
+  check_missing_district() %>% 
+  gt() %>% 
+  tab_header(title = 'Table 7 - Percentage of districts with no missing values, by year')
+```

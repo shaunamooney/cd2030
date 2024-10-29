@@ -24,15 +24,19 @@ Imports:
     purrr,
     readxl,
     rlang,
+    rmarkdown,
     stats,
     stringr,
     tibble,
     tidyr,
+    utils,
     withr
-Suggests: 
+Suggests:
+    gt,
     knitr,
-    rmarkdown,
     spelling
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+Depends: 
+    R (>= 2.10)

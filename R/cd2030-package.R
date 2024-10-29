@@ -16,6 +16,7 @@
 #' @importFrom purrr set_names
 #' @importFrom readxl excel_sheets
 #' @importFrom readxl read_excel
+#' @importFrom rmarkdown render
 #' @importFrom stats as.formula
 #' @importFrom stats lm
 #' @importFrom stringr str_detect
@@ -24,5 +25,6 @@
 #' @importFrom stringr str_to_lower
 #' @importFrom tibble new_tibble
 #' @importFrom tibble tbl_sum
+#' @importFrom utils browseURL
 ## usethis namespace: end
 NULL

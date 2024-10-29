@@ -47,7 +47,9 @@ check_ratios <- function(.data,
     summarise(
       across(unname(unlist(ratio_pairs)), mean, na.rm = TRUE),
       .by = c(district, year)
-    ) %>%
+    )
+
+  data_summary <- data_summary %>%
     bind_cols(
       imap_dfc(ratio_pairs, ~ data_summary[[.x[1]]] / data_summary[[.x[2]]] %>% set_names(.y))
     ) %>%
