@@ -14,6 +14,7 @@
 #' @importFrom purrr imap_dfc
 #' @importFrom purrr list_c
 #' @importFrom purrr map
+#' @importFrom purrr map_chr
 #' @importFrom purrr map_df
 #' @importFrom purrr map_lgl
 #' @importFrom purrr reduce
