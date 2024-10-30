@@ -2,17 +2,9 @@
 % Please edit documentation in R/checks_internal_consistency.R
 \name{plot_comparison}
 \alias{plot_comparison}
-\alias{plot_comparison_penta1_anc1}
-\alias{plot_comparison_penta1_penta2}
+\alias{plot_comparison_anc1_penta1}
+\alias{plot_comparison_penta1_penta3}
 \alias{plot_comparison_opv1_opv3}
-\alias{plot_comparison_opv1_anc1}
-\alias{plot_comparison_pcv1_pcv3}
-\alias{plot_comparison_rota1_rota2}
-\alias{plot_comparison_ipv1_ipv2}
-\alias{plot_comparison_penta1_pcv1}
-\alias{plot_comparison_pcv3_penta3}
-\alias{plot_comparison_opv1_penta1}
-\alias{plot_comparison_opv3_penta3}
 \title{Internal Consistency Plot Functions for Indicator Comparisons}
 \usage{
 plot_comparison(
@@ -26,90 +18,74 @@ plot_comparison(
   ...
 )
 
-plot_comparison_penta1_anc1(.data)
+plot_comparison_anc1_penta1(.data)
 
-plot_comparison_penta1_penta2(.data)
+plot_comparison_penta1_penta3(.data)
 
 plot_comparison_opv1_opv3(.data)
-
-plot_comparison_opv1_anc1(.data)
-
-plot_comparison_pcv1_pcv3(.data)
-
-plot_comparison_rota1_rota2(.data)
-
-plot_comparison_ipv1_ipv2(.data)
-
-plot_comparison_penta1_pcv1(.data)
-
-plot_comparison_pcv3_penta3(.data)
-
-plot_comparison_opv1_penta1(.data)
-
-plot_comparison_opv3_penta3(.data)
 }
 \arguments{
-\item{.data}{A data frame of class \code{cd_data}.}
+\item{.data}{A data frame of class \code{cd_data} that includes the relevant indicators for comparison.}
 
-\item{x_var}{Name of the x-axis variable.}
+\item{x_var}{Character. The name of the indicator variable to plot on the x-axis.}
 
-\item{y_var}{Name of the y-axis variable.}
+\item{y_var}{Character. The name of the indicator variable to plot on the y-axis.}
 
-\item{title}{Title for the plot. Defaults to a title based on \code{x_var} and \code{y_var}.}
+\item{title}{Character. The title for the plot. Defaults to a title based on \code{x_var} and \code{y_var}.}
 
-\item{x_label}{X-axis label. Defaults to \code{x_var}.}
+\item{x_label}{Character. Label for the x-axis. Defaults to \code{x_var}.}
 
-\item{y_label}{Y-axis label. Defaults to \code{y_var}.}
+\item{y_label}{Character. Label for the y-axis. Defaults to \code{y_var}.}
 
-\item{call}{The caller environment.}
+\item{call}{The calling environment, used for error handling. Default is \code{caller_env()}.}
 
-\item{...}{Additional parameters for customization.}
+\item{...}{Additional parameters for further customization, such as point size, line type, or color.}
 }
 \value{
-A \code{ggplot2} object. This plot includes:
+A \code{ggplot2} object, comprising:
 \itemize{
-\item A scatter plot of the two specified indicators across years.
-\item A linear regression line to indicate the trend between the indicators.
-\item An optional R-squared value for each year, displayed on each facet.
-\item Faceting by year, allowing for easy comparison of trends over time.
+\item A scatter plot comparing two specified indicators over multiple years.
+\item A linear regression line for each year, indicating the trend between the indicators.
+\item Optional display of R-squared values per facet, summarizing the correlation strength.
+\item Faceting by year to facilitate a detailed comparison of trends across years.
 }
 
-Users can render this \code{ggplot2} object directly, save it, or add additional
-layers and modifications using the \code{+} operator.
+Users can render this \code{ggplot2} object directly, save it, or further modify it using the \code{+} operator.
 }
 \description{
-These functions create scatter plots of two indicators with a linear regression line,
-faceted by year, to assess internal consistency. Each function compares a specific pair of indicators,
-with options for customizing titles, labels, and displaying R-squared values per year.
+These functions generate scatter plots that compare two health indicators across years, assessing internal consistency
+through visualization of linear regression fits and R-squared values by year. Each function is designed to compare a specific
+pair of indicators, with options for customizing plot titles, axis labels, and the inclusion of trend information.
 
 \code{plot_comparison_penta1_anc1} compares Penta1 and ANC1 indicators across.
 
-\code{plot_comparison_penta1_penta2} compares Penta1 and Penta2 indicators.
+\code{plot_comparison_penta1_penta3} compares Penta1 and Penta23 indicators.
 
 \code{plot_comparison_opv1_opv3} compares OPV1 and OPV3 indicators.
+}
+\details{
+\itemize{
+\item The scatter plot displays the relationship between the two specified indicators over multiple years,
+with each year presented in a separate facet.
+\item A linear regression line is added to each year's plot to help visualize the trend.
+\item R-squared values, calculated per year, are optionally displayed on each facet, indicating the strength
+of the linear relationship between the indicators for that year.
+\item A diagonal reference line is also provided for visual comparison to a 1:1 relationship, where applicable.
+}
 
-\code{plot_comparison_opv1_anc1} compares OPV1 and ANC1 indicators.
-
-\code{plot_comparison_pcv1_pcv3} compares PCV1 and PCV3 indicators.
-
-\code{plot_comparison_rota1_rota2} compares ROTA1 and ROTA2 indicators.
-
-\code{plot_comparison_ipv1_ipv2} compares IPV1 and IPV2 indicators.
-
-\code{plot_comparison_penta1_pcv1} compares Penta1 and PCV1 indicators.
-
-\code{plot_comparison_pcv3_penta3} compares PCV3 and Penta3 indicators.
-
-\code{plot_comparison_opv1_penta1} compares OPV1 and Penta1 indicators.
-
-\code{plot_comparison_opv3_penta3} compares OPV3 and Penta3 indicators.
+This function is commonly used for consistency checks between indicators such as:
+\itemize{
+\item ANC1 vs PENTA1
+\item PENTA1 vs PENTA3
+\item OPV1 vs OPV3
+}
 }
 \examples{
 \dontrun{
-  # Plot comparisons with generic function
+  # Plot a comparison between ANC1 and PENTA1 indicators
   plot_comparison(cd_data, x_var = 'anc1', y_var = 'penta1')
 
-  # Compare ANC1 and Penta1 by year with the dedicated function
+  # Dedicated function for comparing ANC1 and PENTA1 over time
   plot_comparison_penta1_anc1(cd_data)
 }
 

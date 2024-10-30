@@ -26,6 +26,7 @@ Imports:
     readxl,
     rlang,
     rmarkdown,
+    scales,
     stats,
     stringr,
     tibble,

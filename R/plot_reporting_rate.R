@@ -67,32 +67,22 @@ plot.cd_district_reporting_rate <- function(x, ...) {
     ggplot(aes(x = as.factor(year), y = value, fill = as.factor(year))) +
     geom_col(position = 'dodge') +
     geom_text(aes(label = round(value, 0)), position = position_dodge(width = 0.9), vjust = -1.5, color = 'black', size = 3) +
-    facet_wrap(~title, scales = 'free_y', nrow = 2, ncol = 3) +
+    facet_wrap(~title, scales = 'free_y', ncol = 3) +
     labs(
       title = paste("Figure 1a - Percentage of districts with low reporting rate (<", threshold, "%) by service and by year"),
       x = NULL, y = '%',
       caption = paste("Low reporting rate (<", threshold, "%)")
     ) +
+    scale_x_continuous(labels = scales::label_number()) +
+    scale_y_continuous(labels = scales::label_number()) +
+    cd_theme() +
     theme(
-      panel.background = element_blank(),
-      panel.border = element_rect(color = "black", fill = NA, size = 0.8),
       panel.grid.major.y = element_line(colour = 'gray90', size = 0.5),
 
-      legend.background = element_rect(color = "black",size = 0.5),
-      legend.position = "bottom",
       legend.key.size = unit(0.3, "cm"),
-      legend.title = element_blank(),
-      legend.text = element_text(size = 8),
 
-      plot.title = element_text(size = 10, hjust = 0.5),
-      plot.caption = element_text(hjust = 0),
-
-      axis.text.y = element_text(size = 8),
       axis.text.x = element_blank(),
-      axis.ticks = element_blank(),
-
-      strip.background = element_blank(),
-      strip.text = element_text(size = 10),
+      axis.ticks = element_blank()
     ) +
     scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, by = 25), expand = c(0, 0)) +
     scale_fill_manual(values = colors)

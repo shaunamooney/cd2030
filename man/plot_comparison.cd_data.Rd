@@ -41,10 +41,6 @@ a linear regression line and a diagonal reference line. The plot is faceted by y
 and displays R-squared values for each year to assess the relationship between indicators.
 }
 \details{
-This function is primarily used to assess internal consistency across selected indicators
-for a \code{cd_data} object. Users can specify any pair of indicators as x and y variables, allowing for
-flexible comparison of various indicators.
-
 This function calculates R-squared values for each year and displays them in each facet,
 helping assess the relationship between the two indicators over time. The diagonal reference line
 is added to aid in visualizing deviations from a perfect 1:1 relationship.
@@ -58,14 +54,7 @@ Common indicator comparisons include:
 }
 \examples{
 \dontrun{
-  # Example 1: Basic comparison between ANC1 and PENTA1 indicators
   plot_comparison(cd_data, x_var = 'anc1', y_var = 'penta1')
-
-  # Example 2: Customized plot with larger points and a custom theme
-  plot_comparison(cd_data, x_var = 'anc1', y_var = 'penta1',
-                  title = 'ANC1 vs PENTA1 Comparison',
-                  x_label = 'ANC1 Coverage', y_label = 'PENTA1 Coverage',
-                  facet_ncol = 2, plot_theme = theme_minimal())
 }
 
 }
