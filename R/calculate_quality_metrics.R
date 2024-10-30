@@ -1,27 +1,31 @@
 #' Calculate Quality Metrics for Health Indicators
 #'
-#' This function calculates data quality metrics, such as outlier detection and missingness, for a range of health indicators across districts and years.
-#' The calculations involve determining bounds for outliers using Hampel's X84 method based on median absolute deviation (MAD), flagging outliers and missing values, and storing results in a summary data frame.
+#' `calculate_quality_metrics` assesses data quality for various health indicators
+#' across districts and years. It includes outlier detection based on Hampel's X84
+#' method and flags for missing values to ensure comprehensive data quality checks.
 #'
-#' @param .data A data frame containing health indicator data. Must include columns for `district` and `year`, as well as columns for each indicator in the predefined groups.
-#' @param call The calling environment for error checking. Defaults to `caller_env()`.
+#' @param .data A data frame containing health indicator data with columns for
+#'   district, year, and each indicator in the predefined groups.
+#' @param call The calling environment for error handling. Defaults to `caller_env()`.
 #'
 #' @details
-#' - **Indicator Groups**:
-#'   The function groups indicators into categories (e.g., ANC, IDelivery, Vaccination) and calculates MAD and median values up to the `lastyear` for each indicator in `allindicators`.
-#' - **Outlier Detection**:
-#'   Outliers are determined based on Hampel's X84 method, where outlier bounds are defined as 5 standard deviations from the median.
-#' - **Missingness Check**:
-#'   Missing values are flagged as "Missing" and non-missing as "Non-Missing."
+#' - **Indicator Groups**: The function expects indicators grouped into categories,
+#'    e.g., ANC, IDelivery, Vaccination, to calculate MAD and median values up to
+#'    the latest year (`lastyear`) for each indicator.
+#' - **Outlier Detection**: Outliers are identified using Hampel's X84 method,
+#'    where bounds are defined as 5 standard deviations from the median (scaled
+#'    by `1.4826` for robust MAD estimation).
+#' - **Missingness Flag**: Values are flagged as "Missing" (1) or "Non-Missing"
+#'    (0) in alignment with standard handling for quality assessment.
 #'
-#' @return A data frame (`outliers_summary`) containing:
+#' @return A data frame (outliers_summary) containing:
 #' - Outlier flags for each indicator, suffixed with `_outlier5std`.
 #' - Missingness status for each indicator, prefixed with `mis_`.
 #' - `district` and `year` columns to maintain grouping information.
 #'
 #' @examples
 #' \dontrun{
-#' # Assuming `.data` is a data frame with necessary indicator columns
+#' # Assuming .data is a data frame with necessary indicator columns
 #' quality_metrics <- calculate_quality_metrics(.data)
 #' }
 #'
@@ -30,45 +34,34 @@ calculate_quality_metrics <- function(.data, call = caller_env()) {
 
   district = year = NULL
 
-  check_required(.data, call = call)
+  check_cd_data(.data, call = call)
 
-  # Define variable groups
-  ancvargroup <- c('anc1', 'anc4', 'ipt2')
-  idelvvargroup <- c('ideliv', 'instlivebirths', 'csection', 'total_stillbirth', 'stillbirth_f', 'stillbirth_m', 'maternal_deaths')
-  vaccvargroup <- c('opv1', 'opv2', 'opv3', 'penta1', 'penta2', 'penta3', 'measles1', 'pcv1', 'pcv2', 'pcv3', 'measles2', 'bcg', 'rota1', 'rota2', 'ipv1', 'ipv2')
-  pncvargroup <- 'pnc48h'
-  opdvargroup <- c('opd_total', 'opd_under5')
-  ipdvargroup <- c('ipd_total', 'ipd_under5')
-  allindicators <- c(ancvargroup, idelvvargroup, vaccvargroup, pncvargroup, opdvargroup, ipdvargroup)
+  indicator_groups <- attr(.data, 'indicator_groups')
+  allindicators <- list_c(indicator_groups)
 
+  # Get the latest year in the dataset
   lastyear <- max(.data$year, na.rm = TRUE)
 
   outliers_summary <- .data %>%
     select(district, year, allindicators) %>%
     mutate(
-      # Calculate `_mad` and `_med` for each indicator in `allindicators` up to `lastyear`
-      across(allindicators, ~ mad(ifelse(year < lastyear, ., NA_real_), na.rm = TRUE), .names = "{.col}_mad"),
-      # across(ends_with('_mad'), ~ ifelse(is.na(.), max(., na.rm = TRUE), .)),
-      across(allindicators, ~ median(ifelse(year < lastyear, ., NA_real_), na.rm = TRUE), .names = "{.col}_med"),
-      # across(ends_with('_med'), ~ ifelse(is.na(.), max(., na.rm = TRUE), .x)),
+      # Calculate MAD and median for each indicator up to `lastyear`
+      across(allindicators, ~ mad(if_else(year < lastyear, ., NA_real_), na.rm = TRUE), .names = "{.col}_mad"),
+      across(allindicators, ~ median(if_else(year < lastyear, ., NA_real_), na.rm = TRUE), .names = "{.col}_med"),
 
-      # Calculate lower and upper bounds for outliers using Hampel's X84 method
-      across(allindicators, ~ get(paste0(cur_column(), "_med")) - 5 * get(paste0(cur_column(), "_mad")), .names = "{.col}_outlb5std"),
-      across(allindicators, ~ get(paste0(cur_column(), "_med")) + 5 * get(paste0(cur_column(), "_mad")), .names = "{.col}_outub5std"),
+      # Replace NA MAD and median values with max MAD or median within district
+      # across(ends_with('_mad'), ~ if_else(is.na(.), max(., na.rm = TRUE), round(., 1))),
+      # across(ends_with('_med'), ~ if_else(is.na(.), max(., na.rm = TRUE), round(., 1))),
+
+      # Define Hampel X84 method bounds for outliers
+      across(allindicators, ~ round(get(paste0(cur_column(), "_med")) - 5 * get(paste0(cur_column(), "_mad")), 0), .names = "{.col}_outlb5std"),
+      across(allindicators, ~ round(get(paste0(cur_column(), "_med")) + 5 * get(paste0(cur_column(), "_mad")), 0), .names = "{.col}_outub5std"),
 
       # Flag values as outliers if they fall outside the calculated bounds
-      across(allindicators,
-             ~ ifelse(!is.na(.) & (. < get(paste0(cur_column(), "_outlb5std")) | . > get(paste0(cur_column(), "_outub5std"))),
-                      1, 0
-             ),
-             .names = "{.col}_outlier5std"),
+      across(allindicators, ~ if_else(!is.na(.) & (. < get(paste0(cur_column(), "_outlb5std")) | . > get(paste0(cur_column(), "_outub5std"))), 1, 0), .names = "{.col}_outlier5std"),
 
       # Flag missing values
-      across(allindicators,
-             ~ case_when(
-               is.na(.) ~ 1,
-               .default = 0),
-             .names = "mis_{.col}"),
+      across(allindicators, ~ if_else(is.na(.), 1,  0), .names = "mis_{.col}"),
 
       .by = district
     ) %>%

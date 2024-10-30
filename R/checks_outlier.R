@@ -1,140 +1,126 @@
-#' Check for Outliers in Indicator Data
+#' Calculate Outliers Summary by Year
 #'
-#' This function identifies and quantifies extreme outliers for a specified set of indicators in a dataset,
-#' flagging them if values fall beyond five times the Median Absolute Deviation (MAD) from the median.
-#' It returns the percentage of non-outliers for each indicator by year, reflecting data quality trends.
+#' `calculate_outliers_summary` provides an annual overview of data quality by
+#' summarizing extreme outliers for health indicators. Outliers are identified
+#' based on robust statistical metrics (Median Absolute Deviation, MAD) and
+#' flagged when they deviate significantly (beyond five MADs from the median).
 #'
-#' @param .data A data frame containing indicator data for districts and years. The data frame should be processed
-#'   with calculated outlier flags (columns ending in `_outlier5std`), where 1 indicates an outlier and 0 a non-outlier.
+#' @param .data A data frame with district-level health indicators. This data
+#'   frame must include a `district` and `year` column, along with indicator columns
+#'   for calculating outliers. Outlier flags should be computed prior and named
+#'   with the suffix `_outlier5std` (e.g., `anc1_outlier5std` where 1 indicates an
+#'   outlier and 0 indicates non-outliers).
 #'
 #' @details
-#' The function operates as follows:
-#' - Collapses the data by year, calculating the mean percentage of non-outliers for each indicator.
-#' - Aggregates indicators by calculating the mean percentage of non-outliers across all indicators to provide
-#'   an annual summary.
+#' - **Outlier Detection**: Outliers are calculated based on Hampel’s robust X84
+#'   method, using the Median Absolute Deviation (MAD). This method identifies values
+#'   that exceed five times the MAD from the median, reducing the influence of extreme
+#'   values on the analysis.
+#' - **Annual Non-Outlier Rate**: For each indicator and each year, the function calculates the
+#'   percentage of non-outliers. Additionally, the function aggregates the non-outlier
+#'   rates across all indicators, as well as vaccination-only and tracer-only indicators,
+#'   providing an overall data quality summary.
+#' - **Rounding**: Percentages of non-outliers are rounded to two decimal places for
+#'   accuracy and presentation clarity.
 #'
-#' The function uses the Median Absolute Deviation (MAD) method for robust outlier detection, ensuring that only
-#' extreme deviations from the median are flagged.
-#'
-#' @return A `cd_outliers_summary` object (data frame) containing the yearly summary of non-outliers as a
-#'   percentage, with each indicator reported individually and a calculated overall mean.
+#' @return A `cd_outliers_summary` object (tibble) with:
+#'   - Each indicator's non-outlier percentage (`_outlier5std` columns).
+#'   - Overall non-outlier summaries across all indicators, vaccination indicators, and tracers.
 #'
 #' @examples
 #' \dontrun{
 #'   # Check for extreme outliers in indicator data
-#'   check_outliers(data)
+#'   calculate_outliers_summary(data)
 #' }
 #'
 #' # Output: Percentage of monthly values that are not extreme outliers, by year
 #'
 #' @export
-check_outlier_summary <- function(.data) {
+calculate_outliers_summary <- function(.data) {
 
   year = . = NULL
 
   check_cd_data(.data)
 
-  outliers_summary <- .data$quality_metrics %>%
-    # Collapse data by year and calculate mean percentage of non-outliers
-    summarise(
-      across(ends_with('_outlier5std'), ~ mean(1 - .x, na.rm = TRUE) * 100),
-      .by = year
-    ) %>%
-    mutate(mean_outlier5std = round(rowMeans(select(., ends_with('_outlier5std')), na.rm = TRUE), 1))
+  indicator_groups <- attr(.data, 'indicator_groups')
+  vaccine_only <- indicator_groups[['vacc']]
+  tracers <- attr(.data, 'tracers')
+
+  data <- .data %>%
+    calculate_quality_metrics() %>%
+    summarise(across(ends_with('_outlier5std'), mean, na.rm = TRUE), .by = year) %>%
+    mutate(
+      mean_out_all = rowMeans(select(., ends_with('_outlier5std')), na.rm = TRUE),
+      mean_out_vacc_only = rowMeans(select(., paste0(vaccine_only, '_outlier5std')), na.rm = TRUE),
+      mean_out_vacc_tracer = rowMeans(select(., paste0(tracers, '_outlier5std')), na.rm = TRUE),
+
+      across(c(ends_with('_outlier5std'), starts_with('mean_out_')), ~ round((1 - .x) * 100, 2))
+    )
 
   new_tibble(
-    outliers_summary,
+    data,
     class = 'cd_outliers_summary'
   )
 }
 
-#' Summary for `cd_outliers_summary`
+#' Calculate District-Level Outliers Summary by Year
 #'
-#' Provides a custom summary for the `cd_outliers_summary` object, displaying
-#' the percentage of monthly indicator values that are not considered extreme outliers, aggregated by year.
+#' `calculate_district_outlier_summary` computes a district-level summary of extreme
+#' outliers for specified health indicators. This function aggregates extreme outlier counts
+#' for each indicator by first identifying the maximum outlier flag within each district
+#' and year. An outlier is flagged based on Hampel's X84 method, where values exceeding
+#' five Median Absolute Deviations (MAD) from the median are considered extreme outliers.
 #'
-#' @param x A `cd_outliers_summary` object containing data quality metrics.
-#' @param ... Additional arguments for compatibility with S3 methods.
+#' @param .data A data frame containing district-level health indicator data. This data
+#'   frame must include precomputed outlier flags (columns ending in `_outlier5std`),
+#'   where 1 represents an outlier and 0 represents non-outliers.
 #'
-#' @return A character vector summarizing the content and purpose of the data,
-#' indicating the proportion of values that meet the criteria for non-outliers.
+#' @details
+#' - **Outlier Aggregation**: The function first calculates the maximum outlier flag within
+#'   each district and year. This district-level flag is used to determine if extreme outliers
+#'   are present for each indicator.
+#' - **Non-Outlier Percentage**: After aggregating by district and year, it computes the
+#'   mean percentage of districts without extreme outliers for each indicator, as well as
+#'   overall summaries for vaccination-only and tracer indicators.
+#' - **Rounding**: Non-outlier percentages are rounded to two decimal places for clarity
+#'   in reporting and analysis.
 #'
-#' @export
-tbl_sum.cd_outliers_summary <- function(x, ...) {
-  c(
-    'Table' = 'Percentage of monthly values that are not extreme outliers, by year',
-    NextMethod()
-  )
-}
-
-#' Check for Extreme Outliers at District Level
-#'
-#' This function identifies and aggregates extreme outlier counts for various indicators
-#' by calculating the maximum outlier flag for each indicator within each district and year.
-#' An extreme outlier for an indicator in a given district is flagged when the value lies
-#' more than five standard deviations from the median, based on the Hampel X84 method.
-#' This function outputs the percentage of districts without extreme outliers per indicator,
-#' summarized by year.
-#'
-#' @param .data A data frame containing the processed indicator data with outlier flags (e.g., `*_outlier5std`).
-#'
-#' @return A `cd_extreme_outliers` object summarizing the percentage of districts without extreme
-#'   outliers by year. The output includes each indicator's percentage and an overall yearly mean
-#'   percentage for non-outliers across all indicators.
+#' @return A `cd_district_outliers_summary` object (tibble) with:
+#'   - Each indicator's percentage of districts without extreme outliers, calculated yearly.
+#'   - Aggregated summaries for non-outliers across all indicators, vaccination indicators,
+#'     and tracer indicators.
 #'
 #' @examples
 #' \dontrun{
 #'   # Summarize the proportion of districts without extreme outliers
-#'   check_extreme_outlier(data)
+#'   calculate_district_outlier_summary(data)
 #' }
 #'
 #' @export
-check_outlier_district <- function(.data) {
+calculate_district_outlier_summary <- function(.data) {
 
   district = year = . = NULL
 
   check_cd_data(.data)
 
-  outliers_summary <- .data$quality_metrics %>%
-    summarise(
-      across(
-        ends_with('_outlier5std'),
-        ~ ifelse(all(is.na(.x)), NA_real_, max(.x, na.rm = TRUE))
-      ),
-      .by = c(district, year)
-    ) %>%
-    summarise(
-      across(ends_with('_outlier5std'), ~ round((1 - mean(.x, na.rm = TRUE)) * 100, 0.01)),
-      .by = year
-    ) %>%
-    # Add a mean row for district data
+  indicator_groups <- attr(.data, 'indicator_groups')
+  vaccine_only <- indicator_groups[['vacc']]
+  tracers <- attr(.data, 'tracers')
+
+  data <- .data %>%
+    calculate_quality_metrics() %>%
+    summarise(across(ends_with('_outlier5std'), max, na.rm = TRUE), .by = c(district, year)) %>%
+    summarise(across(ends_with('_outlier5std'), mean, na.rm = TRUE), .by = year) %>%
     mutate(
-      mean_outlier5std = round(rowMeans(select(., -year), na.rm = TRUE), 2)
+      mean_out_all = rowMeans(select(., ends_with('_outlier5std')), na.rm = TRUE),
+      mean_out_vacc_only = rowMeans(select(., paste0(vaccine_only, '_outlier5std')), na.rm = TRUE),
+      mean_out_vacc_tracer = rowMeans(select(., paste0(tracers, '_outlier5std')), na.rm = TRUE),
+
+      across(c(ends_with('_outlier5std'), starts_with('mean_out_')), ~ round((1 - .x) * 100, 2))
     )
 
   new_tibble(
-    outliers_summary,
-    class = 'cd_extreme_outliers'
-  )
-}
-
-#' Summary for `cd_extreme_outliers`
-#'
-#' Provides a summary of the `cd_extreme_outliers` object, indicating the percentage of districts with no
-#' extreme outliers by year for each indicator. This summary facilitates data quality monitoring by showing
-#' the proportion of monthly values that are non-extreme for all indicators.
-#'
-#' @param x A `cd_extreme_outliers` object containing the percentage of districts without extreme outliers
-#'   by year and indicator.
-#' @param ... Additional arguments for compatibility with S3 methods.
-#'
-#' @return A character vector describing the purpose of the data, highlighting the percentage of districts
-#'   with no extreme outliers for each year.
-#'
-#' @export
-tbl_sum.cd_extreme_outliers <- function(x, ...) {
-  c(
-    'Table' = 'Percentage of districts with no extreme outliers, by year',
-    NextMethod()
+    data,
+    class = 'cd_district_outliers_summary'
   )
 }

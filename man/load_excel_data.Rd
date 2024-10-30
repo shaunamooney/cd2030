@@ -5,7 +5,8 @@
 \title{Load and Clean Countdown 2030 Excel Data}
 \usage{
 load_excel_data(
-  filename,
+  path,
+  start_year = 2019,
   admin_sheet_name = "Admin_data",
   population_sheet_name = "Population_data",
   reporting_sheet_name = "Reporting_completeness",
@@ -14,7 +15,10 @@ load_excel_data(
 )
 }
 \arguments{
-\item{filename}{A string. The path to the Excel file to be loaded.}
+\item{path}{A string. The path to the Excel file to be loaded.}
+
+\item{start_year}{An integer. The minimum year to filter the data (default is
+2019).}
 
 \item{admin_sheet_name}{A string. The name of the sheet containing administrative
 data. Default is "Admin_data".}
@@ -29,19 +33,17 @@ completeness data. Default is "Reporting_completeness".}
 service data. Default is \code{c("Service_data_1", "Service_data_2", "Service_data_3", "Vaccine_stock_data")}.}
 }
 \value{
-A data frame of class \code{cd_data}, containing cleaned and processed data.
+A tibble of class \code{cd_data}, containing cleaned and processed data.
 }
 \description{
-\code{load_excel_data} loads and processes data from an Excel file formatted
-for Countdown 2030. It reads specified sheets, checks for duplicates, merges
-data, and performs additional cleaning operations like fixing column names
-and handling reporting rates.
+\code{load_excel_data} reads specified sheets from an Excel file, cleans the data,
+and outputs a tibble of class \code{cd_data}.
 }
 \details{
-This function is designed to handle Countdown 2030 data sheets, ensuring
-that each sheet is properly loaded, standardized, and merged into a single data
-frame. It includes robust handling for issues such as duplicate entries, missing
-values in key columns, and inconsistent formatting across sheets.
+This function is designed to handle Countdown 2030 data sheets by ensuring each
+sheet is properly loaded, standardized, and merged into a single tibble. It performs
+checks for duplicates, cleans up formatting issues, and verifies the presence of
+expected columns.
 }
 \examples{
 \dontrun{

@@ -1,11 +1,11 @@
 #' Load and Clean Countdown 2030 Excel Data
 #'
-#' `load_excel_data` loads and processes data from an Excel file formatted
-#' for Countdown 2030. It reads specified sheets, checks for duplicates, merges
-#' data, and performs additional cleaning operations like fixing column names
-#' and handling reporting rates.
+#' `load_excel_data` reads specified sheets from an Excel file, cleans the data,
+#' and outputs a tibble of class `cd_data`.
 #'
-#' @param filename A string. The path to the Excel file to be loaded.
+#' @param path A string. The path to the Excel file to be loaded.
+#' @param start_year An integer. The minimum year to filter the data (default is
+#'   2019).
 #' @param admin_sheet_name A string. The name of the sheet containing administrative
 #'   data. Default is "Admin_data".
 #' @param population_sheet_name A string. The name of the sheet containing population
@@ -13,15 +13,14 @@
 #' @param reporting_sheet_name A string. The name of the sheet containing reporting
 #'   completeness data. Default is "Reporting_completeness".
 #' @param service_sheet_names A vector of strings. The names of the sheets containing
-#'   service data. Default is `c("Service_data_1", "Service_data_2", "Service_data_3",
-#'   "Vaccine_stock_data")`.
+#'   service data. Default is `c("Service_data_1", "Service_data_2", "Service_data_3", "Vaccine_stock_data")`.
 #'
-#' @return A data frame of class `cd_data`, containing cleaned and processed data.
+#' @return A tibble of class `cd_data`, containing cleaned and processed data.
 #' @details
-#' This function is designed to handle Countdown 2030 data sheets, ensuring
-#' that each sheet is properly loaded, standardized, and merged into a single data
-#' frame. It includes robust handling for issues such as duplicate entries, missing
-#' values in key columns, and inconsistent formatting across sheets.
+#' This function is designed to handle Countdown 2030 data sheets by ensuring each
+#' sheet is properly loaded, standardized, and merged into a single tibble. It performs
+#' checks for duplicates, cleans up formatting issues, and verifies the presence of
+#' expected columns.
 #'
 #' @examples
 #' \dontrun{
@@ -30,17 +29,34 @@
 #' }
 #'
 #' @export
-
-load_excel_data <- function(filename,
+load_excel_data <- function(path,
+                            start_year = 2019,
                             admin_sheet_name = 'Admin_data',
                             population_sheet_name = 'Population_data',
                             reporting_sheet_name = 'Reporting_completeness',
                             service_sheet_names = c('Service_data_1', 'Service_data_2', 'Service_data_3', 'Vaccine_stock_data')) {
 
-  service_sheet_names <- c(service_sheet_names, reporting_sheet_name)
-
   # Combine all sheet names
-  sheet_names <- c(service_sheet_names, population_sheet_name, admin_sheet_name)
+  sheet_names <- c(service_sheet_names, reporting_sheet_name, population_sheet_name, admin_sheet_name)
+
+  # Validate if sheet names are provided
+  if (length(sheet_names) == 0) {
+    cd_abort(
+      c("x" = "The {.arg sheet_names} argument is required and cannot be empty. Provide at least one sheet name."),
+      call = call
+    )
+  }
+
+  # Check if specified sheets are present in the file
+  available_sheets <- excel_sheets(path)
+  missing_sheets <- setdiff(sheet_names, available_sheets)
+  if (length(missing_sheets) > 0) {
+    cd_abort(
+      c('x' = 'Missing sheets in file {.val {path}}:',
+        '!' = paste(missing_sheets, collapse = ', ')),
+      call = call
+    )
+  }
 
   sheet_ids <- list2(
     !!admin_sheet_name := 'district',
@@ -48,10 +64,17 @@ load_excel_data <- function(filename,
     service_data = c('district', 'year', 'month')
   )
 
+  # Log and load each sheet with basic cleaning steps
+  cd_info(c("i" = "Loading sheets from {.val {path}}"))
+  data <- map(sheet_names, ~ suppressMessages(read_and_clean_sheet(path, .x, sheet_ids, start_year)))
+  names(data) <- sheet_names
+
   # Standardize merged data
-  data <- load_excel_sheets(filename, sheet_names, sheet_ids) %>%
+  data <- data %>%
     merge_data(sheet_names, sheet_ids) %>%
     standardize_data()
+
+  cd_info(c('i' = 'Successfully loaded and cleaned data'),)
 
   new_countdown(data)
 }
@@ -135,8 +158,10 @@ new_countdown <- function(.data, call = caller_env()) {
   indicator_groups <- list(
     anc = c("anc1"),
     idelv = c("ideliv", "instlivebirths"),
-    vacc = c('bcg', 'ipv1', 'ipv2', 'opv1', 'opv3', 'pcv1', 'pcv3', "penta1", "penta3", 'rota1', 'rota2')
+    vacc = c("opv1", "opv2","opv3",  "penta1","penta2", "penta3", "measles1", "measles2","pcv1", "pcv2","pcv3", "bcg","rota1", "rota2", "ipv1")
   )
+
+  tracers <- c('penta1', 'penta2', 'penta3', 'measles1', 'bcg', 'opv1', 'opv2', 'opv3')
 
   # Identify missing columns for each indicator group
   missing_cols <- list_c(imap(indicator_groups, ~ setdiff(c(.x, paste0(.y, '_rr')), colnames(.data))))
@@ -145,7 +170,7 @@ new_countdown <- function(.data, call = caller_env()) {
   if (length(missing_cols) > 0) {
     cd_abort(
       c('x' = 'The following required columns are missing from the data:',
-        '!' = paste(missing_cols, collapse = ', ')),
+        '!' = '{.field {paste(missing_cols, collapse = ", ")}}'),
       call = call
     )
   }
@@ -154,81 +179,11 @@ new_countdown <- function(.data, call = caller_env()) {
   new_tibble(
     .data,
     indicator_groups = indicator_groups,
+    tracers = tracers,
     class = "cd_data"
   )
 }
 
-#' Load and Clean Excel Sheets
-#'
-#' `load_excel_sheets` loads specified sheets from an Excel file, verifies their
-#' existence, and applies basic cleaning to each sheet. It performs operations
-#' such as validating the presence of required sheets, and checking for missing
-#' sheets.
-#'
-#' @param path A string. The path to the Excel file.
-#' @param sheet_names A vector of strings. The names of sheets to load.
-#' @param sheet_ids A named list specifying columns for duplicate checks for
-#' each sheet.
-#' @param call The call environment for error handling (default is the caller's
-#' environment).
-#'
-#' @return A list of tibbles, where each tibble corresponds to a cleaned sheet.
-#'
-#' @details
-#' **Internal Steps**:
-#' 1. **Validation of Input**: Ensures `sheet_names` is not empty. If it is, the
-#'    function throws an error.
-#' 2. **Sheet Presence Check**: Loads the available sheet names from the Excel
-#'    file at `path`. Then, it checks whether each `sheet_name` specified exists in
-#'    the file, storing any missing sheet names. If any specified sheet is missing,
-#'    an error is triggered, displaying the names of missing sheets.
-#' 3. **Loading and Cleaning Sheets**: For each sheet in `sheet_names`, the
-#'    function calls [read_and_clean_sheet()] to load and clean the sheet. This
-#'    process includes renaming columns, removing unnecessary rows, and converting
-#'    data types as needed. Each sheet's data is then stored in a list with the
-#'    sheet names as keys.
-#'
-#' @examples
-#' \dontrun{
-#'   # Load and clean specified sheets from an Excel file
-#'   sheets_data <- load_excel_sheets(path = "data.xlsx",
-#'                                    sheet_names = c("Sheet1", "Sheet2"),
-#'                                    sheet_ids = list(Sheet1 = "id"))
-#' }
-#'
-#' @noRd
-load_excel_sheets <- function(path, sheet_names, sheet_ids, call = caller_env()) {
-
-  check_required(sheet_names, call = call)
-
-  # Validate if sheet names are provided
-  if (length(sheet_names) == 0) {
-    cd_abort(
-      c("x" = "The {.arg sheet_names} argument is required and cannot be empty. Provide at least one sheet name."),
-      call = call
-    )
-  }
-
-  # Check if specified sheets are present in the file
-  available_sheets <- excel_sheets(path)
-  missing_sheets <- setdiff(sheet_names, available_sheets)
-  if (length(missing_sheets) > 0) {
-    cd_abort(
-      c('x' = 'Missing sheets in file {.val {path}}:',
-        '!' = paste(missing_sheets, collapse = ', ')),
-      call = call
-    )
-  }
-
-  # Log and load each sheet with basic cleaning steps
-  cd_info(c("i" = "Loading sheets from {.val {path}}"))
-  data <- map(sheet_names, ~ suppressMessages(read_and_clean_sheet(path, .x, sheet_ids, call)))
-  names(data) <- sheet_names
-
-  cd_info(c('i' = 'Successfully loaded all specified sheets'),)
-
-  return(data)
-}
 
 #' Helper function to read and clean a single Excel sheet
 #'
@@ -239,9 +194,11 @@ load_excel_sheets <- function(path, sheet_names, sheet_ids, call = caller_env())
 #' @param path A string. Path to the Excel file.
 #' @param sheet_name A string. Name of the sheet to read and clean.
 #' @param sheet_ids A named list specifying the columns for duplicate checks
-#' for each sheet.
+#'   for each sheet.
+#' @param start_year An integer. The minimum year to filter the data (default is
+#'   2019).
 #' @param call The call environment for error handling (default is the caller's
-#' environment).
+#'   environment).
 #'
 #' @return A cleaned tibble for the specified sheet.
 #' @details
@@ -273,11 +230,12 @@ load_excel_sheets <- function(path, sheet_names, sheet_ids, call = caller_env())
 #' }
 #'
 #' @noRd
-read_and_clean_sheet <- function(path, sheet_name, sheet_ids, call = caller_env()) {
+read_and_clean_sheet <- function(path, sheet_name, sheet_ids, start_year, call = caller_env()) {
 
   check_file_path(path, call = call)
   check_required(sheet_name, call = call)
   check_required(sheet_ids, call = call)
+  check_required(start_year, call = call)
 
   # Columns that are required to have data
   required_columns <- c('district', 'year', 'month', 'first_admin_level', 'total_number_health_facilities')
@@ -288,16 +246,16 @@ read_and_clean_sheet <- function(path, sheet_name, sheet_ids, call = caller_env(
     select(-starts_with('..')) %>%                  # Remove columns with names starting with ".." (usually blank or junk columns)
     rename(district = any_of('district_name')) %>%  # Rename 'district_name' to 'district' if exists
     mutate(across(-any_of(c('country', 'first_admin_level', 'district', 'month')), ~ suppressWarnings(as.numeric(.)))) %>% # Convert other columns to numeric
-    filter(!if_any(any_of(required_columns), is.na))# Remove rows with key columns missing
+    filter(!if_any(any_of(required_columns), is.na)) %>% # Remove rows with key columns missing
+    filter(if_any(matches('year'), ~ year >= start_year))
 
   # Determine columns for duplicate checking
   ids <- sheet_ids[[sheet_name]] %||% sheet_ids[['service_data']]
 
   if (anyDuplicated(data[ids]) > 0) {
     cd_abort(
-      c("x" = "Duplicate entries found.",
-        "!" = paste("Sheet:", sheet_name),
-        "!" = paste("Key columns:", paste(ids, collapse = ", "))),
+      c('x' = 'Duplicates found in {.field {paste("Sheet:", sheet_name)}',
+        '!' = paste("Key columns:", paste(ids, collapse = ", "))),
       call = call
     )
   }
@@ -455,7 +413,7 @@ standardize_data <- function(.data, call = caller_env()) {
       across(
         any_of(c(ends_with('_rate'), 'year', 'total_population', 'population_under_5years',
           'population_under_1year', 'live_births', 'total_births')),
-        round, 1
+        round, 0
       )
     ) %>%
     mutate(

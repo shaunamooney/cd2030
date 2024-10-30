@@ -9,30 +9,28 @@ save_data(.data, file = "master_dataset.dta")
 \arguments{
 \item{.data}{A tibble of class \code{cd_data} containing the processed data to be saved.}
 
-\item{file}{A string. The path to the file where the data should be saved.
-Defaults to "master_dataset.dta" if not specified.}
+\item{file}{A string. The path to the file where the data should be saved, with
+extension \code{.rds} or \code{.dta} depending on the desired format. Default is \code{master_dataset.dta}}
 }
 \value{
 No return value. This function is called for its side effects (saving
 the data to an RDS or DTA file).
 }
 \description{
-This function saves the processed Countdown 2030 data to either an RDS or DTA file.
+\code{save_data} saves processed Countdown 2030 data to either an RDS or DTA file.
 It checks that the input data is of class \code{cd_data} before saving.
 }
 \details{
-The function only saves the main \code{data} portion of the \code{cd_data}
-object to the specified file. If the input data does not belong to the
-\code{"cd_data"} class, an error is thrown. The file format is determined by
-the file extension: \code{.rds} for RDS format and \code{.dta} for DTA format.
+The function verifies that the \code{data} argument is of class \code{cd_data}. It then
+saves the data in the specified file format based on the file extension.
 }
 \examples{
 \dontrun{
-  # Save processed Countdown 2030 data to an DTA file
-  save_data(cd_data)
+  # Save processed Countdown 2030 data to an RDS file
+  save_data(cd_data, "processed_cd2030_data.rds")
 
-  # Save processed Countdown 2030 data to a RDS file
-  save_data(cd_data, "master_dataset.rds")
+  # Save processed Countdown 2030 data to a DTA file
+  save_data(cd_data, "processed_cd2030_data.dta")
 }
 
 }
