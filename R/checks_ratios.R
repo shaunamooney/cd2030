@@ -86,7 +86,7 @@ calculate_ratios_summary <- function(.data,
 #'   and upper bounds for adequacy. Ratios within this range will be flagged as adequate.
 #'   Default is `c(1, 1.5)`.
 #'
-#' @return A tibble of class `cd_district_ratio_summary`, containing the summary of
+#' @return A tibble of class `cd_district_ratios_summary`, containing the summary of
 #'   adequacy checks by year. Each column represents the percentage of districts
 #'   meeting the adequacy criteria for the specified ratio, with overall metrics
 #'   included for data interpretation and quality monitoring.
@@ -105,7 +105,7 @@ calculate_ratios_summary <- function(.data,
 #' }
 #'
 #' @export
-calculate_district_ratio_summary <- function(.data,
+calculate_district_ratios_summary <- function(.data,
                                                 ratio_pairs = list(
                                                   "ratioAP" = c("anc1", "penta1"),
                                                   "ratioPP" = c("penta1", "penta3"),
@@ -124,6 +124,6 @@ calculate_district_ratio_summary <- function(.data,
       starts_with("adeq_")
     )
 
-  new_tibble(data_summary, class = 'cd_district_ratio_summary')
+  new_tibble(data_summary, class = 'cd_district_ratios_summary')
 }
 

@@ -22,15 +22,15 @@ tbl_sum.cd_ratios_summary <- function(x, ...) {
   )
 }
 
-#' Summary for `cd_district_ratio_summary` Object
+#' Summary for `cd_district_ratios_summary` Object
 #'
-#' Provides a customized summary for a `cd_district_ratio_summary` object, which
+#' Provides a customized summary for a `cd_district_ratios_summary` object, which
 #' includes the percentage of districts meeting the adequacy criteria (e.g., ratios
 #' within the range of 1.0 to 1.5) across specified indicator pairs by year. This
 #' summary aids in monitoring health indicator alignment at a district level over time.
 #'
-#' @param x A `cd_district_ratio_summary` object, typically created by the
-#'   `calculate_district_ratio_summary` function, containing adequacy checks for
+#' @param x A `cd_district_ratios_summary` object, typically created by the
+#'   `calculate_district_ratios_summary` function, containing adequacy checks for
 #'   district-level indicator ratios by year.
 #' @param ... Additional arguments to support S3 method compatibility.
 #'
@@ -39,7 +39,7 @@ tbl_sum.cd_ratios_summary <- function(x, ...) {
 #'   quality interpretation.
 #'
 #' @export
-tbl_sum.cd_district_ratio_summary <- function(x, ...) {
+tbl_sum.cd_district_ratios_summary <- function(x, ...) {
   c(
     'Table 3c.d' = 'Percentage of Districts with Adequate Ratios (between 1.0 and 1.5)',
     NextMethod()
