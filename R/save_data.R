@@ -1,27 +1,44 @@
-#' Save Processed Countdown 2030 Data to an RDS File
+#' Save Processed Countdown 2030 Data to File
 #'
-#' This function saves the processed Countdown 2030 data to an RDS file. It
-#'   checks that the input data is of class `cd_data` before saving.
+#' This function saves the processed Countdown 2030 data to either an RDS or DTA file.
+#' It checks that the input data is of class `cd_data` before saving.
 #'
-#' @param data A list of class `cd_data` containing the processed data to be saved.
-#' @param file A string. The path to the RDS file where the data should be saved.
+#' @param .data A tibble of class `cd_data` containing the processed data to be saved.
+#' @param file A string. The path to the file where the data should be saved.
+#'   Defaults to "master_dataset.dta" if not specified.
 #'
 #' @return No return value. This function is called for its side effects (saving
-#'   the data to an RDS file).
+#'   the data to an RDS or DTA file).
 #'
-#' @details The function only saves the `merged_data` portion of the `cd_data`
-#'   object to the specified file. If the input data does not belong to the \code{"cd_data"} class, an error is thrown.
+#' @details The function only saves the main `data` portion of the `cd_data`
+#'   object to the specified file. If the input data does not belong to the
+#'   `"cd_data"` class, an error is thrown. The file format is determined by
+#'   the file extension: `.rds` for RDS format and `.dta` for DTA format.
 #'
 #' @examples
 #' \dontrun{
-#'   # Save processed Countdown 2030 data to an RDS file
-#'   save_data(cd_data, "processed_cd2030_data.rds")
+#'   # Save processed Countdown 2030 data to an DTA file
+#'   save_data(cd_data)
+#'
+#'   # Save processed Countdown 2030 data to a RDS file
+#'   save_data(cd_data, "master_dataset.rds")
 #' }
 #'
 #' @export
-save_data <- function(data, file) {
-  if (!inherits(data, "cd_data")) stop("The data object must be of class 'cd_data'.")
+save_data <- function(.data, file = 'master_dataset.dta') {
 
-  # Save the merged_data portion of the object to an RDS file
-  saveRDS(data$merged_data, file = file)
+  check_cd_data(.data)
+
+  # Get file extension and determine save format
+  file_extension <- file_ext(file)
+
+  # Save based on the specified extension
+  switch(
+    file_extension,
+    'rds' = saveRDS(.data, file = file),
+    'dta' = haven::write_dta(.data, file = file),
+    cd_abort(
+      c('x' = 'Unsupported file format. Please use an ".rds" or ".dta" extension.')
+    )
+  )
 }

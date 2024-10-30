@@ -7,6 +7,7 @@
 
 ## usethis namespace: start
 #' @importFrom haven read_dta
+#' @importFrom haven write_dta
 #' @importFrom purrr compact
 #' @importFrom purrr imap
 #' @importFrom purrr imap_chr

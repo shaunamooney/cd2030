@@ -2,31 +2,37 @@
 % Please edit documentation in R/save_data.R
 \name{save_data}
 \alias{save_data}
-\title{Save Processed Countdown 2030 Data to an RDS File}
+\title{Save Processed Countdown 2030 Data to File}
 \usage{
-save_data(data, file)
+save_data(.data, file = "master_dataset.dta")
 }
 \arguments{
-\item{data}{A list of class \code{cd_data} containing the processed data to be saved.}
+\item{.data}{A tibble of class \code{cd_data} containing the processed data to be saved.}
 
-\item{file}{A string. The path to the RDS file where the data should be saved.}
+\item{file}{A string. The path to the file where the data should be saved.
+Defaults to "master_dataset.dta" if not specified.}
 }
 \value{
 No return value. This function is called for its side effects (saving
-the data to an RDS file).
+the data to an RDS or DTA file).
 }
 \description{
-This function saves the processed Countdown 2030 data to an RDS file. It
-checks that the input data is of class \code{cd_data} before saving.
+This function saves the processed Countdown 2030 data to either an RDS or DTA file.
+It checks that the input data is of class \code{cd_data} before saving.
 }
 \details{
-The function only saves the \code{merged_data} portion of the \code{cd_data}
-object to the specified file. If the input data does not belong to the \code{"cd_data"} class, an error is thrown.
+The function only saves the main \code{data} portion of the \code{cd_data}
+object to the specified file. If the input data does not belong to the
+\code{"cd_data"} class, an error is thrown. The file format is determined by
+the file extension: \code{.rds} for RDS format and \code{.dta} for DTA format.
 }
 \examples{
 \dontrun{
-  # Save processed Countdown 2030 data to an RDS file
-  save_data(cd_data, "processed_cd2030_data.rds")
+  # Save processed Countdown 2030 data to an DTA file
+  save_data(cd_data)
+
+  # Save processed Countdown 2030 data to a RDS file
+  save_data(cd_data, "master_dataset.rds")
 }
 
 }
