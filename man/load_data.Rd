@@ -2,23 +2,31 @@
 % Please edit documentation in R/load_data.R
 \name{load_data}
 \alias{load_data}
-\title{Load Processed Countdown 2030 Data from RDS File}
+\title{Load Processed Countdown 2030 Data from RDS or DTA File}
 \usage{
 load_data(path)
 }
 \arguments{
-\item{path}{A string. The path to the RDS file containing the processed data.}
+\item{path}{A string. The path to the file containing the processed data
+in either RDS or DTA format.}
 }
 \value{
-A list of class \code{cd_data} containing the merged data.
+A tibble of class \code{cd_data} containing the loaded data.
 }
 \description{
-This function loads processed Countdown 2030 data from an RDS file.
+\code{load_data} loads processed Countdown 2030 data from a specified file, either in
+RDS or DTA format, and returns a tibble of class \code{cd_data}.
+}
+\details{
+This function first checks the file extension to determine the format, then reads
+the data accordingly. It supports both RDS and Stata (DTA) file formats commonly
+used for saving processed datasets.
 }
 \examples{
 \dontrun{
-  # Load previously processed data from an RDS file
+  # Load previously processed data from an RDS or DTA file
   data <- load_data('processed_cd2030_data.rds')
+  data <- load_data('processed_cd2030_data.dta')
 }
 
 }

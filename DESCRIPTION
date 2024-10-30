@@ -21,6 +21,7 @@ Imports:
     cli,
     dplyr,
     ggplot2,
+    haven,
     purrr,
     readxl,
     rlang,
@@ -29,6 +30,7 @@ Imports:
     stringr,
     tibble,
     tidyr,
+    tools,
     utils,
     withr
 Suggests:

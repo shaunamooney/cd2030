@@ -17,43 +17,36 @@ load_excel_data(
 \item{filename}{A string. The path to the Excel file to be loaded.}
 
 \item{admin_sheet_name}{A string. The name of the sheet containing administrative
-data. Default is 'Admin_data'.}
+data. Default is "Admin_data".}
 
 \item{population_sheet_name}{A string. The name of the sheet containing population
-data. Default is 'Population_data'.}
+data. Default is "Population_data".}
 
-\item{reporting_sheet_name}{A string. The name of the sheet containing
-reporting completeness data. Default is 'Reporting_completeness'.}
+\item{reporting_sheet_name}{A string. The name of the sheet containing reporting
+completeness data. Default is "Reporting_completeness".}
 
 \item{service_sheet_names}{A vector of strings. The names of the sheets containing
-service data. Default is \code{Service_data_1}, \code{Service_data_2}, \code{Service_data_3},
-\code{Vaccine_stock_data}.}
+service data. Default is \code{c("Service_data_1", "Service_data_2", "Service_data_3", "Vaccine_stock_data")}.}
 }
 \value{
-A data of class \code{cd_data}.
+A data frame of class \code{cd_data}, containing cleaned and processed data.
 }
 \description{
-This function loads and cleans data from an Excel file formatted for
-Countdown 2030. It processes the provided Excel sheets, checks for
-duplicates, merges data, and performs additional cleaning steps such as
-fixing column names, removing unnecessary columns, and handling reporting rates.
+\code{load_excel_data} loads and processes data from an Excel file formatted
+for Countdown 2030. It reads specified sheets, checks for duplicates, merges
+data, and performs additional cleaning operations like fixing column names
+and handling reporting rates.
 }
 \details{
-The function performs several cleaning steps, including:
-\itemize{
-\item Removing header rows
-\item Converting column types appropriately (e.g., converting characters to numeric)
-\item Removing entirely missing rows and columns
-\item Renaming columns (e.g., renaming 'District' or 'District_name' to 'district')
-\item Checking for duplicate entries based on key columns
-\item Calculating reporting rates if necessary using expected and received values
-\item Replacing special characters in the 'Month' column and standardizing month names
-}
+This function is designed to handle Countdown 2030 data sheets, ensuring
+that each sheet is properly loaded, standardized, and merged into a single data
+frame. It includes robust handling for issues such as duplicate entries, missing
+values in key columns, and inconsistent formatting across sheets.
 }
 \examples{
 \dontrun{
   # Load and clean data from a Countdown 2030 Excel file
-  data <- load_excel_data('countdown2030_data.xlsx')
+  data <- load_excel_data("countdown2030_data.xlsx")
 }
 
 }

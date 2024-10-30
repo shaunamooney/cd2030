@@ -6,6 +6,7 @@
 "_PACKAGE"
 
 ## usethis namespace: start
+#' @importFrom haven read_dta
 #' @importFrom purrr compact
 #' @importFrom purrr imap
 #' @importFrom purrr imap_chr
@@ -29,6 +30,7 @@
 #' @importFrom stringr str_to_lower
 #' @importFrom tibble new_tibble
 #' @importFrom tibble tbl_sum
+#' @importFrom tools file_ext
 #' @importFrom utils browseURL
 #' @importFrom utils modifyList
 ## usethis namespace: end

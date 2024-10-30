@@ -113,16 +113,29 @@ adjust_service_counts <- function(.data,
   indicator_groups <- list(
     anc = c("anc1", "anc4", "ipt2"),
     idelv = c("ideliv", "instlivebirths", "csection", "total_stillbirth", "stillbirth_f", "stillbirth_m", "maternal_deaths"),
-    pnc = c("pnc48h"),
+    # pnc = c("pnc48h"),
     vacc = c("penta1", "penta3", "measles1", "bcg"),
     opd = c("opd_total", "opd_under5"),
     ipd = c("ipd_total", "ipd_under5")
   )
 
-  all_indicators <- unlist(indicator_groups)
+  all_indicators <- list_c(indicator_groups)
+
+  data <- .data$merged_data %>%
+    bind_cols(
+      imap_dfc(indicator_groups, ~ {
+
+        current_rr <- paste0(.y, '_rr')
+        new_columns <- paste0(.x, '_rr')
+
+        values <- .data$merged_data[[current_rr]]
+
+        set_names(rep(list(values), length(new_columns)), new_columns)
+      })
+    )
 
   # Replace low reporting rates (<75%) with median reporting rates by district
-  data <- .data$merged_data %>%
+  data <- data %>%
     group_by(district) %>%
     mutate(
       across(all_of(all_indicators),
