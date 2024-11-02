@@ -35,7 +35,8 @@
 #'
 #' # Generate adjustment values with custom k-factors
 #' custom_k <- c(anc = 0.3, idelv = 0.2, pnc = 0.35, vacc = 0.4, opd = 0.3, ipd = 0.25)
-#' adjustment_values_custom <- generate_adjustment_values(data, adjustment = "custom", k_factors = custom_k)
+#' adjustment_values_custom <-
+#'   generate_adjustment_values(data, adjustment = "custom", k_factors = custom_k)
 #'
 #' # Generate unadjusted values only
 #' unadjusted_values <- generate_adjustment_values(data, adjustment = "none")
@@ -45,6 +46,8 @@
 generate_adjustment_values <- function(.data,
                               adjustment = c("default", "custom", "none"),
                               k_factors = NULL) {
+
+  year = NULL
 
   check_cd_data(.data)
   adjustment <- arg_match(adjustment)

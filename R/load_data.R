@@ -119,54 +119,60 @@ load_data <- function(path) {
 
 #' Create Countdown 2030 Data Object
 #'
-#' `new_countdown` creates a tibble of class `cd_data`, with additional checks and
-#' validation for required indicator groups used in analysis.
+#' The `new_countdown` function converts cleaned and processed data into a tibble of
+#' class `cd_data`, with additional validation and metadata for analysis within
+#' the Countdown 2030 framework.
 #'
 #' @param .data A tibble. The cleaned and processed data to be converted to
 #'   `cd_data` class.
-#' @param call The call environment
+#' @param class Optional. A character vector specifying additional classes to assign
+#'   to the resulting tibble.
+#' @param call The calling environment. Defaults to `caller_env()`.
 #'
-#' @return A tibble of class `cd_data` with an `indicator_groups` attribute containing
-#'   validated and available indicator groups for analysis.
+#' @return A tibble of class `cd_data`, containing an `indicator_groups` attribute
+#'   that includes validated indicator groups available in the dataset, categorized
+#'   for analysis.
 #'
 #' @details
-#' This function adds metadata to the data for available indicator groups by
-#' checking each group against the column names in the provided data.
-#' The groups are categorized as follows:
-#'   - `anc`: ANC indicators (`anc1`, `anc4`, `ipt2`)
-#'   - `idelv`: Indicators for delivery, stillbirth, and maternal deaths (`ideliv`, `instlivebirths`)
-#'   - `vacc`: Vaccination indicators (`penta1`, `penta3`, etc.)
+#' This function attaches metadata to the data for available indicator groups by
+#' validating each group against the column names in the provided tibble. Indicator
+#' groups represent categories of data relevant to Countdown 2030 analysis:
 #'
-#' These groups are verified for availability and attached as an attribute.
+#'   - **`anc`**: Antenatal care indicators (e.g., `anc1`)
+#'   - **`idelv`**: Delivery and birth outcome indicators (e.g., `ideliv`, `instlivebirths`)
+#'   - **`vacc`**: Vaccination indicators (e.g., `opv1`, `penta1`, `measles1`)
+#'
+#' Additionally, `tracers` are specified to track core indicators, such as vaccination
+#' rates, within `cd_data`.
+#'
+#' Any required columns missing from the input data will trigger an error, with a
+#' message indicating which columns are missing.
 #'
 #' @examples
 #' \dontrun{
-#'   # Convert processed data to `cd_data` class
+#'   # Convert processed data to `cd_data` class for Countdown 2030 analysis
 #'   cd_data <- new_countdown(final_data)
 #' }
+#'
+#' @seealso [adjust_service_data()] for adjusting service data within the
+#'   `cd_data` object.
+#'
 #' @export
-new_countdown <- function(.data, call = caller_env()) {
-  # indicator_groups <- list(
-  #   anc = c("anc1", "anc4", "ipt2"),
-  #   idelv = c("ideliv", "instlivebirths", "csection", "total_stillbirth", "stillbirth_f", "stillbirth_m", "maternal_deaths"),
-  #   pnc = c("pnc48h"),
-  #   vacc = c("penta1", "penta3", "measles1", "bcg"),
-  #   opd = c("opd_total", "opd_under5"),
-  #   ipd = c("ipd_total", "ipd_under5")
-  # )
-
+new_countdown <- function(.data, class = NULL, call = caller_env()) {
+  # Indicator groups required for analysis within Countdown 2030
   indicator_groups <- list(
     anc = c("anc1"),
     idelv = c("ideliv", "instlivebirths"),
-    vacc = c("opv1", "opv2","opv3",  "penta1","penta2", "penta3", "measles1", "measles2","pcv1", "pcv2","pcv3", "bcg","rota1", "rota2", "ipv1")
+    vacc = c("opv1", "opv2", "opv3", "penta1", "penta2", "penta3", "measles1",
+             "measles2", "pcv1", "pcv2", "pcv3", "bcg", "rota1", "rota2", "ipv1")
   )
 
   tracers <- c('penta1', 'penta2', 'penta3', 'measles1', 'bcg', 'opv1', 'opv2', 'opv3')
 
-  # Identify missing columns for each indicator group
+  # Check for any missing columns within the indicator groups
   missing_cols <- list_c(imap(indicator_groups, ~ setdiff(c(.x, paste0(.y, '_rr')), colnames(.data))))
 
-  # If any required columns are missing, abort with a detailed message
+  # Abort with a detailed error message if required columns are missing
   if (length(missing_cols) > 0) {
     cd_abort(
       c('x' = 'The following required columns are missing from the data:',
@@ -175,12 +181,12 @@ new_countdown <- function(.data, call = caller_env()) {
     )
   }
 
-  # Attach indicator groups as an attribute and create the cd_data class
+  # Add attributes for indicator groups and tracers and create the cd_data class
   new_tibble(
     .data,
     indicator_groups = indicator_groups,
     tracers = tracers,
-    class = "cd_data"
+    class = c(class, 'cd_data')
   )
 }
 

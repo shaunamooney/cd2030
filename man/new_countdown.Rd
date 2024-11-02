@@ -4,37 +4,51 @@
 \alias{new_countdown}
 \title{Create Countdown 2030 Data Object}
 \usage{
-new_countdown(.data, call = caller_env())
+new_countdown(.data, class = NULL, call = caller_env())
 }
 \arguments{
 \item{.data}{A tibble. The cleaned and processed data to be converted to
 \code{cd_data} class.}
 
-\item{call}{The call environment}
+\item{class}{Optional. A character vector specifying additional classes to assign
+to the resulting tibble.}
+
+\item{call}{The calling environment. Defaults to \code{caller_env()}.}
 }
 \value{
-A tibble of class \code{cd_data} with an \code{indicator_groups} attribute containing
-validated and available indicator groups for analysis.
+A tibble of class \code{cd_data}, containing an \code{indicator_groups} attribute
+that includes validated indicator groups available in the dataset, categorized
+for analysis.
 }
 \description{
-\code{new_countdown} creates a tibble of class \code{cd_data}, with additional checks and
-validation for required indicator groups used in analysis.
+The \code{new_countdown} function converts cleaned and processed data into a tibble of
+class \code{cd_data}, with additional validation and metadata for analysis within
+the Countdown 2030 framework.
 }
 \details{
-This function adds metadata to the data for available indicator groups by
-checking each group against the column names in the provided data.
-The groups are categorized as follows:
+This function attaches metadata to the data for available indicator groups by
+validating each group against the column names in the provided tibble. Indicator
+groups represent categories of data relevant to Countdown 2030 analysis:
 \itemize{
-\item \code{anc}: ANC indicators (\code{anc1}, \code{anc4}, \code{ipt2})
-\item \code{idelv}: Indicators for delivery, stillbirth, and maternal deaths (\code{ideliv}, \code{instlivebirths})
-\item \code{vacc}: Vaccination indicators (\code{penta1}, \code{penta3}, etc.)
+\item \strong{\code{anc}}: Antenatal care indicators (e.g., \code{anc1})
+\item \strong{\code{idelv}}: Delivery and birth outcome indicators (e.g., \code{ideliv}, \code{instlivebirths})
+\item \strong{\code{vacc}}: Vaccination indicators (e.g., \code{opv1}, \code{penta1}, \code{measles1})
 }
 
-These groups are verified for availability and attached as an attribute.
+Additionally, \code{tracers} are specified to track core indicators, such as vaccination
+rates, within \code{cd_data}.
+
+Any required columns missing from the input data will trigger an error, with a
+message indicating which columns are missing.
 }
 \examples{
 \dontrun{
-  # Convert processed data to `cd_data` class
+  # Convert processed data to `cd_data` class for Countdown 2030 analysis
   cd_data <- new_countdown(final_data)
 }
+
+}
+\seealso{
+\code{\link[=adjust_service_data]{adjust_service_data()}} for adjusting service data within the
+\code{cd_data} object.
 }

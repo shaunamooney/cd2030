@@ -1,44 +1,56 @@
 #' Adjust Service Data for Coverage Analysis
 #'
-#' `adjust_service_data` processes DHIS-2 service data to correct for reporting
-#' completeness, apply k-factor adjustments, and handle extreme outliers, ensuring
-#' data consistency for analytical use. These steps aim to provide a standardized
-#' approach to data preparation for immunization coverage and health service utilization analysis.
+#' The `adjust_service_data` function processes DHIS-2 health service data, correcting
+#' for incomplete reporting, applying k-factor adjustments for accurate scaling, and managing
+#' outliers for consistency in data analysis. This standardization supports reliable
+#' comparisons in immunization coverage and health service utilization studies.
 #'
 #' @param .data A `cd_data` dataframe, typically containing health facility data
-#'   from DHIS-2 with service counts by month and district.
-#' @param adjustment A string specifying the type of adjustment to apply:
-#'   - **"default"**: Applies a standard k-factor (0.25) across all indicators.
-#'   - **"custom"**: Uses user-provided `k_factors` for different indicator groups
-#'       (values must be between 0 and 1).
-#'   - **"none"**: Returns the data without adjustments.
-#' @param k_factors A named numeric vector of custom k-factor values between 0 and
-#'   1 for each indicator group (e.g., `c(anc = 0.3, idelv = 0.2, ...)`). Only used
-#'   when `adjustment = "custom"`.
+#'   from DHIS-2 with monthly service counts by district.
+#' @param adjustment A character string specifying the type of adjustment to apply:
+#'   - **"default"**: Applies a default k-factor of 0.25 across all indicator groups.
+#'   - **"custom"**: Uses user-defined `k_factors` for different indicator groups, with
+#'       values between 0 and 1.
+#'   - **"none"**: Returns the data without any adjustments.
+#' @param k_factors A named numeric vector of custom k-factor values between 0 and 1
+#'   for each indicator group (e.g., `c(anc = 0.3, idelv = 0.2, ...)`). Used only if
+#'   `adjustment = "custom"`.
 #'
-#' @details This function includes several processing steps to prepare service data:
-#'   1. **Validation**: Checks `.data` structure and validates `adjustment` input.
-#'      If using `custom`, ensures `k_factors` are valid.
-#'   2. **k-Factor Defaults**: Sets default k-factor values at 0.25, which can be
-#'      modified if `custom` values are provided.
-#'   3. **Reporting Completeness**: For any district-year reporting rates below
-#'      75%, imputes missing data by district median, as low reporting can impact
-#'      trend reliability.
-#'   4. **k-Factor Scaling**: Adjusts service counts by applying the k-factor
-#'      relative to reporting rates.
-#'   5. **Outlier Detection**: Identifies extreme outliers using Hampel’s X84
-#'      method, replacing values beyond 5 MADs from the median.
-#'   6. **Data Imputation**: Replaces remaining missing data with district medians.
+#' @details
+#' This function prepares service data through a series of steps to ensure data quality and consistency:
 #'
-#' @return A `cd_data` object containing adjusted service data, with flagged outliers
-#'   managed, and missing values imputed for completeness.
+#'   1. **Validation**: Checks the structure of `.data` and ensures that the `adjustment`
+#'      argument is valid. For `custom` adjustments, `k_factors` must be specified and contain valid values.
+#'
+#'   2. **k-Factor Defaults**: Default k-factor values are set to 0.25 for each indicator group,
+#'      unless overridden by user-provided values in `k_factors`.
+#'
+#'   3. **Reporting Completeness**: Flags any district-year reporting rates below 75% and imputes
+#'      missing data using district-level medians to account for reporting inconsistencies.
+#'
+#'   4. **k-Factor Scaling**: Adjusts service counts based on the k-factor and reporting rate using
+#'      the following scaling formula:
+#'      \deqn{AdjustedValue = Value \times \left(1 + \left(\frac{1}{ReportingRate/100} - 1\right) \times k\right)}
+#'      where \code{ReportingRate} is the reporting rate in percent, and \code{k} is the k-factor for the indicator group.
+#'
+#'   5. **Outlier Detection**: Identifies and flags extreme outliers using Hampel's X84 method, marking
+#'      values that exceed 5 Median Absolute Deviations (MAD) from the median.
+#'
+#'   6. **Data Imputation**: Replaces remaining missing values with district-level medians to ensure
+#'      data completeness.
+#'
+#' @return A `cd_adjusted_data` object containing adjusted service data, where outliers are flagged
+#'   and managed, and missing values are imputed.
+#'
+#' @seealso [new_countdown()] for creating `cd_data` objects and [generate_adjustment_values()]
+#' for generating adjustment summaries.
 #'
 #' @examples
 #' \dontrun{
 #' # Default adjustment
 #' adjusted_data <- adjust_service_data(data, adjustment = "default")
 #'
-#' # Custom adjustment
+#' # Custom adjustment with specific k-factors
 #' custom_k <- c(anc = 0.3, idelv = 0.2, pnc = 0.35, vacc = 0.4,
 #'               opd = 0.3, ipd = 0.25)
 #' adjusted_data_custom <- adjust_service_data(data, adjustment = "custom",
@@ -171,5 +183,5 @@ adjust_service_data <- function(.data,
     ) %>%
     select(-any_of(paste0(all_indicators, '_rr')))
 
-  return(merged_data)
+  new_countdown(merged_data, 'cd_adjusted_data')
 }
