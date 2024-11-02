@@ -35,7 +35,7 @@ save_data <- function(.data, file = 'master_dataset.dta') {
   switch(
     file_extension,
     'rds' = saveRDS(.data, file = file),
-    'dta' = haven::write_dta(.data, file = file),
+    'dta' = haven::write_dta(.data, path = file),
     cd_abort(
       c('x' = 'Unsupported file format. Please use an ".rds" or ".dta" extension.')
     )

@@ -75,7 +75,7 @@ plot.cd_district_reporting_rate <- function(x, ...) {
     ) +
     scale_x_continuous(labels = scales::label_number()) +
     scale_y_continuous(labels = scales::label_number()) +
-    cd_theme() +
+    cd_plot_theme() +
     theme(
       panel.grid.major.y = element_line(colour = 'gray90', size = 0.5),
 

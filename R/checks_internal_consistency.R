@@ -85,7 +85,7 @@ plot_comparison.cd_data <- function(.data, x_var, y_var, title = NULL, x_label =
     labs(x = x_label, y = y_label, title = title, caption = paste("R-squared:", r_squared_value)) +
     scale_x_continuous(labels = scales::label_number()) +
     scale_y_continuous(labels = scales::label_number()) +
-    cd_theme() +
+    cd_plot_theme() +
     scale_color_manual(
       values = c('District' = 'navy', 'Linear fit' = 'black', 'Diagonale' = 'red'),
       breaks = c('District', 'Linear fit', 'Diagonale')

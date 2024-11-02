@@ -109,7 +109,9 @@ calculate_district_ratios_summary <- function(.data,
                                                 ratio_pairs = list(
                                                   "ratioAP" = c("anc1", "penta1"),
                                                   "ratioPP" = c("penta1", "penta3"),
-                                                  "ratioOO" = c("opv1", "opv3")
+                                                  "ratioOO" = c("opv1", "opv3"),
+                                                  'ratioPPcv' = c('penta1', 'pcv1'),
+                                                  'ratioPR' = c('penta1', 'rota1')
                                                 ),
                                                 adequate_range = c(1, 1.5)) {
 

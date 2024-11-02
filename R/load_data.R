@@ -428,7 +428,7 @@ standardize_data <- function(.data, call = caller_env()) {
       .by = district
     ) %>%
     # Drop the specified columns and intermediate variables
-    select(-all_of(grep('_reporting_received$|_reporting_expected$', ., value = TRUE))) %>%
+    select(-matches('_reporting_received$|_reporting_expected$')) %>%
     rename(
       adminlevel_1 = any_of('first_admin_level'),
       ideliv = any_of('instdelivery'),

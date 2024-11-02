@@ -12,6 +12,7 @@
 #' @importFrom purrr imap
 #' @importFrom purrr imap_chr
 #' @importFrom purrr imap_dfc
+#' @importFrom purrr keep
 #' @importFrom purrr list_c
 #' @importFrom purrr map
 #' @importFrom purrr map_chr

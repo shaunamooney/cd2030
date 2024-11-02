@@ -39,7 +39,7 @@ check_ratio_pairs <- function(.list, arg = call_args(.list), call = caller_env()
 }
 
 
-cd_theme <- function() {
+cd_plot_theme <- function() {
   theme(
     panel.background = element_blank(),
     panel.border = element_rect(color = "black", fill = NA, size = 0.8),

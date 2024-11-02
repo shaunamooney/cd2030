@@ -99,4 +99,6 @@ print.cd_data <- function(x, ...) {
 
   # Closing line
   cli::cli_rule()
+
+  NextMethod()
 }
