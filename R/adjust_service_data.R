@@ -137,8 +137,16 @@ adjust_service_data <- function(.data,
           mad <-  mad(if_else(year < last_year, ., NA_real_), na.rm = TRUE)
           med <-  median(if_else(year < last_year, ., NA_real_), na.rm = TRUE)
 
-          med <- if_else(is.na(med), max(med, na.rm = TRUE), med)
-          mad <- if_else(is.na(mad), max(mad, na.rm = TRUE), mad)
+          med <- if_else(
+            is.na(med),
+            if (all(is.na(med))) NA_real_ else max(med, na.rm = TRUE),
+            med
+          )
+          mad <- if_else(
+            is.na(mad),
+            if (all(is.na(mad))) NA_real_ else max(mad, na.rm = TRUE),
+            mad
+          )
 
           lower_bound <- round(med - 5 * mad, 1)
           upper_bound <- round(med + 5 * mad, 1)

@@ -164,7 +164,7 @@ new_countdown <- function(.data, class = NULL, call = caller_env()) {
     anc = c("anc1"),
     idelv = c("ideliv", "instlivebirths"),
     vacc = c("opv1", "opv2", "opv3", "penta1", "penta2", "penta3", "measles1",
-             "measles2", "pcv1", "pcv2", "pcv3", "bcg", "rota1", "rota2", "ipv1")
+             "measles2", "pcv1", "pcv2", "pcv3", "bcg", "rota1", "rota2", "ipv1", 'ipv2')
   )
 
   tracers <- c('penta1', 'penta2', 'penta3', 'measles1', 'bcg', 'opv1', 'opv2', 'opv3')

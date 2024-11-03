@@ -11,6 +11,16 @@ check_file_path <- function(path, call = caller_env()) {
   }
 }
 
+check_cd_indicator_coverage <- function(.data, call = caller_env()) {
+
+  check_required(.data, call = call)
+
+  if (!inherits(.data, 'cd_indicator_coverage')) {
+    cd_abort(c('x' = 'The data object must be of class "cd_indicator_coverage".'), call = call)
+  }
+
+}
+
 check_cd_data <- function(.data, call = caller_env()) {
 
   check_required(.data, call = call)
@@ -58,4 +68,96 @@ cd_plot_theme <- function() {
     strip.background = element_blank(),
     strip.text = element_text(size = 10)
   )
+}
+
+
+
+#' Plot Line Graph for Multiple Series with Dynamic Y-axis Scaling
+#'
+#' Generates a line graph for specified y variables over a shared x-axis, with dynamic scaling of the y-axis based on the data.
+#'
+#' @param .data A data frame containing the variables to plot.
+#' @param x The unquoted column name for the x-axis variable (e.g., `year`).
+#' @param y_vars A character vector of column names for the y variables to plot.
+#' @param y_labels A character vector of labels for the y variables (must match the length of `y_vars`).
+#' @param title The title of the plot.
+#' @param y_axis_title The title of the y-axis.
+#' @param hline An optional numeric value to draw a horizontal line.
+#' @param hline_style The line style for the horizontal line, default is "dashed".
+#'
+#' @return A ggplot object.
+#' @export
+plot_line_graph <- function(.data, x, y_vars, y_labels, title, y_axis_title, hline = NULL, hline_style = 'dashed') {
+
+  variable = value = NULL
+
+  # Ensure `y_vars` and `y_labels` are of the same length
+  if (length(y_vars) != length(y_labels)) {
+    cd_abort(c('x' = '`y_vars` and `y_labels` must have the same length.'))
+  }
+
+  # Determine max and min for dynamic scaling, accounting for negatives
+  y_max <- max(sapply(y_vars, function(var) max(.data[[var]], na.rm = TRUE)), na.rm = TRUE)
+  y_min <- min(sapply(y_vars, function(var) min(.data[[var]], na.rm = TRUE)), na.rm = TRUE)
+
+  # Set y_min to 0 if all values are non-negative
+  if (y_min > 0) {
+    y_min <- 0
+  }
+
+  # Choose the scaling factor and y-axis label suffix
+  scale_factor <- if (y_max > 1e6) 1e6 else if (y_max > 1e3) 1e3 else 1
+  y_label_suffix <- if (scale_factor == 1e6) " (Millions)" else if (scale_factor == 1e3) " (Thousands)" else ""
+
+  # Adjust limits based on scale factor and round up/down
+  y_max <- ceiling(y_max / scale_factor) * scale_factor
+  y_min <- floor(y_min / scale_factor) * scale_factor
+
+  # Add a small allowance to y_max to create space at the top of the plot
+  y_max <- y_max * 1.05
+
+  # Set dynamic breaks for the y-axis
+  y_breaks <- scales::pretty_breaks(n = 6)(c(y_min, y_max))
+
+  # Reshape data for ggplot
+  .data_long <- .data %>%
+    select({{ x }}, !!!syms(y_vars)) %>%
+    pivot_longer(cols = all_of(y_vars), names_to = 'variable', values_to = 'value') %>%
+    mutate(
+      variable = factor(variable, levels = y_vars, labels = y_labels),
+      value = value / scale_factor
+    )
+
+  # Generate the line plot
+  p <- .data_long %>%
+    ggplot(aes(x = !!sym(x), y = value, colour = variable, group = variable)) +
+      geom_point(size = 4) +
+      geom_line(size = 1) +
+      labs(
+        title = title,
+        x = NULL,
+        y = paste0(y_axis_title, y_label_suffix)
+      ) +
+      scale_y_continuous(
+        limits = c(y_min / scale_factor, y_max / scale_factor),
+        breaks = y_breaks / scale_factor,
+        labels = scales::label_number(accuracy = 1, big.mark = ",")
+        # expand = c(0, 0)
+      ) +
+      scale_color_manual(values = set_names(c("darkgreen", "red2", "blue", "purple", "orange", "brown")[1:length(y_vars)], y_labels)) +
+      cd_plot_theme() +
+      theme(
+        plot.title = element_text(size = 14),
+        axis.text = element_text(size = 10),
+        legend.text = element_text(size = 10),
+        legend.title = element_blank()
+    )
+
+  # Add horizontal line if specified
+  if (!is.null(hline)) {
+    p <- p +
+      geom_hline(yintercept = hline, linetype = hline_style, color = "grey40")
+  }
+
+  return(p)
 }
