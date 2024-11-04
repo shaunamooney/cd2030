@@ -73,7 +73,7 @@ plot.cd_district_reporting_rate <- function(x, ...) {
       x = NULL, y = '%',
       caption = paste("Low reporting rate (<", threshold, "%)")
     ) +
-    scale_x_continuous(labels = scales::label_number()) +
+    # scale_x_continuous(labels = scales::label_number()) +
     scale_y_continuous(labels = scales::label_number()) +
     cd_plot_theme() +
     theme(

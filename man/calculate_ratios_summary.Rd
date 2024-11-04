@@ -2,68 +2,80 @@
 % Please edit documentation in R/checks_ratios.R
 \name{calculate_ratios_summary}
 \alias{calculate_ratios_summary}
-\title{Calculate Yearly Indicator Ratios Summary}
+\title{Calculate Yearly Indicator Ratios Summary with Expected Ratios}
 \usage{
 calculate_ratios_summary(
   .data,
+  survey_coverage = c(anc1 = 0.98, penta1 = 0.97, penta3 = 0.89, opv1 = 0.97, opv3 =
+    0.78, pcv1 = 0.97, rota1 = 0.96),
+  anc1_penta1_mortality = 1.07,
   ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3"),
-    ratioOO = c("opv1", "opv3")),
+    ratioOO = c("opv1", "opv3"), ratioPPcv = c("penta1", "pcv1"), ratioPR = c("penta1",
+    "rota1")),
   adequate_range = c(1, 1.5)
 )
 }
 \arguments{
-\item{.data}{A data frame containing yearly data for specified indicators,
-with columns for \code{district} and \code{year} and additional numeric columns
-representing health indicators (e.g., \code{anc1}, \code{penta1}).}
+\item{.data}{A data frame containing yearly data for specified indicators.
+Expected columns include \code{district}, \code{year}, and additional numeric columns
+for health indicators, such as \code{anc1} and \code{penta1}.}
 
-\item{ratio_pairs}{A named list of indicator pairs for which ratios should be
-calculated, with the format: \code{list("ratioName" = c("numerator", "denominator"))}.
-Each list entry represents one ratio, where the first element is the numerator
-and the second element is the denominator. Default pairs include:
+\item{survey_coverage}{A named vector of assumed coverage rates for each indicator.
+Default is \code{c(anc1 = 0.98, penta1 = 0.97, penta3 = 0.89, opv1 = 0.97, opv3 = 0.78, pcv1 = 0.97, rota1 = 0.96)}.}
+
+\item{anc1_penta1_mortality}{A numeric multiplier applied specifically to the \code{"ratioAP"}
+ratio of \code{anc1} to \code{penta1}, to account for assumed mortality between \code{anc1} and \code{penta1}.
+Default is \code{1.07}.}
+
+\item{ratio_pairs}{A named list specifying indicator pairs for which ratios
+should be calculated. Format: \code{list("ratioName" = c("numerator", "denominator"))}.
+Default pairs include:
 \itemize{
-\item \code{"ratioAP"}: Ratio of \code{anc1} to \code{penta1}
-\item \code{"ratioPP"}: Ratio of \code{penta1} to \code{penta3}
-\item \code{"ratioOO"}: Ratio of \code{opv1} to \code{opv3}
+\item \code{"ratioAP"}: Ratio of \code{anc1} to \code{penta1}, adjusted with \code{anc1_penta1_mortality}.
+\item \code{"ratioPP"}: Ratio of \code{penta1} to \code{penta3}.
+\item \code{"ratioOO"}: Ratio of \code{opv1} to \code{opv3}.
+\item \code{"ratioPPcv"}: Ratio of \code{penta1} to \code{pcv1}.
+\item \code{"ratioPR"}: Ratio of \code{penta1} to \code{rota1}.
 }}
 
-\item{adequate_range}{A numeric vector of length 2 specifying the acceptable
-range for adequacy checks. Ratios that fall within this range are flagged as
-adequate, while those outside are flagged as inadequate. Default is \code{c(1, 1.5)}.}
+\item{adequate_range}{A numeric vector of length 2 defining the acceptable
+range for adequacy checks. Ratios within this range are marked adequate;
+outside this range, inadequate. Default is \code{c(1, 1.5)}.}
 }
 \value{
-A \code{cd_ratios_summary} object, which is a data frame containing the
-following columns:
+A \code{cd_ratios_summary} object, a data frame containing:
 \itemize{
-\item \strong{\code{year}}: Yearly breakdown for calculated indicator ratios.
-\item \strong{Indicator Ratios}: Each column represents one ratio calculated as the
-sum of the specified numerator divided by the sum of the specified
-denominator for each year.
+\item \strong{\code{year}}: Year of each calculated ratio, with an additional row \code{"Expected Ratio"}
+to represent expected values for each indicator ratio based on \code{survey_coverage}.
+\item \strong{Indicator Ratios}: Columns for each ratio, showing actual yearly values
+and an expected value row based on \code{survey_coverage}.
+\item \strong{Additional Columns}: Health indicator values for each year.
 }
 }
 \description{
 This function computes yearly summaries for specified indicator ratios,
-evaluating trends across years. It uses dynamically specified indicator pairs
-to calculate ratios, providing a clear view of how key health indicators relate
-over time.
+assessing trends across years and providing both actual and expected ratios
+for each indicator. It evaluates specified indicator pairs to calculate
+ratios and compares actual values with expected ratios, based on predefined
+survey coverage values. The summary facilitates monitoring consistency of
+key health indicators over time.
 }
 \details{
-This function is used to monitor internal consistency between key indicators
-over time by computing meaningful ratios. By summarizing ratios at the yearly
-level, this function enables quick identification of trends and deviations,
-aiding in data quality checks and trend analysis. Adequate ratios provide
-insight into adherence to expected ranges for key indicators, especially
-in monitoring healthcare intervention effectiveness.
+The function provides insights into indicator relationships over time and evaluates
+deviations from expected values. It enables data quality checks and trend analysis
+by summarizing ratios yearly and including expected values for comparison. The \code{"Expected Ratio"}
+row incorporates predefined survey coverage and serves as a reference for assessing
+the adequacy of each indicator's ratio.
 }
 \examples{
 \dontrun{
-  # Calculate ratios summary using default pairs
+  # Basic usage with default parameters
   calculate_ratios_summary(cd_data)
 
-  # Custom ratio pairs with a wider adequacy range
+  # Custom survey coverage and mortality adjustments for "ratioAP"
   calculate_ratios_summary(cd_data,
-                           ratio_pairs = list(
-                          "ratioCustom" = c("custom_indicator1", "custom_indicator2")),
-                           adequate_range = c(0.8, 1.2))
+                           survey_coverage = c(anc1 = 0.95, penta1 = 0.92, penta3 = 0.85),
+                           anc1_penta1_mortality = 1.05)
 }
 
 }

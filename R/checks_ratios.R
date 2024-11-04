@@ -1,62 +1,103 @@
-#' Calculate Yearly Indicator Ratios Summary
+#' Calculate Yearly Indicator Ratios Summary with Expected Ratios
 #'
 #' This function computes yearly summaries for specified indicator ratios,
-#' evaluating trends across years. It uses dynamically specified indicator pairs
-#' to calculate ratios, providing a clear view of how key health indicators relate
-#' over time.
+#' assessing trends across years and providing both actual and expected ratios
+#' for each indicator. It evaluates specified indicator pairs to calculate
+#' ratios and compares actual values with expected ratios, based on predefined
+#' survey coverage values. The summary facilitates monitoring consistency of
+#' key health indicators over time.
 #'
-#' @param .data A data frame containing yearly data for specified indicators,
-#'   with columns for `district` and `year` and additional numeric columns
-#'   representing health indicators (e.g., `anc1`, `penta1`).
-#' @param ratio_pairs A named list of indicator pairs for which ratios should be
-#'   calculated, with the format: `list("ratioName" = c("numerator", "denominator"))`.
-#'   Each list entry represents one ratio, where the first element is the numerator
-#'   and the second element is the denominator. Default pairs include:
-#'   - `"ratioAP"`: Ratio of `anc1` to `penta1`
-#'   - `"ratioPP"`: Ratio of `penta1` to `penta3`
-#'   - `"ratioOO"`: Ratio of `opv1` to `opv3`
-#' @param adequate_range A numeric vector of length 2 specifying the acceptable
-#'   range for adequacy checks. Ratios that fall within this range are flagged as
-#'   adequate, while those outside are flagged as inadequate. Default is `c(1, 1.5)`.
+#' @param .data A data frame containing yearly data for specified indicators.
+#'   Expected columns include `district`, `year`, and additional numeric columns
+#'   for health indicators, such as `anc1` and `penta1`.
+#' @param survey_coverage A named vector of assumed coverage rates for each indicator.
+#'   Default is `c(anc1 = 0.98, penta1 = 0.97, penta3 = 0.89, opv1 = 0.97, opv3 = 0.78, pcv1 = 0.97, rota1 = 0.96)`.
+#' @param anc1_penta1_mortality A numeric multiplier applied specifically to the `"ratioAP"`
+#'   ratio of `anc1` to `penta1`, to account for assumed mortality between `anc1` and `penta1`.
+#'   Default is `1.07`.
+#' @param ratio_pairs A named list specifying indicator pairs for which ratios
+#'   should be calculated. Format: `list("ratioName" = c("numerator", "denominator"))`.
+#'   Default pairs include:
+#'   - `"ratioAP"`: Ratio of `anc1` to `penta1`, adjusted with `anc1_penta1_mortality`.
+#'   - `"ratioPP"`: Ratio of `penta1` to `penta3`.
+#'   - `"ratioOO"`: Ratio of `opv1` to `opv3`.
+#'   - `"ratioPPcv"`: Ratio of `penta1` to `pcv1`.
+#'   - `"ratioPR"`: Ratio of `penta1` to `rota1`.
+#' @param adequate_range A numeric vector of length 2 defining the acceptable
+#'   range for adequacy checks. Ratios within this range are marked adequate;
+#'   outside this range, inadequate. Default is `c(1, 1.5)`.
 #'
-#' @return A `cd_ratios_summary` object, which is a data frame containing the
-#'   following columns:
-#'   - **`year`**: Yearly breakdown for calculated indicator ratios.
-#'   - **Indicator Ratios**: Each column represents one ratio calculated as the
-#'      sum of the specified numerator divided by the sum of the specified
-#'      denominator for each year.
+#' @return A `cd_ratios_summary` object, a data frame containing:
+#'   - **`year`**: Year of each calculated ratio, with an additional row `"Expected Ratio"`
+#'     to represent expected values for each indicator ratio based on `survey_coverage`.
+#'   - **Indicator Ratios**: Columns for each ratio, showing actual yearly values
+#'     and an expected value row based on `survey_coverage`.
+#'   - **Additional Columns**: Health indicator values for each year.
 #'
 #' @details
-#' This function is used to monitor internal consistency between key indicators
-#' over time by computing meaningful ratios. By summarizing ratios at the yearly
-#' level, this function enables quick identification of trends and deviations,
-#' aiding in data quality checks and trend analysis. Adequate ratios provide
-#' insight into adherence to expected ranges for key indicators, especially
-#' in monitoring healthcare intervention effectiveness.
+#' The function provides insights into indicator relationships over time and evaluates
+#' deviations from expected values. It enables data quality checks and trend analysis
+#' by summarizing ratios yearly and including expected values for comparison. The `"Expected Ratio"`
+#' row incorporates predefined survey coverage and serves as a reference for assessing
+#' the adequacy of each indicator's ratio.
 #'
 #' @examples
 #' \dontrun{
-#'   # Calculate ratios summary using default pairs
+#'   # Basic usage with default parameters
 #'   calculate_ratios_summary(cd_data)
 #'
-#'   # Custom ratio pairs with a wider adequacy range
+#'   # Custom survey coverage and mortality adjustments for "ratioAP"
 #'   calculate_ratios_summary(cd_data,
-#'                            ratio_pairs = list(
-#'                           "ratioCustom" = c("custom_indicator1", "custom_indicator2")),
-#'                            adequate_range = c(0.8, 1.2))
+#'                            survey_coverage = c(anc1 = 0.95, penta1 = 0.92, penta3 = 0.85),
+#'                            anc1_penta1_mortality = 1.05)
 #' }
 #'
 #' @export
 calculate_ratios_summary <- function(.data,
+                                     survey_coverage = c(anc1 = 0.98, penta1 = 0.97, penta3 = 0.89, opv1 = 0.97, opv3 = 0.78, pcv1 = 0.97, rota1 = 0.96),
+                                     anc1_penta1_mortality = 1.07,
                                      ratio_pairs = list(
                                        "ratioAP" = c("anc1", "penta1"),
                                        "ratioPP" = c("penta1", "penta3"),
-                                       "ratioOO" = c("opv1", "opv3")
+                                       "ratioOO" = c("opv1", "opv3"),
+                                       'ratioPPcv' = c('penta1', 'pcv1'),
+                                       'ratioPR' = c('penta1', 'rota1')
                                      ),
                                      adequate_range = c(1, 1.5)) {
 
+  year = NULL
+
+  diff <- setdiff(unique(list_c(ratio_pairs)), names(survey_coverage))
+  if (length(diff) > 0) {
+    cd_abort(
+      c('x' = 'Please provide the survey coverage for all indicators in the {.arg ratio_pairs}')
+    )
+  }
+
+  ratios <- map(names(ratio_pairs), ~ {
+    pair <- ratio_pairs[[.x]]
+    numerator <- pair[1]
+    denominator <- pair[2]
+
+    ratio <- survey_coverage[numerator] / survey_coverage[denominator]
+    if (.x == 'ratioAP') {
+      ratio = ratio * anc1_penta1_mortality
+    }
+
+    return(ratio)
+  })
+
+  names(ratios) <- names(ratio_pairs)
+
   data_summary <- calculate_ratios_and_adequacy(.data, ratio_pairs, adequate_range) %>%
     select(-starts_with('adeq_')) %>%
+    mutate(
+      year = as.character(year)
+    ) %>%
+    bind_rows(
+      c(year = 'Expected Ratio', survey_coverage, ratios) %>%
+        as_tibble()
+    ) %>%
     rename_with(
       ~ map_chr(.x, function(name) {
         pair <- ratio_pairs[[name]]
