@@ -23,6 +23,7 @@
 #' @importFrom readxl excel_sheets
 #' @importFrom readxl read_excel
 #' @importFrom rmarkdown render
+#' @importFrom shiny runApp
 #' @importFrom stats as.formula
 #' @importFrom stats lm
 #' @importFrom stats setNames
