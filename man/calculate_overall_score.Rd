@@ -2,13 +2,41 @@
 % Please edit documentation in R/checks_overall_score.R
 \name{calculate_overall_score}
 \alias{calculate_overall_score}
-\title{Calculate Overall Quality Score}
+\title{Calculate Overall Quality Score for Data Quality Metrics}
 \usage{
 calculate_overall_score(.data)
 }
 \arguments{
-\item{.data}{A data frame of type \code{cd_data}.}
+\item{.data}{A data frame of type \code{cd_data} containing facility data
+including annual reporting rates, completeness, and consistency indicators.}
+}
+\value{
+A tibble with calculated scores for each metric, including
+a summary row for the annual quality score. The result is ordered by
+metric codes and ready for reporting in tabular or graphical form.
 }
 \description{
-Calculate Overall Quality Score
+This function calculates an overall quality score based on various data
+quality metrics. It summarizes completeness, outlier presence, and
+consistency of reporting in immunization health facility data.
+}
+\details{
+\code{calculate_overall_score} processes multiple data quality indicators:
+\itemize{
+\item \strong{Completeness metrics}: Percentage of expected reports, districts with
+complete reporting, and districts with no missing values.
+\item \strong{Outlier metrics}: Percentage of monthly values and districts without
+extreme outliers.
+\item \strong{Consistency ratios}: Ratios between different immunization indicators
+to ensure internal consistency.
+}
+
+The function calculates averages for the selected metrics and includes
+a row summarizing the annual data quality score.
+}
+\examples{
+\dontrun{
+calculate_overall_score(.data = my_data)
+}
+
 }

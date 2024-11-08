@@ -1,34 +1,175 @@
-#' Calculate Overall Quality Score
+#' Calculate Overall Quality Score for Data Quality Metrics
 #'
-#' @param .data A data frame of type `cd_data`.
+#' This function calculates an overall quality score based on various data
+#' quality metrics. It summarizes completeness, outlier presence, and
+#' consistency of reporting in immunization health facility data.
+#'
+#' @param .data A data frame of type `cd_data` containing facility data
+#'   including annual reporting rates, completeness, and consistency indicators.
+#'
+#' @details
+#' `calculate_overall_score` processes multiple data quality indicators:
+#'  - **Completeness metrics**: Percentage of expected reports, districts with
+#'    complete reporting, and districts with no missing values.
+#'  - **Outlier metrics**: Percentage of monthly values and districts without
+#'    extreme outliers.
+#'  - **Consistency ratios**: Ratios between different immunization indicators
+#'    to ensure internal consistency.
+#'
+#' The function calculates averages for the selected metrics and includes
+#' a row summarizing the annual data quality score.
+#'
+#' @return A tibble with calculated scores for each metric, including
+#'   a summary row for the annual quality score. The result is ordered by
+#'   metric codes and ready for reporting in tabular or graphical form.
+#'
+#' @examples
+#' \dontrun{
+#' calculate_overall_score(.data = my_data)
+#' }
 #'
 #' @export
 calculate_overall_score <- function(.data) {
 
-  year = NULL
+  year = mean_rr = low_mean_rr = mean_mis_vacc_tracer = mean_out_vacc_tracer =
+    value = `Data Quality Metrics` = value = no = NULL
 
-  missingsd <- calculate_district_completeness_summary(.data)
-  outliers <- calculate_outliers_summary(.data)
-  outliersd <- calculate_district_outlier_summary(.data)
-  perc_dist_lowrr <- calculate_district_reporting_rate(.data)
-  low_rr_national <- calculate_average_reporting_rate(.data)
-  adeqratiosd <- calculate_district_ratios_summary(.data) %>% select(starts_with('Ratio'))
+  check_cd_data(.data)
 
-  combined <- cbind(
-    missingsd[, 1:20],        # Columns 1 to 20 from missingsd
-    outliers[, 2:20],         # Columns 2 to 20 from outliers
-    outliersd[, 2:20],        # Columns 2 to 20 from outliersd
-    perc_dist_lowrr[, 2:5],   # Columns 2 to 4 from perc_dist_lowrr
-    low_rr_national[, 2:5],   # Columns 2 to 4 from low_rr_national
-    adeqratiosd[, 1:4]       # Columns 2 to 4 from adeqratiosd
-  )
+  avg_reporting_rate <- calculate_average_reporting_rate(.data) %>%
+    select(year, mean_rr) %>%
+    pivot_wider(names_from = year, values_from = mean_rr) %>%
+    mutate(
+      `Data Quality Metrics` = '% of expected monthly facility reports (national)',
+      no = '1a'
+    )
 
-  # Calculate the overall mean across rows and truncate (round down) each mean value
-  overall <- combined %>%
-    as_tibble(.name_repair = 'unique') %>%
-    rowwise(year) %>%
-    summarise(overall = mean(c_across(everything()), na.rm = TRUE)) %>%
-    ungroup()
+  district_reporting_rate <- calculate_district_reporting_rate(.data) %>%
+    select(year, low_mean_rr) %>%
+    pivot_wider(names_from = year, values_from = low_mean_rr) %>%
+    mutate(
+      `Data Quality Metrics` = '% of districts with completeness of facility reporting >= 90%',
+      no = '1b'
+    )
 
-  return(overall)
+  district_completeness <- calculate_district_completeness_summary(.data) %>%
+    select(year, mean_mis_vacc_tracer) %>%
+    pivot_wider(names_from = year, values_from = mean_mis_vacc_tracer) %>%
+    mutate(
+      `Data Quality Metrics` = '% of districts with no missing values (mean for common vaccines)',
+      no = '1c'
+    )
+
+  outliers <- calculate_outliers_summary(.data) %>%
+    select(year,mean_out_vacc_tracer) %>%
+    pivot_wider(names_from = year, values_from = mean_out_vacc_tracer) %>%
+    mutate(
+      `Data Quality Metrics` = '% of monthly values that are not extreme outliers (national)',
+      no = '2a'
+    )
+
+  outliersd <- calculate_district_outlier_summary(.data) %>%
+    select(year, mean_out_vacc_tracer) %>%
+    pivot_wider(names_from = year, values_from = mean_out_vacc_tracer) %>%
+    mutate(
+      `Data Quality Metrics` = '% of districts with no extreme outliers in the year',
+      no = '2b'
+    )
+
+  adeqratiosd <- calculate_ratios_and_adequacy(.data) %>%
+    select(year, starts_with("Ratio"), starts_with("% district with")) %>%
+    pivot_longer(-year, names_to = 'Data Quality Metrics', values_to = 'value') %>%
+    pivot_wider(names_from = year, values_from = value) %>%
+    mutate(
+      no = case_match(`Data Quality Metrics`,
+                      'Ratio anc1/penta1'~ '3a',
+                      'Ratio penta1/penta3' ~ '3b',
+                      'Ratio opv1/opv3' ~ '3c',
+                      'Ratio penta1/pcv1' ~ '3d',
+                      'Ratio penta1/rota1' ~ '3e',
+                      '% district with anc1/penta1 in expected ranged' ~ '3f',
+                      '% district with penta1/penta3 in expected ranged' ~ '3g',
+                      '% district with opv1/opv3 in expected ranged' ~ '3h',
+                      '% district with penta1/pcv1 in expected ranged' ~ '3i',
+                      '% district with penta1/rota1 in expected ranged' ~ '3j')
+    )
+
+  rows <- c("1a", "1b", "1c", "2a", "2b", "3f", "3g", "3h", "3i", "3j", '4')
+
+  final_data <- bind_rows(
+    avg_reporting_rate,
+    district_reporting_rate,
+    district_completeness,
+    outliers,
+    outliersd,
+    adeqratiosd
+  ) %>%
+    relocate(no, `Data Quality Metrics`)
+
+  mean_row <- final_data %>%
+    filter(no %in% c("1a", "1b", "1c", "2a", "2b", "3f", "3g", "3h")) %>%
+    summarise(across(starts_with("20"), mean, na.rm = TRUE)) %>%
+    mutate(
+      `Data Quality Metrics` = "Annual data quality score",
+      no = "4"
+    )
+
+  final_data <- final_data %>%
+    bind_rows(mean_row) %>%
+    arrange(no)
+
+  return(final_data)
+
+  # final_data %>%
+  #   gt() %>%
+  #   tab_header(
+  #     title = md("**Table 1a: Summary of data quality for reported immunization health facility data**")
+  #   ) %>%
+  #   tab_row_group(
+  #     label = "3. Consistency of annual reporting",
+  #     rows = no %in% c("3a", "3b", '3c', '3d', '3e', '3f', '3g', '3h', '3i', '3j')
+  #   ) %>%
+  #   tab_row_group(
+  #     label = "2. Extreme outliers (Common Vaccine antigens)",
+  #     rows = no %in% c("2a", "2b")
+  #   ) %>%
+  #   tab_row_group(
+  #     label = "1. Completeness of monthly facility reporting (Immunization)",
+  #     rows = no %in% c("1a", "1b", "1c")
+  #   ) %>%
+  #   tab_style(
+  #     style = cell_fill(color = "lightgoldenrodyellow"),
+  #     locations = cells_row_groups()
+  #   ) %>%
+  #   fmt_number(
+  #     columns = starts_with("20"),
+  #     rows = no %in% rows,
+  #     decimals = 1
+  #   ) %>%
+  #   fmt_number(
+  #     columns = starts_with("20"),
+  #     rows = !no %in% rows,
+  #     decimals = 4
+  #   ) # %>%
+    # tab_style(
+    #   style = cell_fill(color = "darkgreen"),
+    #   locations = cells_body(
+    #     columns = starts_with("20"),
+    #     rows = if_any(. > 80)
+    #   )
+    # ) # %>%
+    # tab_style(
+    #   style = cell_fill(color = "yellow"),
+    #   locations = cells_body(
+    #     columns = starts_with("20"),
+    #     rows = no %in% rows & between(.data[[as.character(no)]], 41, 80)
+    #   )
+    # ) %>%
+    # tab_style(
+    #   style = cell_fill(color = "red"),
+    #   locations = cells_body(
+    #     columns = starts_with("20"),
+    #     rows = no %in% rows & .data[[as.character(no)]] <= 40
+    #   )
+    # )
 }

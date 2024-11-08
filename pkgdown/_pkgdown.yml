@@ -29,6 +29,13 @@ reference:
     - tbl_sum.cd_district_reporting_rate
     - tbl_sum.cd_average_reporting_rate
 
+  - subtitle: "Date Completeness"
+    contents:
+    - calculate_completeness_summary
+    - calculate_district_completeness_summary
+    - tbl_sum.cd_completeness_summary
+    - tbl_sum.cd_district_completeness_summary
+
   - subtitle: "Consistency Checks"
     contents:
     - plot_comparison
@@ -37,14 +44,6 @@ reference:
     - plot_comparison_opv1_opv3
     - plot_comparison.cd_data
 
-  - subtitle: "Calculate Ratios"
-    contents:
-    - calculate_ratios_summary
-    - calculate_district_ratios_summary
-    - plot.cd_ratios_summary
-    - tbl_sum.cd_ratios_summary
-    - tbl_sum.cd_district_ratios_summary
-
   - subtitle: "Outlier detection"
     contents:
     - calculate_outliers_summary
@@ -52,12 +51,13 @@ reference:
     - tbl_sum.cd_outliers_summary
     - tbl_sum.cd_district_outliers_summary
 
-  - subtitle: "Date Completeness"
+  - subtitle: "Calculate Ratios"
     contents:
-    - calculate_completeness_summary
-    - calculate_district_completeness_summary
-    - tbl_sum.cd_completeness_summary
-    - tbl_sum.cd_district_completeness_summary
+    - calculate_ratios_summary
+    - calculate_district_ratios_summary
+    - plot.cd_ratios_summary
+    - tbl_sum.cd_ratios_summary
+    - tbl_sum.cd_district_ratios_summary
 
   - subtitle: "Overall Score"
     contents:
@@ -93,6 +93,7 @@ reference:
     desc: >
       To document findings, generate summaries, and create exportable formats for sharing and presentation
     contents:
+    - dashboard
     - generate_checks_report
 
   - title: "Other Functions"

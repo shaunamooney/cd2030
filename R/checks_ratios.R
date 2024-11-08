@@ -90,20 +90,13 @@ calculate_ratios_summary <- function(.data,
   names(ratios) <- names(ratio_pairs)
 
   data_summary <- calculate_ratios_and_adequacy(.data, ratio_pairs, adequate_range) %>%
-    select(-starts_with('adeq_')) %>%
+    select(-starts_with('%')) %>%
     mutate(
       year = as.character(year)
     ) %>%
     bind_rows(
       c(year = 'Expected Ratio', survey_coverage, ratios) %>%
         as_tibble()
-    ) %>%
-    rename_with(
-      ~ map_chr(.x, function(name) {
-        pair <- ratio_pairs[[name]]
-        paste0('Ratio ', pair[1], '/', pair[2])
-      }),
-      starts_with("ratio")
     )
 
   new_tibble(data_summary, class = 'cd_ratios_summary')
@@ -157,16 +150,125 @@ calculate_district_ratios_summary <- function(.data,
                                                 adequate_range = c(1, 1.5)) {
 
   data_summary <- calculate_ratios_and_adequacy(.data, ratio_pairs, adequate_range) %>%
-    select(-starts_with('ratio')) %>%
+    select(-starts_with('Ratio'))
+
+  new_tibble(data_summary, class = 'cd_district_ratios_summary')
+}
+
+
+#' Calculate Indicator Ratios and Adequacy Flags
+#'
+#' Computes ratios for specified pairs of indicators dynamically and flags whether
+#' each calculated ratio falls within an adequate range, per district and year.
+#' This function is an intermediate utility used to standardize ratio calculations
+#' and adequacy checks across indicator pairs.
+#'
+#' @param .data A data frame of type `cd_data`.
+#' @param ratio_pairs A named list of indicator pairs for which ratios should be
+#'   calculated.
+#'   - Each pair should be a character vector of length two, with the first
+#'     element as the numerator and the second as the denominator. Default is:
+#'     `list("ratioAP" = c("anc1", "penta1"), "ratioPP" = c("penta1", "penta3"), "ratioOO" = c("opv1", "opv3"))`.
+#'   - Each name in the list becomes the name of the resulting ratio column.
+#' @param adequate_range A numeric vector of length two specifying the inclusive
+#'   lower and upper bounds for the adequate range, typically between `1` and
+#'   `1.5`. Ratios within this range are flagged as adequate.
+#'
+#' @return A data frame with columns for:
+#' - **Summed indicators by district and year**: Summed values for each indicator
+#'    across districts within the specified `year`, based on input in `ratio_pairs`.
+#' - **Ratios**: Each ratio is calculated as the sum of the specified numerator
+#'    divided by the sum of the specified denominator for each pair.
+#' - **Adequacy flags**: For each ratio, an adequacy flag (e.g., `adeq_ratioAP`)
+#'    is generated, set to `1` if the ratio falls within the `adequate_range`,
+#'    and `0` otherwise.
+#' - The output is aggregated by year and includes means of ratios and adequacy
+#'    flags.
+#'
+#' @details
+#' This function standardizes ratio calculations by dynamically computing ratios
+#' and adequacy flags for specified pairs of indicators. It operates in three
+#' main stages:
+#' 1. **Summing Indicators**: Calculates the sum of each indicator by `district`
+#'    and `year`.
+#' 2. **Calculating Ratios**: Divides the summed numerator by the summed
+#'    denominator for each pair in `ratio_pairs`, creating a column for each ratio.
+#' 3. **Checking Adequacy**: Flags each ratio as adequate if it falls within the
+#'    specified `adequate_range`, returning `1` for adequate and `0` otherwise.
+#'
+#' @examples
+#' \dontrun{
+#'   # Calculate ratios and adequacy checks using custom ranges
+#'   calculate_ratios_and_adequacy(data,
+#'                                 ratio_pairs = list("ratioAP" = c("anc1", "penta1"),
+#'                                                    "ratioPP" = c("penta1", "penta3")),
+#'                                 adequate_range = c(1, 1.5))
+#' }
+#'
+#' @noRd
+calculate_ratios_and_adequacy <- function(.data,
+                                          ratio_pairs = list(
+                                            "ratioAP" = c("anc1", "penta1"),
+                                            "ratioPP" = c("penta1", "penta3"),
+                                            "ratioOO" = c("opv1", "opv3"),
+                                            'ratioPPcv' = c('penta1', 'pcv1'),
+                                            'ratioPR' = c('penta1', 'rota1')
+                                          ),
+                                          adequate_range = c(1, 1.5)) {
+
+  district = year = NULL
+
+  check_cd_data(.data)
+  check_ratio_pairs(ratio_pairs)
+  check_required(adequate_range)
+
+  # Check that adequate_range is a numeric vector of length 2
+  if (!is.numeric(adequate_range) || length(adequate_range) != 2){
+    cd_abort(c('x' = 'Adequate range must be a numeric vector of length 2.'), call = call)
+  }
+
+  all_pairs <- list_c(ratio_pairs)
+
+  data_summary <- .data %>%
+    # Calculate the average of indicators by district and year
+    summarise(
+      across(all_of(all_pairs), sum, na.rm = TRUE),
+      .by = c(district, year)
+    )
+
+  data_summary <- data_summary %>%
+    bind_cols(
+      imap_dfc(ratio_pairs, ~ data_summary[[.x[1]]] / data_summary[[.x[2]]] %>% set_names(.y))
+    ) %>%
+    # Calculate adequacy checks
+    mutate(across(names(ratio_pairs), ~ as.integer(.x >= adequate_range[1] & .x <= adequate_range[2]), .names = "adeq_{.col}")) %>%
+    # Summarize adequacy checks by year
+    summarise(
+      across(all_of(all_pairs), sum, na.rm = TRUE),
+      across(c(starts_with('adeq_'), starts_with('ratio')), mean, na.rm = TRUE),
+      .by = year
+    ) %>%
+    mutate(
+      across(starts_with('adeq_'), ~ round(.x * 100, 1)),
+      across(all_of(all_pairs), ~ round(.x, 1))
+    ) %>%
     rename_with(
       ~ map_chr(.x, function(name) {
         ratio_name <- str_replace(name, '^adeq_', '')
         pair <- ratio_pairs[[ratio_name]]
-        paste0('Ratio ', pair[1], '/', pair[2])
+        paste0('% district with ', pair[1], '/', pair[2], ' in expected ranged')
       }),
       starts_with("adeq_")
+    ) %>%
+    rename_with(
+      ~ map_chr(.x, function(name) {
+        pair <- ratio_pairs[[name]]
+        paste0('Ratio ', pair[1], '/', pair[2])
+      }),
+      starts_with("ratio")
     )
 
-  new_tibble(data_summary, class = 'cd_district_ratios_summary')
+  return(data_summary)
 }
+
 

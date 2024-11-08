@@ -45,8 +45,8 @@ calculate_indicator_coverage <- function(.data,
                                          sbr = 0.02,
                                          nmr = 0.025,
                                          pnmr = 0.024,
-                                         anc1survey = 0.88,
-                                         dpt1survey = 0.88,
+                                         anc1survey = 0.98,
+                                         dpt1survey = 0.97,
                                          twin = 0.015,
                                          preg_loss = 0.03) {
 
