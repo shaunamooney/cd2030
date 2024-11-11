@@ -9,6 +9,7 @@ library(dplyr)
 library(echarts4r)
 library(gt)
 library(purrr)
+library(cd2030)
 
 source('modules/help_button.R')
 source('modules/introduction.R')
