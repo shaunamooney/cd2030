@@ -20,6 +20,7 @@ Imports:
     cli,
     dplyr,
     ggplot2,
+    gt,
     haven,
     purrr,
     readxl,
@@ -27,6 +28,7 @@ Imports:
     rmarkdown,
     scales,
     shiny,
+    shinydashboard,
     stats,
     stringr,
     tibble,
@@ -35,9 +37,7 @@ Imports:
     utils,
     withr
 Suggests:
-    gt,
     knitr,
-    shinydashboard,
     spelling
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
