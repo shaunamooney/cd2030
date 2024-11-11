@@ -3,6 +3,28 @@ options(shiny.maxRequestSize = 2000*1024^2)
 # options(shiny.trace = TRUE)
 # options(shiny.trace = FALSE)
 
+library(shiny)
+library(shinydashboard)
+library(dplyr)
+library(echarts4r)
+library(gt)
+library(purrr)
+
+source('modules/help_button.R')
+source('modules/introduction.R')
+source('modules/setup.R')
+source('modules/upload_data.R')
+source('modules/reporting_rate.R')
+source('modules/data_completeness.R')
+source('modules/consistency_check.R')
+source('modules/outlier_detection.R')
+source('modules/calculate_ratios.R')
+source('modules/overall_score.R')
+source('modules/data_adjustment.R')
+source('modules/denominator_assessment.R')
+source('modules/national_coverage.R')
+source('modules/subnational_coverage.R')
+
 
 ui <- dashboardPage(
   skin = 'green',
