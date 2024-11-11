@@ -89,6 +89,16 @@ reference:
     - tbl_sum.cd_indicator_coverage
     - tbl_sum.cd_national_denominators
 
+  - title: "National Coverage"
+    desc: >
+      To determine the coverage of various indicators
+    contents:
+    - analyze_national_coverage
+    - analyze_subnational_coverage
+    - plot.cd_national_coverage
+    - plot.cd_subnational_coverage
+    - summary.cd_subnational_coverage
+
   - title: "Reporting"
     desc: >
       To document findings, generate summaries, and create exportable formats for sharing and presentation

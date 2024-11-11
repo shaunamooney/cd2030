@@ -1,8 +1,9 @@
 #' @keywords internal
 #' @import dplyr
 #' @import ggplot2
-#' @import tidyr
 #' @import rlang
+#' @import shiny
+#' @import tidyr
 "_PACKAGE"
 
 ## usethis namespace: start
@@ -23,10 +24,10 @@
 #' @importFrom readxl excel_sheets
 #' @importFrom readxl read_excel
 #' @importFrom rmarkdown render
-#' @importFrom shiny runApp
 #' @importFrom stats as.formula
 #' @importFrom stats lm
 #' @importFrom stats setNames
+#' @importFrom stats weighted.mean
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_ends
 #' @importFrom stringr str_extract

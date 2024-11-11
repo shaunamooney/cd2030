@@ -57,16 +57,26 @@ cd_plot_theme <- function() {
     legend.background = element_rect(color = "black",size = 0.5),
     legend.position = "bottom",
     legend.title = element_blank(),
-    legend.text = element_text(size = 8),
+    # legend.text = element_text(size = 8),
+    legend.text = element_text(size = 15),
+    legend.key.size = unit(8, "mm"),
 
-    plot.title = element_text(size = 10, hjust = 0.5),
-    plot.caption = element_text(hjust = 0),
+    # plot.title = element_text(size = 10, hjust = 0.5),
+    # plot.subtitle = element_text(size = 10, hjust = 0.5),
+    # plot.caption = element_text(hjust = 0),
 
-    axis.text = element_text(size = 8),
-    axis.title = element_text(size = 10),
+    plot.title = element_text(size = 18, hjust = 0.5),
+    plot.subtitle = element_text(size = 12, hjust = 0.5),
+    plot.caption = element_text(size = 12, hjust = 0),
+
+    # axis.text = element_text(size = 8),
+    axis.text = element_text(size = 14),
+    # axis.title = element_text(size = 10),
+    axis.title = element_text(size = 18),
 
     strip.background = element_blank(),
-    strip.text = element_text(size = 10)
+    # strip.text = element_text(size = 10),
+    strip.text = element_text(size = 12)
   )
 }
 

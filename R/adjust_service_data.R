@@ -73,17 +73,18 @@ adjust_service_data <- function(.data,
 
   k_defaults <- c(anc = 0.25, idelv = 0.25, pnc = 0.25, vacc = 0.25, opd = 0.25, ipd = 0.25)
 
+  if (adjustment == "none") {
+    cd_info(c('i' = 'No adjustment applied. Data returned as-is.'))
+    return(.data)
+  }
+
   if (adjustment == "custom") {
     if (is.null(k_factors) || any(k_factors < 0 | k_factors > 1)) {
       cd_abort(c('x' = 'k_factors must be a numeric vector with values between 0 and 1 for each indicator group.'))
     }
-    k_factors <- k_factors[names(k_factors) %in% names(k_defaults)]
-    k_defaults <- modifyList(k_defaults, k_factors)
-  }
 
-  if (adjustment == "none") {
-    cd_info(c('i' = 'No adjustment applied. Data returned as-is.'))
-    return(.data)
+    common_names <- intersect(names(k_defaults), names(k_factors))
+    k_defaults[common_names] <- k_factors[common_names]
   }
 
   indicator_groups = attr(.data, 'indicator_groups')

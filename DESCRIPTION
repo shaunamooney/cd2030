@@ -4,13 +4,12 @@ Version: 0.0.0.9000
 Authors@R: 
     person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: cd2030 is a comprehensive R package designed to streamline
-    data management and validation for Countdown 2030 initiatives. It
-    efficiently handles data formatted according to the Countdown 2030
-    standardized structure, providing functionalities for data loading,
-    cleaning, and validation. The package automatically identifies and
-    addresses common data quality issues, ensuring data adherence to
-    Countdown 2030 guidelines. It performs comprehensive checks, including
+Description: cd2030 is a comprehensive R package designed to streamline data 
+    management and validation for Countdown 2030 initiatives. It efficiently 
+    handles data formatted according to the Countdown 2030 standardized structure, 
+    providing functionalities for data loading, cleaning, and validation. The 
+    package automatically identifies and addresses common data quality issues, 
+    ensuring data adherence to Countdown 2030 guidelines. It performs comprehensive checks, including
     completeness, consistency, outlier detection, and ratio consistency,
     to guarantee data integrity. cd2030 generates standardized reports
     summarizing data quality and identifying potential issues, saving
@@ -38,6 +37,7 @@ Imports:
 Suggests:
     gt,
     knitr,
+    shinydashboard,
     spelling
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

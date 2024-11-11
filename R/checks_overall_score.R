@@ -94,8 +94,6 @@ calculate_overall_score <- function(.data) {
                       '% district with penta1/rota1 in expected ranged' ~ '3j')
     )
 
-  rows <- c("1a", "1b", "1c", "2a", "2b", "3f", "3g", "3h", "3i", "3j", '4')
-
   final_data <- bind_rows(
     avg_reporting_rate,
     district_reporting_rate,
@@ -119,57 +117,4 @@ calculate_overall_score <- function(.data) {
     arrange(no)
 
   return(final_data)
-
-  # final_data %>%
-  #   gt() %>%
-  #   tab_header(
-  #     title = md("**Table 1a: Summary of data quality for reported immunization health facility data**")
-  #   ) %>%
-  #   tab_row_group(
-  #     label = "3. Consistency of annual reporting",
-  #     rows = no %in% c("3a", "3b", '3c', '3d', '3e', '3f', '3g', '3h', '3i', '3j')
-  #   ) %>%
-  #   tab_row_group(
-  #     label = "2. Extreme outliers (Common Vaccine antigens)",
-  #     rows = no %in% c("2a", "2b")
-  #   ) %>%
-  #   tab_row_group(
-  #     label = "1. Completeness of monthly facility reporting (Immunization)",
-  #     rows = no %in% c("1a", "1b", "1c")
-  #   ) %>%
-  #   tab_style(
-  #     style = cell_fill(color = "lightgoldenrodyellow"),
-  #     locations = cells_row_groups()
-  #   ) %>%
-  #   fmt_number(
-  #     columns = starts_with("20"),
-  #     rows = no %in% rows,
-  #     decimals = 1
-  #   ) %>%
-  #   fmt_number(
-  #     columns = starts_with("20"),
-  #     rows = !no %in% rows,
-  #     decimals = 4
-  #   ) # %>%
-    # tab_style(
-    #   style = cell_fill(color = "darkgreen"),
-    #   locations = cells_body(
-    #     columns = starts_with("20"),
-    #     rows = if_any(. > 80)
-    #   )
-    # ) # %>%
-    # tab_style(
-    #   style = cell_fill(color = "yellow"),
-    #   locations = cells_body(
-    #     columns = starts_with("20"),
-    #     rows = no %in% rows & between(.data[[as.character(no)]], 41, 80)
-    #   )
-    # ) %>%
-    # tab_style(
-    #   style = cell_fill(color = "red"),
-    #   locations = cells_body(
-    #     columns = starts_with("20"),
-    #     rows = no %in% rows & .data[[as.character(no)]] <= 40
-    #   )
-    # )
 }

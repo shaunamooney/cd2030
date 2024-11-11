@@ -65,25 +65,24 @@ plot.cd_district_reporting_rate <- function(x, ...) {
     ) %>%
     # Create the plot with facet_wrap
     ggplot(aes(x = as.factor(year), y = value, fill = as.factor(year))) +
-    geom_col(position = 'dodge') +
-    geom_text(aes(label = round(value, 0)), position = position_dodge(width = 0.9), vjust = -1.5, color = 'black', size = 3) +
-    facet_wrap(~title, scales = 'free_y', ncol = 3) +
-    labs(
-      title = paste("Figure 1a - Percentage of districts with low reporting rate (<", threshold, "%) by service and by year"),
-      x = NULL, y = '%',
-      caption = paste("Low reporting rate (<", threshold, "%)")
-    ) +
-    # scale_x_continuous(labels = scales::label_number()) +
-    scale_y_continuous(labels = scales::label_number()) +
-    cd_plot_theme() +
-    theme(
-      panel.grid.major.y = element_line(colour = 'gray90', size = 0.5),
+      geom_col(position = 'dodge') +
+      geom_text(aes(label = round(value, 0)), position = position_dodge(width = 0.9), vjust = -1.5, color = 'black', size = 5) +
+      facet_wrap(~title, scales = 'free_y', ncol = 3) +
+      labs(
+        title = paste("Figure 1a - Percentage of districts with low reporting rate (<", threshold, "%) by service and by year"),
+        x = NULL, y = '%',
+        caption = paste("Low reporting rate (<", threshold, "%)")
+      ) +
+      # scale_x_continuous(labels = scales::label_number()) +
+      scale_y_continuous(limits = c(0, 100),
+                         breaks = scales::pretty_breaks(n = 6),
+                         expand = c(0, 0)) +
+      cd_plot_theme() +
+      theme(
+        panel.grid.major.y = element_line(colour = 'gray90', size = 0.5),
 
-      legend.key.size = unit(0.3, "cm"),
-
-      axis.text.x = element_blank(),
-      axis.ticks = element_blank()
-    ) +
-    scale_y_continuous(limits = c(0, 100), breaks = seq(0, 100, by = 25), expand = c(0, 0)) +
-    scale_fill_manual(values = colors)
+        axis.text.x = element_blank(),
+        axis.ticks = element_blank()
+      ) +
+      scale_fill_manual(values = colors)
 }

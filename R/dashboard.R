@@ -27,5 +27,27 @@
 #'
 #' @export
 dashboard <- function() {
-  shiny::runApp('inst/shiny/app.R')
+
+  ui = server = NULL
+
+  # Ensure `shinydashboard` is recognized as used
+  if (!requireNamespace('shinydashboard', quietly = TRUE)) {
+    cd_abort(
+      c('x' = 'Package {.pkg shinydashboard} is required but not available.')
+    )
+  }
+
+  shiny_dir <- system.file('app', package = 'cd2030')
+  if (shiny_dir == '') {
+    cd_abort(
+      c('x' = 'Could not find app directory. Try re-installing {.pkg cd2030}.')
+    )
+  }
+
+  # evaluate them inside function environment, also change working directory temporarily
+
+  source(file.path(shiny_dir, "global.R"), local = TRUE, chdir = TRUE)
+  source(file.path(shiny_dir, "app.R"), local = TRUE, chdir = TRUE)
+
+  shiny::runApp(shiny::shinyAppDir(shiny_dir), launch.browser = TRUE, display.mode = "normal")
 }

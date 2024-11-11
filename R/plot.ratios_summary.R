@@ -30,7 +30,7 @@ plot.cd_ratios_summary <-  function(x, ...) {
   year = name = value = NULL
 
   plot_data <- x %>%
-    select(year, starts_with('Ratio')) %>%
+    select(year, starts_with('Ratio ')) %>%
     pivot_longer(cols = -year) %>%
     mutate(year = factor(year, levels = sort(unique(year))))
 
@@ -42,7 +42,7 @@ plot.cd_ratios_summary <-  function(x, ...) {
   plot_data %>%
     ggplot(aes(name, value, fill = year)) +
       geom_col(position = position_dodge2()) +
-      scale_y_continuous(expand = c(0,0)) +
+      # scale_y_continuous(expand = c(0,0)) +
       scale_fill_manual(values = color_mapping) +
       labs(
         title = 'Figure 1b: Ratio of number of facility reported ANC1 to penta1, penta1 to penta3 and of OPV1 to OPV3. compared with expected ratioss',

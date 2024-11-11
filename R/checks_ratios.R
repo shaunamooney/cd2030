@@ -89,15 +89,25 @@ calculate_ratios_summary <- function(.data,
 
   names(ratios) <- names(ratio_pairs)
 
+  ratios <- ratios %>%
+    as_tibble() %>%
+    rename_with(
+      ~ map_chr(.x, function(name) {
+        pair <- ratio_pairs[[name]]
+        paste0('Ratio ', pair[1], '/', pair[2])
+      }),
+      starts_with("ratio")
+    ) %>%
+    mutate(
+      year = 'Expected Ratio'
+    )
+
   data_summary <- calculate_ratios_and_adequacy(.data, ratio_pairs, adequate_range) %>%
     select(-starts_with('%')) %>%
     mutate(
       year = as.character(year)
     ) %>%
-    bind_rows(
-      c(year = 'Expected Ratio', survey_coverage, ratios) %>%
-        as_tibble()
-    )
+    bind_rows(ratios)
 
   new_tibble(data_summary, class = 'cd_ratios_summary')
 }
