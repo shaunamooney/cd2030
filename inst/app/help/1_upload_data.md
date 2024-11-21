@@ -1,65 +1,37 @@
-### Uploading Health Facility Data (HFD)
+#### Uploading Health Facility Data (HFD)
 
-This application enables users to upload health facility data (HFD) for analysis. 
-Supported file formats include:
+This application enables users to upload health facility data (HFD) for analysis. Supported file formats include:
 
 - **Health Facility Data**: Excel files (`.xls` and `.xlsx`)
 - **Master Dataset**: Stata files (`.dta`) and R data files (`.rds`)
 
-Simply drag and drop your file into the uploader for easy upload. The application 
-is designed to facilitate quick and efficient data processing.
+Simply drag and drop your file into the uploader or use the "Browse" button to locate the file on your device. The application is designed to facilitate quick and efficient data processing.
 
----
+#### Guidelines for Uploading Data
 
-## Save Progress
+1. **Prepare Your Data**:
+   - Ensure that your data is in one of the supported file formats:
+     - **Excel files** (`.xls`, `.xlsx`) for health facility data.
+     - **Stata files** (`.dta`) and **R data files** (`.rds`) for master datasets.
+   - Use standardized templates, such as the Countdown HFD spreadsheet, for better compatibility and data quality.
 
-You can save your work at any time by clicking the **Save Progress** button in 
-the sidebar. This will create a zip file containing all relevant session data,
-including input data, processed data, cached results, and a session report:
+2. **Upload Your Data**:
+   - Drag and drop the file into the uploader or use the "Browse" button to locate the file on your device.
 
-- **Input Data**
-  - `input_data.rds`: The original uploaded data.
-  
-- **Processed Data**
-  - `combined_data_table.csv`: The processed data within the app, in CSV format.
-  - `data.rds`: A comprehensive data file used in the app, containing:
-    - `data_list`: A list of modified data, reflecting any transformations (e.g.,
-      filtering, subsetting).
-    - `summary`: A summary table of the processed data.
-    - `all_removed_outliers`: Rows flagged as outliers and removed during processing.
+3. **Validation and Feedback**:
+   - After uploading, the application validates the file and provides immediate feedback:
+     - **Successful Upload**: A confirmation message will appear, and your data will be ready for analysis.
+     - **Failed Upload**: If the file format is unsupported or the file contains errors, a generic error message will prompt you to check and re-upload the corrected file.
 
-- **Cached Calculations** (`cache.zip`): A collection of cached results from 
-  previous calculations, enabling faster operations when repeating tasks.
+#### Supported Data Types
 
-- **Session Report**
-  - `report.html`: A record of all actions taken during the session, including 
-    data transformations and analyses.
-  - `plot.zip`: All plots generated in the session, saved as PNG or PDF files,
-    with maps saved as HTML files.
+- **Health Facility Data**:
+  - Operational, coverage, or service-related metrics specific to health facilities.
+  - Key indicators might include vaccination coverage, service delivery, and facility performance metrics.
 
-- **Error Log**
-  - `error_log.txt`: A log of any errors encountered during the session, for 
-    debugging and troubleshooting.
+- **Master Dataset**:
+  - Supplementary data to link or analyze alongside health facility data.
+  - Useful for denominators, subnational analyses, and equity evaluations.
 
-### DPI Control for Plots
+By following these guidelines, users can seamlessly upload their data and ensure it is correctly processed for subsequent analyses. This streamlined process supports data quality assessments, equity evaluations, and coverage estimates, facilitating effective decision-making.
 
-You can adjust the DPI (dots per inch) of saved plot images to control their
-resolution. Resize the application window to adjust the plot dimensions.
-
----
-
-## Restore Progress
-
-If you previously saved your session as a zip file, you can restore it by using
-the **Restore Progress** feature on the import page. This will reload the input 
-data, processed data, and cached results, allowing you to resume your analysis
-from where you left off.
-
-- **Limitations**: The restore feature will reload input data and cached results
-  but cannot fully replicate every step of the workflow (e.g., table selections or
-  interactive plot choices). Workflow stages that require user interactions cannot
-  be reproduced automatically.
-  
-- **App Version Compatibility**: Cached results are only compatible with the exact 
-  app version they were created in. Data saved with older versions of the app may
-  not work with future versions.

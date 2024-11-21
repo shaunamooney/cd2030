@@ -6,7 +6,7 @@
 \usage{
 plot_absolute_differences(
   .data,
-  indicator = c("penta3", "mcv1", "bcg"),
+  indicator = c("penta3", "measles1", "bcg"),
   survey_coverage = 88,
   coverage_year = 2021
 )

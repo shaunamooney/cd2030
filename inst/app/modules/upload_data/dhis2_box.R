@@ -21,7 +21,7 @@ dhis2BoxServer <- function(id) {
     id = id,
     module = function(input, output, session) {
 
-      helpButtonServer('dhis2_download', 'Dhis2 Download', 'l', '1_dhis2_login.md')
+      helpButtonServer('dhis2_download', 'DHIS2 Download', 'l', '1_dhis2_login.md')
     }
   )
 }

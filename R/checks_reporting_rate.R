@@ -95,3 +95,18 @@ calculate_district_reporting_rate <- function(.data, threshold = 90) {
     threshold = threshold
   )
 }
+
+#' @export
+district_low_reporting <- function(.data, threshold = 90) {
+
+  check_cd_data(.data)
+
+  indicator_groups <- attr(.data, 'indicator_groups')
+  indicator_groups <- paste0(names(indicator_groups), '_rr')
+
+  reporting_rate <- .data %>%
+    summarise(across(all_of(indicator_groups), mean, na.rm = TRUE), .by = c(district, year)) %>%
+    filter(if_any(ends_with("rr"), ~ .x < threshold))
+
+  return(reporting_rate)
+}

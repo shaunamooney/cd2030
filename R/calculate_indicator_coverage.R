@@ -6,6 +6,11 @@
 #' UN estimates, ANC-1, and Penta-1 survey data.
 #'
 #' @param .data A `cd_data` tibble containing DHIS-2, UN, ANC-1, and Penta-1 data.
+#' @param admin_level Character. Specifies the level for calculations, options include:
+#'   - **"national"**: Aggregates data at the national level.
+#'   - **"admin_level_1"**: Aggregates data at the first administrative level.
+#'   - **"district"**: Aggregates data at the district level.
+#' @param un_estimates Unestimates data
 #' @param sbr Numeric. The stillbirth rate.
 #' @param nmr Numeric. Neonatal mortality rate.
 #' @param pnmr Numeric. Post-neonatal mortality rate.
@@ -13,11 +18,6 @@
 #' @param dpt1survey Numeric. Survey coverage rate for Penta-1 (DPT1).
 #' @param twin Numeric. Twin birth rate, default is 0.014.
 #' @param preg_loss Numeric. Pregnancy loss rate, default is 0.03.
-#' @param country_name Character. The country for which data is being processed.
-#' @param admin_level Character. Specifies the level for calculations, options include:
-#'   - **"national"**: Aggregates data at the national level.
-#'   - **"admin_level_1"**: Aggregates data at the first administrative level.
-#'   - **"district"**: Aggregates data at the district level.
 #'
 #' @return A tibble of class `cd_indicator_coverage`, containing calculated
 #'    denominators and coverage indicators for the specified administrative level.
@@ -40,8 +40,8 @@
 #'
 #' @export
 calculate_indicator_coverage <- function(.data,
-                                         country_name,
                                          admin_level = c('national', 'admin_level_1', 'district'),
+                                         un_estimates,
                                          sbr = 0.02,
                                          nmr = 0.025,
                                          pnmr = 0.024,
@@ -53,8 +53,11 @@ calculate_indicator_coverage <- function(.data,
   admin_level <- arg_match(admin_level)
 
   output_data <- calculate_populations(.data,
-                                       country_name, admin_level, sbr, nmr, pnmr,
-                                       anc1survey, dpt1survey, twin, preg_loss) %>%
+                                       admin_level = admin_level,
+                                       un_estimates = un_estimates,
+                                       sbr = sbr, nmr = nmr, pnmr = pnmr,
+                                       anc1survey = anc1survey, dpt1survey = dpt1survey,
+                                       twin = twin, preg_loss = preg_loss) %>%
     select(any_of(c('country', 'year', 'adminlevel_1', 'district')), starts_with('cov_'))
 
   new_tibble(
@@ -65,8 +68,8 @@ calculate_indicator_coverage <- function(.data,
 }
 
 calculate_populations <- function(.data,
-                                  country_name,
                                   admin_level = c('national', 'admin_level_1', 'district'),
+                                  un_estimates,
                                   sbr = 0.02,
                                   nmr = 0.025,
                                   pnmr = 0.024,
@@ -74,6 +77,8 @@ calculate_populations <- function(.data,
                                   dpt1survey = 0.97,
                                   twin = 0.015,
                                   preg_loss = 0.03) {
+
+
 
   pop_dhis2 = under5_dhis2 = under1_dhis2 = livebirths_dhis2 = allbirths_dhis2 =
     wom15_49_dhis2 = year = un_under5y = un_population = un_under1y = un_wom15_49 =
@@ -93,7 +98,7 @@ calculate_populations <- function(.data,
     totinftmeasles_anc1 = totmeasles2_anc1 = totpreg_penta1 =
     otinftmeasles_penta1 = totmeasles2_penta1 = NULL
 
-  national_population <- prepare_population_metrics(.data, country_name, admin_level = admin_level)
+  national_population <- prepare_population_metrics(.data, admin_level = admin_level, un_estimates = un_estimates)
   indicator_numerator <- compute_indicator_numerator(.data, admin_level = admin_level)
 
   admin_level <- arg_match(admin_level)

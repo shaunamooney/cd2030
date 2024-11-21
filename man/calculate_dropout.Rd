@@ -6,7 +6,6 @@
 \usage{
 calculate_dropout(
   .data,
-  filter_year,
   indicator = c("zerodose", "undervax", "dropout_penta13", "dropout_measles12",
     "dropout_penta3mcv1", "dropout_penta1mcv1"),
   source = c("dhis2", "anc1", "penta1")
@@ -15,8 +14,6 @@ calculate_dropout(
 \arguments{
 \item{.data}{A data frame or tibble containing health indicator data, with coverage columns
 named in the format \verb{cov_<indicator>_<source>}.}
-
-\item{filter_year}{Numeric. The specific year to filter the data for dropout calculations.}
 
 \item{indicator}{Character. The specific health indicator to evaluate. Options are:
 \itemize{
@@ -34,6 +31,8 @@ named in the format \verb{cov_<indicator>_<source>}.}
 \item \code{"anc1"}: Data from ANC-1 surveys.
 \item \code{"penta1"}: Data from Penta-1 surveys.
 }}
+
+\item{filter_year}{Numeric. The specific year to filter the data for dropout calculations.}
 }
 \value{
 A tibble with the selected administrative level and coverage value for regions

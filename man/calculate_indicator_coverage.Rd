@@ -6,8 +6,8 @@
 \usage{
 calculate_indicator_coverage(
   .data,
-  country_name,
   admin_level = c("national", "admin_level_1", "district"),
+  un_estimates,
   sbr = 0.02,
   nmr = 0.025,
   pnmr = 0.024,
@@ -20,14 +20,14 @@ calculate_indicator_coverage(
 \arguments{
 \item{.data}{A \code{cd_data} tibble containing DHIS-2, UN, ANC-1, and Penta-1 data.}
 
-\item{country_name}{Character. The country for which data is being processed.}
-
 \item{admin_level}{Character. Specifies the level for calculations, options include:
 \itemize{
 \item \strong{"national"}: Aggregates data at the national level.
 \item \strong{"admin_level_1"}: Aggregates data at the first administrative level.
 \item \strong{"district"}: Aggregates data at the district level.
 }}
+
+\item{un_estimates}{Unestimates data}
 
 \item{sbr}{Numeric. The stillbirth rate.}
 

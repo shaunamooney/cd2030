@@ -10,14 +10,16 @@ denominatorAssessmentUI <- function(id) {
       tabPanel(
         title = 'Total Population',
         fluidRow(
-          column(12, plotOutput(ns('population')))
+          column(12, plotOutput(ns('population'))),
+          column(3, downloadButton(ns('population_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
         )
       ),
 
       tabPanel(
         title = 'Births',
         fluidRow(
-          column(12, plotOutput(ns('births')))
+          column(12, plotOutput(ns('births'))),
+          column(3, downloadButton(ns('births_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
         )
       )
     ),
@@ -29,60 +31,75 @@ denominatorAssessmentUI <- function(id) {
       tabPanel(
         title = 'Penta 3',
         fluidRow(
-          column(12, plotOutput(ns('penta3')))
+          column(12, plotOutput(ns('penta3'))),
+          column(3, downloadButton(ns('penta3_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
         )
       ),
 
       tabPanel(
         title = 'Measles 1',
         fluidRow(
-          column(12, plotOutput(ns('measles1')))
+          column(12, plotOutput(ns('measles1'))),
+          column(3, downloadButton(ns('measles1_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
         )
       ),
 
       tabPanel(
         title = 'BCG',
         fluidRow(
-          column(12, plotOutput(ns('bcg')))
+          column(12, plotOutput(ns('bcg'))),
+          column(3, downloadButton(ns('bcg_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
+        )
+      ),
+
+      tabPanel(
+        title = 'Custom Checks',
+        fluidRow(
+          column(12, plotOutput(ns('custom'))),
+          column(3, downloadButton(ns('custom_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
         )
       )
     )
   )
 }
 
-denominatorAssessmentServer <- function(id, data, national_rates, national_survey) {
+denominatorAssessmentServer <- function(id, data, national_values) {
   stopifnot(is.reactive(data))
-  stopifnot(is.reactive(national_rates))
-  stopifnot(is.reactive(national_survey))
+  stopifnot(is.reactive(national_values))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
 
-      denominators <- reactive({
+      national_rates <- reactive({
+        national_values()$rates
+      })
 
-        country <- data() %>% select(country) %>% distinct(country) %>% pull(country)
+      un_estimates <- reactive({
+        national_values()$data$un
+      })
+
+      denominators <- reactive({
+        req(un_estimates())
 
         data() %>%
-          prepare_population_metrics(country)
+          prepare_population_metrics(un_estimates = un_estimates())
       })
 
       indicator_coverage <- reactive({
-
-        country <- data() %>% select(country) %>% distinct(country) %>% pull(country)
+        req(national_rates(), un_estimates())
 
         rates <- national_rates()
-        surveys <- national_survey()
 
         data() %>%
-          calculate_indicator_coverage(country,
-                                       sbr = rates['sbr']/100,
-                                       nmr = rates['nmr']/100,
-                                       pnmr = rates['pnmr']/100,
-                                       twin = rates['twin_rate']/100,
-                                       preg_loss = rates['preg_loss']/100,
-                                       anc1survey = surveys['anc1']/100,
-                                       dpt1survey = surveys['penta1']/100)
+          calculate_indicator_coverage(un_estimates = un_estimates(),
+                                       sbr = rates$sbr,
+                                       nmr = rates$nmr,
+                                       pnmr = rates$pnmr,
+                                       twin = rates$twin_rate,
+                                       preg_loss = rates$preg_loss,
+                                       anc1survey = rates$anc1/100,
+                                       dpt1survey = rates$penta1/100)
       })
 
       output$population <- renderPlot({
@@ -104,6 +121,46 @@ denominatorAssessmentServer <- function(id, data, national_rates, national_surve
       output$bcg <- renderPlot({
         plot_absolute_differences(indicator_coverage(), 'bcg')
       })
+
+      output$population_plot <- downloadHandler(
+        filename = function() { paste0("population_plot_", Sys.Date(), ".png") },
+        content = function(file) {
+          plot(denominators(), 'population')
+          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
+        }
+      )
+
+      output$births_plot <- downloadHandler(
+        filename = function() { paste0("births_plot_", Sys.Date(), ".png") },
+        content = function(file) {
+          plot(denominators(), 'births')
+          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
+        }
+      )
+
+      output$penta3_plot <- downloadHandler(
+        filename = function() { paste0("penta3_plot_", Sys.Date(), ".png") },
+        content = function(file) {
+          plot_absolute_differences(indicator_coverage(), 'penta3')
+          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
+        }
+      )
+
+      output$measles1_plot <- downloadHandler(
+        filename = function() { paste0("measles1_plot_", Sys.Date(), ".png") },
+        content = function(file) {
+          plot_absolute_differences(indicator_coverage(), 'measles1')
+          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
+        }
+      )
+
+      output$bcg_plot <- downloadHandler(
+        filename = function() { paste0("bcg_plot_", Sys.Date(), ".png") },
+        content = function(file) {
+          plot_absolute_differences(indicator_coverage(), 'bcg')
+          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
+        }
+      )
     }
   )
 }

@@ -6,21 +6,25 @@
 \usage{
 analyze_national_coverage(
   .data,
-  country_name,
-  country_iso,
   indicator = c("bcg", "anc1", "pcv3", "opv1", "opv2", "opv3", "penta2", "pcv1", "pcv2",
     "penta1", "penta3", "measles1", "rota1", "rota2", "instdeliveries", "measles2",
     "ipv1", "ipv2", "undervax", "dropout_penta13", "zerodose", "dropout_measles12",
     "dropout_penta3mcv1"),
-  denominator = c("dhis2", "anc1", "penta1")
+  denominator = c("dhis2", "anc1", "penta1"),
+  un_estimates,
+  survey_data,
+  wuenic_data,
+  sbr = 0.02,
+  nmr = 0.025,
+  pnmr = 0.024,
+  anc1survey = 0.98,
+  dpt1survey = 0.97,
+  twin = 0.015,
+  preg_loss = 0.03
 )
 }
 \arguments{
 \item{.data}{A data frame of type \code{cd_data} containing immunization coverage data.}
-
-\item{country_name}{Character. Name of the country, e.g., "Kenya".}
-
-\item{country_iso}{Character. ISO3 country code, e.g., "KEN".}
 
 \item{indicator}{Character. The immunization indicator to analyze. Must be one
 of the supported values such as "bcg", "penta3", etc.
@@ -35,6 +39,26 @@ Supported indicators include:
 
 \item{denominator}{Character. The denominator used for calculating coverage
 estimates. Must be one of "dhis2", "anc1", or "penta1".}
+
+\item{un_estimates}{description}
+
+\item{survey_data}{description}
+
+\item{wuenic_data}{description}
+
+\item{sbr}{Numeric. The stillbirth rate.}
+
+\item{nmr}{Numeric. Neonatal mortality rate.}
+
+\item{pnmr}{Numeric. Post-neonatal mortality rate.}
+
+\item{anc1survey}{Numeric. Survey coverage rate for ANC-1.}
+
+\item{dpt1survey}{Numeric. Survey coverage rate for Penta-1 (DPT1).}
+
+\item{twin}{Numeric. Twin birth rate, default is 0.014.}
+
+\item{preg_loss}{Numeric. Pregnancy loss rate, default is 0.03.}
 }
 \value{
 A data frame of class \code{cd_national_coverage}, containing year-wise
@@ -65,8 +89,7 @@ is ready for further analysis or visualization.
 }
 \examples{
 \dontrun{
-analyze_national_coverage(.data = my_data, country_name = "Kenya",
-                          country_iso = "KEN", indicator = "penta3",
+analyze_national_coverage(.data = my_data, indicator = "penta3",
                           denominator = "penta1")
 }
 

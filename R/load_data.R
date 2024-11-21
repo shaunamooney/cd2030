@@ -181,11 +181,19 @@ new_countdown <- function(.data, class = NULL, call = caller_env()) {
     )
   }
 
+  country_name <- .data %>%
+    distinct(country) %>%
+    pull(country)
+
+  country <- match_country(country_name)
+
   # Add attributes for indicator groups and tracers and create the cd_data class
   new_tibble(
     .data,
     indicator_groups = indicator_groups,
     tracers = tracers,
+    country = country$country,
+    iso3 = country$iso3,
     class = c(class, 'cd_data')
   )
 }
@@ -514,4 +522,71 @@ replace_special_chars <- function(text) {
     '[\u00FA\u00F9\u00FB\u00FC\u00D9\u00DA\u00DC\u00DB]' = 'u',  # úùûüÙÚÜÛ
     '\u00F1' = 'n'  # ñ
   ))
+}
+
+
+#' Match Country to Closest Dataset Entry
+#'
+#' This function matches a given country name to the closest match in a dataset,
+#' considering both the `country` and `alternate` name columns. It utilizes the
+#' Jaro-Winkler string distance method to find the best match.
+#'
+#' @param country A character string representing the country name to match.
+#' @param call Caller Enviroment
+#'
+#' @return A data frame containing the closest match with columns `country`,
+#' `countrycode`, `iso3`, and `iso2`. If no close match is found, a suggestion
+#' string is returned.
+#'
+#' @details The function calculates string distances using the Jaro-Winkler method
+#' for the `country` and `alternate` columns in the `countries` dataset. It selects
+#' the closest match based on the minimum distance values and checks if the match
+#' is within a predefined threshold (0.25).
+#'
+#' @examples
+#' # Example usage:
+#' # Assuming `countries` is a data frame with columns `country`, `alternate`, `countrycode`, `iso3`, and `iso2`.
+#' matched_result <- match_country("USA")
+#'
+#' @noRd
+match_country <- function(country_name, call = caller_call()) {
+
+  check_required(country)
+
+  # Check if input is non-empty and valid
+  if (!is.character(country_name) || nchar(country_name) < 3) {
+    cd_abort(
+      c('x' = 'Please provide a valid country name as a string.')
+    )
+  }
+
+  # Calculate string distances for both 'country' and 'alternate' columns
+  distances <- countries %>%
+    mutate(
+      country_dist = stringdist::stringdist(tolower(country_name), tolower(country), method = "jw"),
+      alternate_dist = stringdist::stringdist(tolower(country_name), tolower(alternate), method = "jw")
+    )
+
+  # Select the single closest match based on combined distance
+  closest_match <- distances %>%
+    mutate(total_dist = country_dist + alternate_dist) %>%
+    arrange(total_dist) %>%
+    slice(1) # Always take the first row after sorting by total distance
+
+  # Get the minimum distance values for 'country' and 'alternate' columns
+  min_country_dist <- min(closest_match$country_dist, na.rm = TRUE)
+  min_alternate_dist <- min(closest_match$alternate_dist, na.rm = TRUE)
+
+  # Check if the closest match is within acceptable thresholds
+  if (min_country_dist < 0.25 | min_alternate_dist < 0.25) {
+    return(closest_match %>% select(country, countrycode, iso3, iso2))
+  } else {
+    suggestion <- closest_match$country[1]
+    cd_abort(
+      c(
+        'x' = 'The country in the document is not supported',
+        '!' = paste('Did you mean:', suggestion, '?')
+      )
+    )
+  }
 }

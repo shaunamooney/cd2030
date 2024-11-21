@@ -48,7 +48,11 @@ calculate_outliers_summary <- function(.data) {
 
   data <- .data %>%
     calculate_quality_metrics() %>%
-    summarise(across(ends_with('_outlier5std'), mean, na.rm = TRUE), .by = year) %>%
+    summarise(
+      across(
+        ends_with('_outlier5std'), mean, na.rm = TRUE),
+      .by = year
+    ) %>%
     mutate(
       mean_out_all = rowMeans(select(., ends_with('_outlier5std')), na.rm = TRUE),
       mean_out_vacc_only = rowMeans(select(., paste0(vaccine_only, '_outlier5std')), na.rm = TRUE),
@@ -109,7 +113,13 @@ calculate_district_outlier_summary <- function(.data) {
 
   data <- .data %>%
     calculate_quality_metrics() %>%
-    summarise(across(ends_with('_outlier5std'), max, na.rm = TRUE), .by = c(district, year)) %>%
+    summarise(
+      across(
+        ends_with('_outlier5std'),
+        ~ if(all(is.na(.))) NA else max(., na.rm = TRUE)
+      ),
+      .by = c(district, year)
+    ) %>%
     summarise(across(ends_with('_outlier5std'), mean, na.rm = TRUE), .by = year) %>%
     mutate(
       mean_out_all = rowMeans(select(., ends_with('_outlier5std')), na.rm = TRUE),

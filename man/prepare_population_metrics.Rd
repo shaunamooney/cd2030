@@ -6,19 +6,16 @@
 \usage{
 prepare_population_metrics(
   .data,
-  country_name,
   admin_level = c("national", "admin_level_1", "district"),
   start_year = 2019,
-  end_year = 2023
+  end_year = 2023,
+  un_estimates
 )
 }
 \arguments{
 \item{.data}{A \code{cd_data} tibble containing processed DHIS-2 health facility
 data with population indicators. This data is required for all administrative
 levels.}
-
-\item{country_name}{A character string specifying the country for which
-demographic indicators are calculated.}
 
 \item{admin_level}{A character string specifying the administrative level for
 calculation. Available options are:
@@ -87,7 +84,6 @@ for aggregation.
 # Calculate demographic metrics for Kenya at the national level
 population_data <- prepare_population_metrics(
   .data = dhis2_data,
-  country_name = "Kenya",
   admin_level = "national",
   start_year = 2019,
   end_year = 2023
@@ -96,7 +92,6 @@ population_data <- prepare_population_metrics(
 # Calculate demographic metrics for Kenya at the district level
 population_data <- prepare_population_metrics(
   .data = dhis2_data,
-  country_name = "Kenya",
   admin_level = "district",
   start_year = 2019,
   end_year = 2023

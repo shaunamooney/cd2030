@@ -45,8 +45,6 @@ dashboard <- function() {
   }
 
   # evaluate them inside function environment, also change working directory temporarily
-
-  source(file.path(shiny_dir, "global.R"), local = TRUE, chdir = TRUE)
   source(file.path(shiny_dir, "app.R"), local = TRUE, chdir = TRUE)
 
   shiny::runApp(shiny::shinyAppDir(shiny_dir), launch.browser = TRUE, display.mode = "normal")

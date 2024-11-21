@@ -8,8 +8,6 @@
 #' @param .data A `cd_data` tibble containing processed DHIS-2 health facility
 #'   data with population indicators. This data is required for all administrative
 #'   levels.
-#' @param country_name A character string specifying the country for which
-#'   demographic indicators are calculated.
 #' @param admin_level A character string specifying the administrative level for
 #'   calculation. Available options are:
 #'   - `"national"`: Aggregates data at the country level, including comparisons
@@ -60,7 +58,6 @@
 #' # Calculate demographic metrics for Kenya at the national level
 #' population_data <- prepare_population_metrics(
 #'   .data = dhis2_data,
-#'   country_name = "Kenya",
 #'   admin_level = "national",
 #'   start_year = 2019,
 #'   end_year = 2023
@@ -69,7 +66,6 @@
 #' # Calculate demographic metrics for Kenya at the district level
 #' population_data <- prepare_population_metrics(
 #'   .data = dhis2_data,
-#'   country_name = "Kenya",
 #'   admin_level = "district",
 #'   start_year = 2019,
 #'   end_year = 2023
@@ -78,10 +74,10 @@
 #'
 #' @export
 prepare_population_metrics <- function(.data,
-                                       country_name,
                                        admin_level = c('national', 'admin_level_1', 'district'),
                                        start_year = 2019,
-                                       end_year = 2023) {
+                                       end_year = 2023,
+                                       un_estimates) {
 
   totlivebirths_dhis2 = total_pop = under5_pop = under1_pop = live_births =
     total_births = women15_49 = pop_rate = adminlevel_1 = district = year =
@@ -90,7 +86,9 @@ prepare_population_metrics <- function(.data,
     un_cbr = un_cdr = NULL
 
   check_cd_data(.data)
-  check_required(country_name)
+  check_un_estimates_data(un_estimates)
+
+  country_name <- attr(.data, 'country')
 
   admin_level <- arg_match(admin_level)
 
@@ -99,10 +97,6 @@ prepare_population_metrics <- function(.data,
                        admin_level_1 = c('country', 'adminlevel_1', 'year'),
                        district = c('country', 'adminlevel_1', 'district', 'year')
   )
-
-  if (!is_scalar_character(country_name)) {
-    cd_abort(c('x' = '{.arg country_name} should be a scalar string'))
-  }
 
   columns <- c('district', 'adminlevel_1', 'year', 'total_pop', 'under5_pop', 'under1_pop', 'pop_rate', 'live_births', 'women15_49', 'total_births')
 
@@ -135,8 +129,6 @@ prepare_population_metrics <- function(.data,
   if (admin_level == 'national') {
     # Prepare UN Data
     combined_data <- un_estimates %>%
-      filter(year >= start_year & year <= end_year, country == country_name) %>%
-      rename_with(~ paste0("un_", .), -c(country, year, countrycode, iso3, iso2)) %>%
       inner_join(dhis_data, by = c('country', 'year')) %>%
       arrange(country, year)
   } else {

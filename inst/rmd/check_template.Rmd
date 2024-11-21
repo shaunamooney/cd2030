@@ -25,156 +25,63 @@ knitr::opts_chunk$set(
 
 ```{r}
 library(cd2030)
+library(dplyr)
 library(gt)
 ```
 
-### Reporting Rate
+### Health facility data quality assessment: numerators
 
-#### Average RR by year
+**BACKGROUND:** Routinely reported health facility data are an important data source for health indicators. The data are reported by health facilities on events such as immunizations given, or live births attended. As with any data, quality is an issue. Data are checked to consider completeness of reporting by health facilities, identify extreme outliers and internal consistency. 
+
 
 ```{r}
-params$data %>% 
-  check_average_reporting_rate() %>% 
-  gt() %>% 
-  tab_header(title = 'Table 1 - average reporting rates for all indicators, by year')
+rows <- c("1a", "1b", "1c", "2a", "2b", "3f", "3g", "3h", "3i", "3j", '4')
+
+calculate_overall_score(params$data) %>% 
+  gt() %>%
+          tab_header(
+            title = md("**Table 1a: Summary of data quality for reported immunization health facility data**")
+          ) %>%
+          tab_row_group(
+            label = "3. Consistency of annual reporting",
+            rows = no %in% c("3a", "3b", '3c', '3d', '3e', '3f', '3g', '3h', '3i', '3j')
+          ) %>%
+          tab_row_group(
+            label = "2. Extreme outliers (Common Vaccine antigens)",
+            rows = no %in% c("2a", "2b")
+          ) %>%
+          tab_row_group(
+            label = "1. Completeness of monthly facility reporting (Immunization)",
+            rows = no %in% c("1a", "1b", "1c")
+          ) %>%
+          tab_style(
+            style = cell_fill(color = "lightgoldenrodyellow"),
+            locations = cells_row_groups()
+          ) %>%
+          fmt_number(
+            columns = starts_with("20"),
+            rows = no %in% rows,
+            decimals = 1
+          ) %>%
+          fmt_number(
+            columns = starts_with("20"),
+            rows = !no %in% rows,
+            decimals = 4
+          )
 ```
 
-#### Reporting Rate District {.tabset}
-
-##### RR >= `r params$threshold` (districts)
-
 ```{r}
-dt <- params$data %>% 
-  check_district_reporting_summary(threshold = params$threshold) 
-
-dt %>% 
-  gt() %>% 
-  tab_header(title = paste0('Table 2 - Percentage of districts with reporting rates >=', params$threshold, ' by year'))
+plot(calculate_district_reporting_rate(params$data, params$threshold))
 ```
 
-##### Low RR districts (graph)
+
+#### Health facility data quality assessment: numerators
+
+**BACKGROUND:** Routinely reported health facility data are essential for monitoring 
+immunization coverage. Data quality assessments often reveal discrepancies in the 
+Penta1/Penta3 ratio, which should ideally be close to 1.
+
 
 ```{r}
-plot(dt)
-```
-
-##### {-}
-
-### Internal Consitency {.tabset}
-
-#### IPV1 vs IPV2 ratio
-
-```{r}
-plot_comparison_ipv1_ipv2(params$data)
-```
-
-#### OPV1 vs OPV3 ratio
-
-```{r}
-plot_comparison_opv1_opv3(params$data)
-```
-
-#### OPV1 vs ANC1 ratio
-
-```{r}
-plot_comparison_opv1_anc1(params$data)
-```
-
-#### OPV1 vs Penta1 ratio
-
-```{r}
-plot_comparison_opv1_penta1(params$data)
-```
-
-#### OPV3 vs Penta3 ratio
-
-```{r}
-plot_comparison_opv3_penta3(params$data)
-```
-
-#### PCV1 vs PCV3 ratio
-
-```{r}
-plot_comparison_pcv1_pcv3(params$data)
-```
-
-#### PCV3 vs Penta3 ratio
-
-```{r}
-plot_comparison_pcv3_penta3(params$data)
-```
-
-#### Penta1 vs ANC1 ratio
-
-```{r}
-plot_comparison_penta1_anc1(params$data)
-```
-
-#### Penta1 vs PCV1 ratio
-
-```{r}
-plot_comparison_penta1_pcv1(params$data)
-```
-
-#### Penta1 vs Penta2 ratio
-
-```{r}
-plot_comparison_penta1_penta2(params$data)
-```
-
-#### Rota1 vs Rota2 ratio
-
-```{r}
-plot_comparison_rota1_rota2(params$data)
-```
-
-#### {-}
-
-### Adequate ratios
-
-```{r}
-params$data %>% 
-  check_ratios() %>% 
-  gt() %>% 
-  tab_header(title = 'Table 3 - Percentage of districts with adequate ratios (between 1.0 and 1.5)')
-```
-
-### Outliers
-
-#### Outliers by year
-
-```{r}
-params$data %>% 
-  check_outlier_summary() %>% 
-  gt() %>% 
-  tab_header(title = 'Table 4 - Percentage of monthly values that are not extreme outliers, by year')
-```
-
-#### Outliers (Districts)
-
-```{r}
-params$data %>% 
-  check_outlier_district() %>% 
-  gt() %>% 
-  tab_header(title = 'Table 5 - Percentage of districts with no extreme outliers, by year')
-```
-
-### Missings
-
-#### Missing by years
-
-```{r}
-params$data %>% 
-  check_missing_summary() %>% 
-  gt() %>% 
-  tab_header(title = 'Table 6 - Percentage of monthly values that are not missing, by year')
-```
-
-#### Missings (districts)
-
-```{r}
-params$data %>% 
-  check_missing_district() %>% 
-  gt() %>% 
-  tab_header(title = 'Table 7 - Percentage of districts with no missing values, by year')
+plot(calculate_ratios_summary(params$data))
 ```

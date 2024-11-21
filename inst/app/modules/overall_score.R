@@ -21,6 +21,7 @@ overallScoreServer <- function(id, data) {
     module = function(input, output, session) {
 
       output$overall_score <- render_gt({
+        req(data())
 
         rows <- c("1a", "1b", "1c", "2a", "2b", "3f", "3g", "3h", "3i", "3j", '4')
 

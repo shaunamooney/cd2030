@@ -31,6 +31,33 @@ check_cd_data <- function(.data, call = caller_env()) {
 
 }
 
+check_un_estimates_data <- function(.data, call = caller_env()) {
+
+  check_required(.data, call = call)
+
+  if (!inherits(.data, 'cd_un_estimates')) {
+    cd_abort(c('x' = 'The data object must be of class "cd_un_estimates".'), call = call)
+  }
+}
+
+check_wuenic_data <- function(.data, call = caller_env()) {
+
+  check_required(.data, call = call)
+
+  if (!inherits(.data, 'cd_wuenic_data')) {
+    cd_abort(c('x' = 'The data object must be of class "cd_un_estimates".'), call = call)
+  }
+}
+
+check_survey_data <- function(.data, call = caller_env()) {
+
+  check_required(.data, call = call)
+
+  if (!inherits(.data, 'cd_survey_data')) {
+    cd_abort(c('x' = 'The data object must be of class "cd_un_estimates".'), call = call)
+  }
+}
+
 check_ratio_pairs <- function(.list, arg = call_args(.list), call = caller_env()) {
 
   check_required(.data, call = call)
@@ -58,14 +85,14 @@ cd_plot_theme <- function() {
     legend.position = "bottom",
     legend.title = element_blank(),
     # legend.text = element_text(size = 8),
-    legend.text = element_text(size = 15),
+    legend.text = element_text(size = 13),
     legend.key.size = unit(8, "mm"),
 
     # plot.title = element_text(size = 10, hjust = 0.5),
     # plot.subtitle = element_text(size = 10, hjust = 0.5),
     # plot.caption = element_text(hjust = 0),
 
-    plot.title = element_text(size = 18, hjust = 0.5),
+    plot.title = element_text(size = 16, hjust = 0.5),
     plot.subtitle = element_text(size = 12, hjust = 0.5),
     plot.caption = element_text(size = 12, hjust = 0),
 

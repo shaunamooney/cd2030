@@ -1,13 +1,12 @@
 #' Analyze Subnational Health Coverage Data with Disparity Metrics
 #'
-#' Calculates health coverage and disparity metrics, such as Mean Absolute
-#' Difference to the Mean (MADM), weighted MADM, Mean Relative Difference to the
-#' Mean (MRDM), and weighted MRDM, for a specified subnational level and health
-#' indicator. The function returns a `cd_subnational_coverage` object with
-#' calculated metrics for plotting and summarizing.
+#' `analyze_subnational_inequality` Calculates health coverage and disparity metrics,
+#' such as Mean Absolute Difference to the Mean (MADM), weighted MADM, Mean Relative
+#' Difference to the Mean (MRDM), and weighted MRDM, for a specified subnational
+#' level and health indicator. The function returns a `cd_subnational_inequality`
+#' object with calculated metrics for plotting and summarizing.
 #'
 #' @param .data A data frame containing the subnational health coverage data.
-#' @param country_name A character string specifying the country for analysis.
 #' @param level A character string specifying the administrative level to analyze
 #'   (either "admin_level_1" or "district").
 #' @param indicator A character string specifying the health indicator to analyze
@@ -15,24 +14,31 @@
 #' @param denominator A character string specifying the denominator to use for
 #'   coverage calculations (e.g., "dhis2", "anc1", "penta1").
 #'
-#' @return A `cd_subnational_coverage` object containing calculated metrics such
+#' @return A `cd_subnational_inequality` object containing calculated metrics such
 #'   as coverage, MADM, MRDM, and population shares.
 #'
 #' @examples
 #' \dontrun{
-#' data <- analyze_subnational_coverage(.data, "Kenya", level = "district",
+#' data <- analyze_subnational_inequality(.data, level = "district",
 #'      indicator = "measles1", denominator = "penta1")
 #' }
 #'
 #' @export
-analyze_subnational_coverage <- function(.data,
-                                         country_name,
+analyze_subnational_inequality <- function(.data,
                                          level = c('admin_level_1', 'district'),
                                          indicator = c('bcg', 'anc1', 'pcv3', 'opv1', 'opv2', 'opv3',
                                                        'penta2', 'pcv1', 'pcv2', 'penta1', 'penta3', 'measles1',
                                                        'rota1', 'rota2', 'instdeliveries', 'measles2', 'ipv1', 'ipv2',
                                                        'undervax', 'dropout_penta13', 'zerodose', 'dropout_measles12', 'dropout_penta3mcv1'),
-                                         denominator = c('dhis2', 'anc1', 'penta1')) {
+                                         denominator = c('dhis2', 'anc1', 'penta1'),
+                                         un_estimates,
+                                         sbr = 0.02,
+                                         nmr = 0.025,
+                                         pnmr = 0.024,
+                                         anc1survey = 0.98,
+                                         dpt1survey = 0.97,
+                                         twin = 0.015,
+                                         preg_loss = 0.03) {
 
   country = year = tot = national_mean = popshare = madm = madmpop = rd_max = NULL
 
@@ -58,13 +64,23 @@ analyze_subnational_coverage <- function(.data,
   dhis2_col <- paste0('cov_', indicator, '_', denominator)
   pop_col <- paste0(population, '_', denominator)
 
-  national_data <- calculate_populations(.data, country_name) %>%
+  national_data <- calculate_populations(.data,
+                                         admin_level = 'national',
+                                         un_estimates = un_estimates,
+                                         sbr = sbr, nmr = nmr, pnmr = pnmr,
+                                         anc1survey = anc1survey, dpt1survey = dpt1survey,
+                                         twin = twin, preg_loss = preg_loss) %>%
     # mutate(!!sym(level_name) := 'National') %>%
     select(country, year, dhis2_col, pop_col) %>%
     rename(national_mean = !!sym(dhis2_col),
            tot = !!sym(pop_col))
 
-  subnational_data <- calculate_populations(.data, country_name, level) %>%
+  subnational_data <- calculate_populations(.data,
+                                            admin_level = level,
+                                            un_estimates = un_estimates,
+                                            sbr = sbr, nmr = nmr, pnmr = pnmr,
+                                            anc1survey = anc1survey, dpt1survey = dpt1survey,
+                                            twin = twin, preg_loss = preg_loss) %>%
     select(country, year, level_name, dhis2_col, pop_col)
 
   combined_data <- subnational_data %>%
@@ -85,7 +101,7 @@ analyze_subnational_coverage <- function(.data,
       .by = year
     ) %>%
     mutate(
-      rd_max = round(max(!!sym(dhis2_col), na.rm = TRUE), -1),
+      rd_max = round(if_else(all(is.na(!!sym(dhis2_col))), 100, max(!!sym(dhis2_col), na.rm = TRUE)), -1),
       rd_max = if_else(rd_max < max(!!sym(dhis2_col), na.rm = TRUE), rd_max + 10, rd_max),
       rd_max = rd_max + 10,
       rd_max = if_else(rd_max %% 20 != 0, rd_max + 10, rd_max)
@@ -93,9 +109,40 @@ analyze_subnational_coverage <- function(.data,
 
   new_tibble(
     combined_data,
-    class = 'cd_subnational_coverage',
+    class = 'cd_subnational_inequality',
     indicator = indicator,
     denominator = denominator,
     level = level_name
   )
+}
+
+analyze_subnational_coverage <- function(.data,
+                                         level = c('admin_level_1', 'district'),
+                                         indicator = c('bcg', 'anc1', 'pcv3', 'opv1', 'opv2', 'opv3',
+                                                       'penta2', 'pcv1', 'pcv2', 'penta1', 'penta3', 'measles1',
+                                                       'rota1', 'rota2', 'instdeliveries', 'measles2', 'ipv1', 'ipv2',
+                                                       'undervax', 'dropout_penta13', 'zerodose', 'dropout_measles12', 'dropout_penta3mcv1'),
+                                         denominator = c('dhis2', 'anc1', 'penta1'),
+                                         un_estimates,
+                                         wuenvic_data,
+                                         survey_data,
+                                         sbr = 0.02,
+                                         nmr = 0.025,
+                                         pnmr = 0.024,
+                                         anc1survey = 0.98,
+                                         dpt1survey = 0.97,
+                                         twin = 0.015,
+                                         preg_loss = 0.03) {
+
+  check_cd_data(.data)
+  level <-  arg_match(level)
+  indicator <-  arg_match(indicator)
+  denominator <- arg_match(denominator)
+
+
+
+}
+
+map_subnational_coverage <- function(.data) {
+
 }

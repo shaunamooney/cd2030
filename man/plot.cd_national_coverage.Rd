@@ -41,8 +41,7 @@ contains coverage values for different indicators and estimates.
 }
 \examples{
 \dontrun{
-  plot(analyze_national_coverage(dt_adj, country_name = "Kenya",
-        country_iso = "KEN", indicator = "bcg", denominator = "anc1"))
+  plot(analyze_national_coverage(dt_adj, indicator = "bcg", denominator = "anc1"))
 }
 
 }

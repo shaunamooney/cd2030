@@ -106,7 +106,7 @@ calculate_indicator_threshold_coverage <- function(.data) {
 #'
 #' @export
 calculate_dropout <- function(.data,
-                              filter_year,
+                              # filter_year,
                               indicator = c("zerodose", "undervax", "dropout_penta13", "dropout_measles12", "dropout_penta3mcv1", "dropout_penta1mcv1"),
                               source = c('dhis2', 'anc1', 'penta1')) {
 
@@ -133,7 +133,8 @@ calculate_dropout <- function(.data,
     mutate(
       below10 = if_else(!is.na(!!sym(column_name)) & !!sym(column_name) < 10, 1, 0)
     ) %>%
-    filter(below10 == 0, year == filter_year)
+    # filter(below10 == 0, year == filter_year)
+    filter(below10 == 0)
 
   if (NROW(data_below) == 0) {
     data_below <- tibble(

@@ -15,6 +15,9 @@ reference:
     contents:
       - load_data
       - load_excel_data
+      - load_un_estimates
+      - load_survey_data
+      - load_wuenic_data
       - save_data
 
   - title: "Data Quality Assessment"

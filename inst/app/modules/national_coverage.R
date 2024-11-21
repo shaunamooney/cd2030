@@ -6,6 +6,7 @@ nationalCoverageUI <- function(id) {
       title = 'National Coverage Trend',
       id = 'national_trend',
       width = 12,
+
       tabPanel(
         title = 'Measles 1',
         fluidRow(
@@ -19,28 +20,25 @@ nationalCoverageUI <- function(id) {
           column(12, plotOutput(ns('penta3')))
         )
       )
-    ),
-
-    box(
-      title = 'Custom Check',
-      status = 'success',
-      width = 12,
-      fluidRow(
-        column(3, selectizeInput(ns('indicator'), label = 'Indicator', choices = NULL))
-      ),
-      fluidRow(
-        column(12, plotOutput(ns('custom_check')))
-      )
     )
   )
 }
 
-nationalCoverageServer <- function(id, data) {
+nationalCoverageServer <- function(id, data, national_values) {
   stopifnot(is.reactive(data))
+  stopifnot(is.reactive(national_values))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
+
+      national_rates <- reactive({
+        national_values()$rates
+      })
+
+      national_data <- reactive({
+        national_values()$data
+      })
 
       observe({
 
@@ -56,33 +54,73 @@ nationalCoverageServer <- function(id, data) {
       })
 
       output$measles1 <- renderPlot({
+        req(national_data(), national_rates(), national_data()$un, national_data()$wuenic, national_data()$survdata)
 
-        country <- data() %>% select(country) %>% distinct(country) %>% pull(country)
+        rates <- national_rates()
+        surv_data <- national_data()
 
-        coverage <- analyze_national_coverage(data(), country, 'KEN', 'measles1')
+        coverage <- analyze_national_coverage(data(),
+                                              indicator = 'measles1',
+                                              un_estimates = surv_data$un,
+                                              wuenic_data = surv_data$wuenic,
+                                              survey_data = surv_data$survdata,
+                                              sbr = rates$sbr,
+                                              nmr = rates$nmr,
+                                              pnmr = rates$pnmr,
+                                              anc1survey =rates$anc1,
+                                              dpt1survey = rates$penta1,
+                                              twin = rates$twin_rate,
+                                              preg_loss = rates$preg_loss)
 
-        plot(coverage)
+        tryCatch(
+          plot(coverage),
+          error = function(e) {
+
+            clean_message <- cli::ansi_strip(conditionMessage(e))
+            plot.new() # Start a blank plot
+            text(
+              x = 0.5, y = 0.5,
+              labels = paste("Error:", clean_message),
+              cex = 1.2, col = "red"
+            )
+          }
+        )
 
       })
 
       output$penta3 <- renderPlot({
+        req(national_data(), national_rates(), national_data()$un, national_data()$wuenic, national_data()$survdata)
 
-        country <- data() %>% select(country) %>% distinct(country) %>% pull(country)
+        rates <- national_rates()
+        surv_data <- national_data()
 
-        coverage <- analyze_national_coverage(data(), country, 'KEN', 'penta3')
+        coverage <- analyze_national_coverage(data(),
+                                              indicator = 'penta3',
+                                              un_estimates = surv_data$un,
+                                              wuenic_data = surv_data$wuenic,
+                                              survey_data = surv_data$survdata,
+                                              sbr = rates$sbr,
+                                              nmr = rates$nmr,
+                                              pnmr = rates$pnmr,
+                                              anc1survey =rates$anc1,
+                                              dpt1survey = rates$penta1,
+                                              twin = rates$twin_rate,
+                                              preg_loss = rates$preg_loss)
 
-        plot(coverage)
+        tryCatch(
+          plot(coverage),
+          error = function(e) {
 
-      })
+            clean_message <- cli::ansi_strip(conditionMessage(e))
+            plot.new() # Start a blank plot
+            text(
+              x = 0.5, y = 0.5,
+              labels = paste("Error:", clean_message),
+              cex = 1.2, col = "red"
+            )
+          }
+        )
 
-      output$custom_check <- renderPlot({
-        req(input$indicator != '0')
-
-        country <- data() %>% select(country) %>% distinct(country) %>% pull(country)
-
-        coverage <- analyze_national_coverage(data(), country, 'KEN', input$indicator)
-
-        plot(coverage)
       })
 
     }

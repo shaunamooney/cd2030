@@ -29,8 +29,7 @@
 #'
 #' @examples
 #' \dontrun{
-#'   plot(analyze_national_coverage(dt_adj, country_name = "Kenya",
-#'         country_iso = "KEN", indicator = "bcg", denominator = "anc1"))
+#'   plot(analyze_national_coverage(dt_adj, indicator = "bcg", denominator = "anc1"))
 #' }
 #'
 #' @export
@@ -38,28 +37,63 @@ plot.cd_national_coverage <- function(x, ...) {
 
   estimates = year = value = NULL
 
-  x <- x %>%
+  if (ncol(x) <= 1) {
+    cd_abort(
+      c('x' = "The columns data is empty.")
+    )
+  }
+
+
+  data_long <- x %>%
     pivot_longer(cols = -estimates, names_to = 'year') %>%
     mutate(year = as.integer(year))
 
-  max_y <- max(x$value, na.rm = TRUE) * 1.05
+  max_y <- max(data_long$value, na.rm = TRUE) * 1.05
 
-  denominator <- x %>%
+  denominator <- data_long %>%
     filter(str_detect(estimates, 'anc') | str_detect(estimates, 'penta') | str_detect(estimates, 'dhis')) %>%
     distinct(estimates) %>%
     pull(estimates)
 
-  x %>%
-    ggplot(aes(year, value, colour = estimates)) +
-    geom_line() +
-    geom_point() +
-    scale_y_continuous(
-      expand = c(0, 0),
-      limits = c(0, max_y),
-      breaks = scales::pretty_breaks(11)
-    ) +
-    labs(y = "Coverage (%)",
-         x = "Year",
-         caption = paste0('Denominators derived from ', denominator)) +
-    cd_plot_theme()
+  data_long <- data_long %>%
+    pivot_wider(
+      names_from = estimates,
+      values_from = value,
+      names_repair = 'minimal'
+    )
+
+  data_long %>%
+    ggplot(aes(x = year)) +
+    # Add lines and points for DHIS2 and WUENIC estimates
+      geom_line(aes(y = !!sym(denominator), color = "DHIS2 estimate"), size = 1) +
+      geom_point(aes(y = !!sym(denominator), color = "DHIS2 estimate"), size = 2) +
+      geom_line(aes(y = `WUENIC estimates`, color = "WUENIC estimate"), size = 1) +
+      geom_point(aes(y = `WUENIC estimates`, color = "WUENIC estimate"), size = 2) +
+
+    # Add Survey estimates
+      geom_line(aes(y = `Survey estimates`, color = "Survey estimate"), size = 1) +
+      geom_point(aes(y = `Survey estimates`, color = "Survey estimate"), size = 2) +
+
+    # Add error bars for 95% CI
+      geom_errorbar(
+        aes(
+          ymin = `95% CI LL`,
+          ymax = `95% CI UL`,
+          y = `Survey estimates`,
+          color = '95% CI'
+        ),
+        width = 0.2
+      ) +
+      scale_y_continuous(
+        expand = c(0, 0),
+        limits = c(0, max_y),
+        breaks = scales::pretty_breaks(11)
+      ) +
+      scale_color_manual(
+        values = c('Survey estimate' = 'royalblue1', '95% CI' = 'royalblue1', 'DHIS2 estimate' = 'forestgreen', 'WUENIC estimate' = 'gold')
+      ) +
+      labs(y = "Coverage (%)",
+           x = "Year",
+           caption = paste0('Denominators derived from ', denominator)) +
+      cd_plot_theme()
 }
