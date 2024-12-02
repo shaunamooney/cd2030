@@ -8,7 +8,6 @@ dataAjustmentUI <- function(id) {
       status = 'danger',
       width = 6,
       solidHeader = TRUE,
-      style = "height: 350px;",
 
       fluidRow(
         column(12, tags$p(
@@ -19,9 +18,6 @@ dataAjustmentUI <- function(id) {
         ))
       ),
 
-      fluidRow(
-        column(8, offset = 2, selectizeInput(ns('year_to_remove'), label = 'Select year to remove', choices = NULL, multiple = TRUE)),
-      ),
       fluidRow(
         column(8, offset = 2, actionButton(ns('adjust_data'),
                                            label = 'Adjust Data',
@@ -46,17 +42,19 @@ dataAjustmentUI <- function(id) {
       status = 'success',
       solidHeader = TRUE,
       width = 6,
-      style = "height: 350px;",
       fluidRow(
-        column(8, offset = 1, sliderInput(ns('k_anc'),
-                              label = 'ANC K-Factor',
-                              min = 0, max = 1, value = 0.25, step = 0.01)),
-        column(8, offset = 1, sliderInput(ns('k_delivery'),
-                              label = 'Delivery K-Factor',
-                              min = 0, max = 1, value = 0.25, step = 0.01)),
-        column(8, offset = 1, sliderInput(ns('k_vaccines'),
-                              label = 'Vaccines K-Factor',
-                              min = 0, max = 1, value = 0.25, step = 0.01))
+        column(4, selectizeInput(ns('k_anc'),
+                                 selected = '0.25',
+                                 label = 'ANC K-Factor',
+                                 choices = c(0, 0.25, 0.75))),
+        column(4, selectizeInput(ns('k_delivery'),
+                                 label = 'Delivery K-Factor',
+                                 selected = '0.25',
+                                 choices = c(0, 0.25, 0.75))),
+        column(4, selectizeInput(ns('k_vaccines'),
+                                 label = 'Vaccines K-Factor',
+                                 selected = '0.25',
+                                 choices = c(0, 0.25, 0.75)))
       )
     ),
 
@@ -120,13 +118,19 @@ dataAdjustmentServer <- function(id, data) {
 
       adjustment_status <- reactiveVal(list(message = "Dataset not adjusted", color = "gray"))
 
+      k_factors <- reactive({
+        c(
+          anc = as.integer(input$k_anc),
+          idelv = as.integer(input$k_delivery),
+          vacc = as.integer(input$k_vaccines)
+        )
+      })
+
       adjustments <- reactive({
         req(data())
 
        data() %>%
-          generate_adjustment_values(adjustment = 'custom', k_factors = c(anc = input$k_anc,
-                                                                          idelv = input$k_delivery,
-                                                                          vacc = input$k_vaccines))
+          generate_adjustment_values(adjustment = 'custom', k_factors = k_factors())
       })
 
       observe({
@@ -139,16 +143,6 @@ dataAdjustmentServer <- function(id, data) {
         all_indicators <- c('Select' = '0', all_indicators)
 
         updateSelectInput(session, 'indicator', choices = all_indicators)
-      })
-
-      observe({
-        req(data())
-
-        years <- data() %>%
-          distinct(year) %>%
-          pull(year)
-
-        updateSelectInput(session, 'year_to_remove', choices = years)
       })
 
       output$adjust_feedback <- renderUI({
@@ -197,11 +191,8 @@ dataAdjustmentServer <- function(id, data) {
         req(data())
 
         new_data <- data() %>%
-          filter(!year %in% input$year_to_remove) %>%
           adjust_service_data(adjustment = 'custom',
-                              k_factors = c(anc = input$k_anc,
-                                            idelv = input$k_delivery,
-                                            vacc = input$k_vaccines))
+                              k_factors = k_factors())
         adjustment_status(list(
           message = 'Data Adjusted',
           color = "darkgreen"

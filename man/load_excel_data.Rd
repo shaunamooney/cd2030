@@ -10,8 +10,7 @@ load_excel_data(
   admin_sheet_name = "Admin_data",
   population_sheet_name = "Population_data",
   reporting_sheet_name = "Reporting_completeness",
-  service_sheet_names = c("Service_data_1", "Service_data_2", "Service_data_3",
-    "Vaccine_stock_data")
+  service_sheet_names = c("Service_data_1", "Service_data_2", "Service_data_3")
 )
 }
 \arguments{

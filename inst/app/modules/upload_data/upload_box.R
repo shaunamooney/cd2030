@@ -25,7 +25,7 @@ uploadBoxUI <- function(id) {
     ),
     fluidRow(
       column(
-        3,
+        4,
         downloadButton(ns('download_data'), label = "Download Master Dataset", style = "color:#2196F3;width:100%;margin-top:10px;")
       )
     )

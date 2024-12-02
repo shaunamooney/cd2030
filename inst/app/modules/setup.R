@@ -2,31 +2,34 @@ setupUI <- function(id) {
   ns <- NS(id)
 
   fluidRow(
+
+    column(4, offset = 8, helpButtonUI(ns('upload_data')), style = 'margin-bottom: 10px;'),
+
     box(
       title = 'Setup National Rates',
       status = 'success',
       solidHeader = TRUE,
       width = 12,
       fluidRow(
-        column(3, offset = 1, sliderInput(ns('neonatal_mortality_rate'), 'Neonatal Mortality Rate',
+        column(3, offset = 1, numericInput(ns('neonatal_mortality_rate'), 'Neonatal Mortality Rate',
                                           min = 0, max = 0.05, value = 0.025, step = 0.001)),
-        column(3, offset = 0, sliderInput(ns('post_neonatal_mortality_rate'), 'Post Neonatal Mortality Rate',
+        column(3, offset = 0, numericInput(ns('post_neonatal_mortality_rate'), 'Post Neonatal Mortality Rate',
                                           min = 0, max = 0.05, value = 0.024, step = 0.001)),
-        column(3, offset = 0, sliderInput(ns('twin_rate'), 'Twin Rate',
+        column(3, offset = 0, numericInput(ns('twin_rate'), 'Twin Rate',
                                           min = 0, max = 0.05, value = 0.015, step = 0.001))
       ),
       fluidRow(
-        column(3, offset = 1, sliderInput(ns('pregnancy_loss'), 'Pregnancy Loss',
+        column(3, offset = 1, numericInput(ns('pregnancy_loss'), 'Pregnancy Loss',
                               min = 0, max = 0.05, value = 0.03, step = 0.001)),
-        column(3, offset = 0, sliderInput(ns('stillbirth_rate'), 'Still Birth Rate',
+        column(3, offset = 0, numericInput(ns('stillbirth_rate'), 'Still Birth Rate',
                               min = 0, max = 0.05, value = 0.02, step = 0.001)),
-        column(3, offset = 0, sliderInput(ns('penta1_mortality_rate'), 'ANC1 to Penta1 Mortality Rate',
+        column(3, offset = 0, numericInput(ns('penta1_mortality_rate'), 'ANC1 to Penta1 Mortality Rate',
                               min = 0, max = 0.05, value = 0.025, step = 0.001))
       ),
       fluidRow(
-        column(3, offset = 1, sliderInput(ns('anc1_prop'), 'ANC1 Survey',
+        column(3, offset = 1, numericInput(ns('anc1_prop'), 'ANC1 Survey',
                                           min = 0, max = 100, value = 0, step = 1)),
-        column(3, offset = 0, sliderInput(ns('penta1_prop'), 'Penta1 Survey',
+        column(3, offset = 0, numericInput(ns('penta1_prop'), 'Penta1 Survey',
                                           min = 0, max = 100, value = 0, step = 1)),
       )
     ),
@@ -36,9 +39,7 @@ setupUI <- function(id) {
       status = 'success',
       solidHeader = TRUE,
       width = 12,
-      fluidRow(
-        column(2, offset = 10, helpButtonUI(ns('upload_data')))
-      ),
+
       fluidRow(
         column(
           6,
@@ -273,6 +274,8 @@ setupServer <- function(id, data, survey_data) {
           status$message
         )
       })
+
+      helpButtonServer('upload_data', 'Upload required Data', 'l', '5_upload_data.md')
 
       return(setup_values)
     }

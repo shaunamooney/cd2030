@@ -48,6 +48,8 @@ plot.cd_national_coverage <- function(x, ...) {
     pivot_longer(cols = -estimates, names_to = 'year') %>%
     mutate(year = as.integer(year))
 
+  min_y <- min(data_long$value, na.rm = TRUE)
+  min_y <- if (min_y < 0) min_y * 1.05 else 0
   max_y <- max(data_long$value, na.rm = TRUE) * 1.05
 
   denominator <- data_long %>%
@@ -60,6 +62,13 @@ plot.cd_national_coverage <- function(x, ...) {
       names_from = estimates,
       values_from = value,
       names_repair = 'minimal'
+    ) %>%
+    mutate(
+      `DHIS2 estimate` = ifelse(!"DHIS2 estimate" %in% colnames(.), NA_real_, `DHIS2 estimate`),
+      `WUENIC estimates` = ifelse(!"WUENIC estimates" %in% colnames(.), NA_real_, `WUENIC estimates`),
+      `Survey estimates` = ifelse(!"Survey estimates" %in% colnames(.), NA_real_, `Survey estimates`),
+      `95% CI LL` = ifelse(!"95% CI LL" %in% colnames(.), NA_real_, `95% CI LL`),
+      `95% CI UL` = ifelse(!"95% CI UL" %in% colnames(.), NA_real_, `95% CI UL`)
     )
 
   data_long %>%
@@ -86,7 +95,7 @@ plot.cd_national_coverage <- function(x, ...) {
       ) +
       scale_y_continuous(
         expand = c(0, 0),
-        limits = c(0, max_y),
+        limits = c(min_y, max_y),
         breaks = scales::pretty_breaks(11)
       ) +
       scale_color_manual(

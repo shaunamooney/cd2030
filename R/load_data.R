@@ -34,7 +34,7 @@ load_excel_data <- function(path,
                             admin_sheet_name = 'Admin_data',
                             population_sheet_name = 'Population_data',
                             reporting_sheet_name = 'Reporting_completeness',
-                            service_sheet_names = c('Service_data_1', 'Service_data_2', 'Service_data_3', 'Vaccine_stock_data')) {
+                            service_sheet_names = c('Service_data_1', 'Service_data_2', 'Service_data_3')) {
 
   # Combine all sheet names
   sheet_names <- c(service_sheet_names, reporting_sheet_name, population_sheet_name, admin_sheet_name)
@@ -551,7 +551,12 @@ replace_special_chars <- function(text) {
 #' @noRd
 match_country <- function(country_name, call = caller_call()) {
 
-  check_required(country)
+  check_required(country_name)
+  if (!is_scalar_character(country_name)) {
+    cd_abort(
+      c('x' = 'Country should be a single string')
+    )
+  }
 
   # Check if input is non-empty and valid
   if (!is.character(country_name) || nchar(country_name) < 3) {

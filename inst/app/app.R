@@ -11,8 +11,10 @@ library(dplyr)
 library(echarts4r)
 library(gt)
 library(openxlsx)
+library(khisr)
 library(plotly)
 library(purrr)
+library(lubridate)
 library(RColorBrewer)
 library(sf)
 library(stringr)
@@ -27,8 +29,10 @@ source('modules/consistency_check.R')
 source('modules/outlier_detection.R')
 source('modules/calculate_ratios.R')
 source('modules/overall_score.R')
+source('modules/remove_years.R')
 source('modules/data_adjustment.R')
 source('modules/denominator_assessment.R')
+source('modules/denominator_selection.R')
 source('modules/national_coverage.R')
 source('modules/subnational_coverage.R')
 source('modules/subnational_inequality.R')
@@ -67,12 +71,14 @@ ui <- dashboardPage(
                            tabName = 'overall_score',
                            icon = icon('star'))
                ),
+      menuItem('Remove Years', tabName = 'remove_years', icon = icon('trash')),
       menuItem('Data Adjustment', tabName = 'data_adjustment', icon = icon('adjust')),
       menuItem('Analysis Setup', tabName = 'setup', icon = icon('sliders-h')),
       menuItem('Denominator Assessment', tabName = 'denominator_assessment', icon = icon('calculator')),
+      menuItem('Denominator Selection', tabName = 'denominator_selection', icon = icon('filter')),
       menuItem('National Coverage', tabName = 'national_coverage', icon = icon('map-marked-alt')),
       menuItem('Sub-National Coverage', tabName = 'subnational_coverage', icon = icon('map')),
-      menuItem('Sub-National Inequality', tabName = 'subnational_inequality', icon = icon('map'))
+      menuItem('Sub-National Inequality', tabName = 'subnational_inequality', icon = icon('balance-scale-right'))
     )
   ),
   body = dashboardBody(
@@ -85,10 +91,11 @@ ui <- dashboardPage(
       tabItem(tabName = 'outlier_detection', outlierDetectionUI('outlier_detection')),
       tabItem(tabName = 'calculate_ratios', calculateRatiosUI('calculate_ratios')),
       tabItem(tabName = 'overall_score', overallScoreUI('overall_score')),
+      tabItem(tabName = 'remove_years', removeYearsUI('remove_years')),
       tabItem(tabName = 'data_adjustment', dataAjustmentUI('data_adjustment')),
-
       tabItem(tabName = 'setup', setupUI('setup')),
       tabItem(tabName = 'denominator_assessment', denominatorAssessmentUI('denominator_assessment')),
+      tabItem(tabName = 'denominator_selection', denominatorSelectionUI('denominator_selection')),
       tabItem(tabName = 'national_coverage', nationalCoverageUI('national_coverage')),
       tabItem(tabName = 'subnational_coverage', subnationalCoverageUI('subnational_coverage')),
       tabItem(tabName = 'subnational_inequality', subnationalInequalityUI('subnational_inequality'))
@@ -112,10 +119,12 @@ server <- function(input, output, session) {
   outlierDetectionServer('outlier_detection', data)
   survey_data <- calculateRatiosServer('calculate_ratios', data)
   overallScoreServer('overall_score', data)
-  dt <- dataAdjustmentServer('data_adjustment', data)
+  removed_dt <- removeYearsServer('remove_years', data)
+  dt <- dataAdjustmentServer('data_adjustment', removed_dt)
 
   national_values <- setupServer('setup', data, survey_data)
   denominatorAssessmentServer('denominator_assessment', dt, national_values)
+  denominatorSelectionServer('denominator_selection', dt, national_values)
   nationalCoverageServer('national_coverage', dt, national_values)
   subnationalCoverageServer('subnational_coverage', dt, national_values)
   subnationalInequalityServer('subnational_inequality', dt, national_values)

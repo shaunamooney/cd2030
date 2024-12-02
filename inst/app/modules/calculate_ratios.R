@@ -7,30 +7,30 @@ calculateRatiosUI <- function(id) {
       status = 'success',
       width = 12,
       fluidRow(
-        column(3, offset = 1, sliderInput(ns('anc1_coverage'),
+        column(3, offset = 1, numericInput(ns('anc1_coverage'),
                                           'ANC1 Coverage (%)',
                                           min = 0, max = 100, value = 98, step = 1)),
-        column(3, offset = 0, sliderInput(ns('penta1_coverage'),
+        column(3, offset = 0, numericInput(ns('penta1_coverage'),
                                           'Penta1 Coverage (%)',
                                           min = 0, max = 100, value = 97, step = 1)),
-        column(3, offset = 0, sliderInput(ns('penta3_coverage'),
+        column(3, offset = 0, numericInput(ns('penta3_coverage'),
                                           'Penta3 Coverage (%)',
                                           min = 0, max = 100, value = 89, step = 1))
       ),
       fluidRow(
 
-        column(3, offset = 1, sliderInput(ns('opv1_coverage'),
+        column(3, offset = 1, numericInput(ns('opv1_coverage'),
                                           'OPV1 Coverage (%)',
                                           min = 0, max = 100, value = 97, step = 1)),
-        column(3, offset = 0, sliderInput(ns('opv3_coverage'),
+        column(3, offset = 0, numericInput(ns('opv3_coverage'),
                                           'OPV3 Coverage (%)',
                                           min = 0, max = 100, value = 78, step = 1)),
-        column(3, offset = 0, sliderInput(ns('pcv1_coverage'),
+        column(3, offset = 0, numericInput(ns('pcv1_coverage'),
                                           'PCV1 Coverage (%)',
                                           min = 0, max = 100, value = 97, step = 1))
       ),
       fluidRow(
-        column(3, offset = 1, sliderInput(ns('rota1_coverage'),
+        column(3, offset = 1, numericInput(ns('rota1_coverage'),
                                           'Rota1 Coverage (%)',
                                           min = 0, max = 100, value = 96, step = 1))
       )
