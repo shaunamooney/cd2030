@@ -107,6 +107,37 @@ cd_plot_theme <- function() {
   )
 }
 
+cd_report_theme <- function() {
+  theme(
+    panel.background = element_blank(),
+    panel.border = element_rect(color = "black", fill = NA, size = 0.8),
+
+    legend.background = element_rect(color = "black",size = 0.5),
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 8),
+    # legend.text = element_text(size = 13),
+    # legend.key.size = unit(8, "mm"),
+
+    plot.title = element_text(size = 10, hjust = 0.5),
+    plot.subtitle = element_text(size = 10, hjust = 0.5),
+    plot.caption = element_text(hjust = 0),
+
+    # plot.title = element_text(size = 16, hjust = 0.5),
+    # plot.subtitle = element_text(size = 12, hjust = 0.5),
+    # plot.caption = element_text(size = 12, hjust = 0),
+
+    axis.text = element_text(size = 8),
+    # axis.text = element_text(size = 14),
+    axis.title = element_text(size = 10),
+    # axis.title = element_text(size = 18),
+
+    strip.background = element_blank(),
+    strip.text = element_text(size = 10),
+    # strip.text = element_text(size = 12)
+  )
+}
+
 
 
 #' Plot Line Graph for Multiple Series with Dynamic Y-axis Scaling

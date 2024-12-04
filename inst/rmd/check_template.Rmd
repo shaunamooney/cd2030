@@ -13,6 +13,8 @@ params:
     value: data
   threshold:
     value: 90
+  un_estimates:
+      value: un_estimates
 ---
 
 ```{r setup, include=FALSE}
@@ -66,16 +68,17 @@ calculate_overall_score(params$data) %>%
           fmt_number(
             columns = starts_with("20"),
             rows = !no %in% rows,
-            decimals = 4
+            decimals = 2
           )
 ```
 
 ```{r}
-plot(calculate_district_reporting_rate(params$data, params$threshold))
+plot(calculate_district_reporting_rate(params$data, params$threshold)) +
+  cd_report_theme()
 ```
 
 
-#### Health facility data quality assessment: numerators
+### Health facility data quality assessment: numerators
 
 **BACKGROUND:** Routinely reported health facility data are essential for monitoring 
 immunization coverage. Data quality assessments often reveal discrepancies in the 
@@ -83,5 +86,26 @@ Penta1/Penta3 ratio, which should ideally be close to 1.
 
 
 ```{r}
-plot(calculate_ratios_summary(params$data))
+plot(calculate_ratios_summary(params$data, ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3"),
+    ratioOO = c("opv1", "opv3")))) +
+  cd_report_theme()
 ```
+
+### Health facility data adjustment: Numerators - reported live births and Pentavalent 1 doses
+
+**BACKGROUND:** Completeness of reporting affects analysis, especially if it is 
+low or varies between years. Extreme outliers can have a large impact, especially
+on subnational numbers. Several steps are necessary to obtain a clean data set for
+“endline” analysis, including adjusting for incomplete reporting and correcting
+for extreme outliers. These graphs show the impact on the numbers.
+
+```{r}
+plot(prepare_population_metrics(params$data, un_estimates = params$un_estimates), metric = 'population') +
+  cd_report_theme()
+```
+
+```{r}
+plot(prepare_population_metrics(params$data, un_estimates = params$un_estimates), metric = 'births') +
+  cd_report_theme()
+```
+

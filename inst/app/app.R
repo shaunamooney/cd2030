@@ -8,7 +8,7 @@ library(shinydashboard)
 library(cd2030)
 library(cli)
 library(dplyr)
-library(echarts4r)
+# library(echarts4r)
 library(gt)
 library(openxlsx)
 library(khisr)
@@ -78,7 +78,8 @@ ui <- dashboardPage(
       menuItem('Denominator Selection', tabName = 'denominator_selection', icon = icon('filter')),
       menuItem('National Coverage', tabName = 'national_coverage', icon = icon('map-marked-alt')),
       menuItem('Sub-National Coverage', tabName = 'subnational_coverage', icon = icon('map')),
-      menuItem('Sub-National Inequality', tabName = 'subnational_inequality', icon = icon('balance-scale-right'))
+      menuItem('Sub-National Inequality', tabName = 'subnational_inequality', icon = icon('balance-scale-right')),
+      menuItem('Download Report', tabName = 'download_report', icon = icon('download'))
     )
   ),
   body = dashboardBody(
@@ -128,6 +129,25 @@ server <- function(input, output, session) {
   nationalCoverageServer('national_coverage', dt, national_values)
   subnationalCoverageServer('subnational_coverage', dt, national_values)
   subnationalInequalityServer('subnational_inequality', dt, national_values)
+
+  observeEvent(input$tabs, {
+    if (input$tabs == 'download_report') {
+      if (is.null(dt()) || is.null(national_values()$data$un)) {
+        # Show an error dialog if data is not available
+        showModal(
+          modalDialog(
+            title = "Error",
+            "The necessary data for generating the report is not available. Please ensure that the data is uploaded and processed correctly.",
+            easyClose = TRUE,
+            footer = modalButton("OK")
+          )
+        )
+      } else {
+        # Generate the report if data is available
+        generate_checks_report(dt(), 'report.html', un_estimates = national_values()$data$un)
+      }
+    }
+  })
 }
 
 shinyApp(ui = ui, server = server)

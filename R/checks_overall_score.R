@@ -6,6 +6,7 @@
 #'
 #' @param .data A data frame of type `cd_data` containing facility data
 #'   including annual reporting rates, completeness, and consistency indicators.
+#' @param ratio_pairs description
 #'
 #' @details
 #' `calculate_overall_score` processes multiple data quality indicators:
@@ -29,7 +30,8 @@
 #' }
 #'
 #' @export
-calculate_overall_score <- function(.data) {
+calculate_overall_score <- function(.data, ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3"),
+                                                                ratioOO = c("opv1", "opv3"))) {
 
   year = mean_rr = low_mean_rr = mean_mis_vacc_tracer = mean_out_vacc_tracer =
     value = `Data Quality Metrics` = value = no = NULL
@@ -76,7 +78,7 @@ calculate_overall_score <- function(.data) {
       no = '2b'
     )
 
-  adeqratiosd <- calculate_ratios_and_adequacy(.data) %>%
+  adeqratiosd <- calculate_ratios_and_adequacy(.data, ratio_pairs = ratio_pairs) %>%
     select(year, starts_with("Ratio"), starts_with("% district with")) %>%
     pivot_longer(-year, names_to = 'Data Quality Metrics', values_to = 'value') %>%
     pivot_wider(names_from = year, values_from = value) %>%

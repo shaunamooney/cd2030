@@ -20,6 +20,7 @@
 #' @export
 generate_checks_report <- function(.data,
                           output_file,
+                          un_estimates,
                           output_format = c('html_document', 'word_document'),
                           threshold = 90) {
 
@@ -42,7 +43,7 @@ generate_checks_report <- function(.data,
     input = paste0(system.file(package = "cd2030"), "/rmd/check_template.Rmd"),
     output_format = format,
     output_file = output_path,
-    params = list(data = .data, threshold = threshold),
+    params = list(data = .data, threshold = threshold, un_estimates = un_estimates),
     encoding = "UTF-8",
     runtime = 'static',
     intermediates_dir = temp_dir,    # Set unique temp directory
