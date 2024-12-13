@@ -44,18 +44,18 @@ load_un_estimates <- function(path, country_iso, start_year, end_year) {
 #'
 #' @param path Character. File path to the survey data file (DTA format).
 #' @param country_iso Character. ISO code of the country.
-#' @param start_year Integer. Minimum year to include in the processed dataset.
-#' @param level description
+#' @param admin_level description
+#' @param scale description
 #'
 #' @return A tibble containing cleaned and processed survey data, with aligned state codes.
 #' @export
-load_survey_data <- function(path, country_iso, start_year, level = c('national', 'regional')) {
+load_survey_data <- function(path, country_iso, admin_level = c('national', 'admin_level_1'), scale = 100) {
 
   check_file_path(path)
   check_required(country_iso)
   check_required(start_year)
 
-  level <- arg_match(level)
+  admin_level <- arg_match(admin_level)
 
   file_extension <- file_ext(path)
   survdata <- switch(file_extension,
@@ -80,13 +80,13 @@ load_survey_data <- function(path, country_iso, start_year, level = c('national'
     rename_with(~ gsub("dpopv", "dropout_opv13", .x)) %>%
     # rename_with(~ gsub("measles22.*", "measles2", .x)) %>%
     # rename_with(~ gsub("measles12.*", "measles1", .x)) %>%
-    select(-ends_with("r"), -ends_with("24_35"), year) %>%
-    filter(year >= start_year)
+    select(-ends_with("r"), -ends_with("24_35"), year) # %>%
+    # filter(year >= start_year)
 
-  if (level == 'regional') {
+  if (admin_level == 'admin_level_1') {
 
     survdata <- survdata %>%
-      mutate(across(matches('^r_|^se_|^ll_|^ul_'), ~ . * 100)) %>%
+      mutate(across(matches('^r_|^se_|^ll_|^ul_'), ~ . * scale)) %>%
       separate_wider_delim(cols = 'level', delim = ' ', names = c('admin1_code', 'adminlevel_1'), too_many = 'merge') %>%
       filter(!(iso == 'TZA' & adminlevel_1 %in% c("Kaskazini Unguja","Pemba North",
                                                  "Kusini Pemba","Pemba South","Pemba",
@@ -94,7 +94,6 @@ load_survey_data <- function(path, country_iso, start_year, level = c('national'
                                                  "Mjini Magharibi","Zanzibar South",
                                                  "Rest Zanzibar","Town West"))) %>%
       mutate(
-        # adminlevel_1 = str_to_upper(adminlevel_1),
         admin1_code = as.integer(admin1_code),
         adminlevel_1 = if_else(iso == 'KEN', str_replace(adminlevel_1, '/', ''), adminlevel_1),
         adminlevel_1 = if_else(iso == 'KEN', str_replace(adminlevel_1,  '-', ' '), adminlevel_1),

@@ -11,7 +11,8 @@ nationalCoverageUI <- function(id) {
         column(3, selectizeInput(ns('denominator'), label = 'Denominator',
                                  choices = c('DHIS2' = 'dhis2',
                                              'ANC 1' = 'anc1',
-                                             'Penta 1' = 'penta1')))
+                                             'Penta 1' = 'penta1'))),
+        column(3, selectizeInput(ns('year'), label = 'Survey Start Year', choices = NULL))
       )
     ),
 
@@ -63,6 +64,17 @@ nationalCoverageServer <- function(id, data, national_values) {
         national_values()$data
       })
 
+      survdata <- reactive({
+        req(national_data()$survdata)
+
+        if (input$year != 0) {
+          national_data()$survdata %>%
+            filter(year >= as.numeric(input$year))
+        } else {
+          national_data()$survdata
+        }
+      })
+
       observe({
 
         indicators <-  c("bcg", "anc1", "pcv3", "opv1", "opv2", "opv3", "penta2", "pcv1", "pcv2",
@@ -76,6 +88,23 @@ nationalCoverageServer <- function(id, data, national_values) {
         updateSelectInput(session, 'indicator', choices = indicators)
       })
 
+      observe({
+        req(national_data()$survdata)
+
+        years <- national_data()$survdata %>%
+          distinct(year) %>%
+          pull(year)
+
+        years <- c('None' = 0, years)
+
+        # Update the select input
+        updateSelectInput(
+          session,
+          'year',
+          choices = years
+        )
+      })
+
       output$measles1 <- renderPlot({
         req(national_data(), national_rates(), national_data()$un, national_data()$wuenic, national_data()$survdata)
 
@@ -87,7 +116,7 @@ nationalCoverageServer <- function(id, data, national_values) {
                                               denominator = input$denominator,
                                               un_estimates = surv_data$un,
                                               wuenic_data = surv_data$wuenic,
-                                              survey_data = surv_data$survdata,
+                                              survey_data = survdata(),
                                               sbr = rates$sbr,
                                               nmr = rates$nmr,
                                               pnmr = rates$pnmr,
@@ -123,7 +152,7 @@ nationalCoverageServer <- function(id, data, national_values) {
                                               denominator = input$denominator,
                                               un_estimates = surv_data$un,
                                               wuenic_data = surv_data$wuenic,
-                                              survey_data = surv_data$survdata,
+                                              survey_data = survdata(),
                                               sbr = rates$sbr,
                                               nmr = rates$nmr,
                                               pnmr = rates$pnmr,
@@ -159,7 +188,7 @@ nationalCoverageServer <- function(id, data, national_values) {
                                               denominator = input$denominator,
                                               un_estimates = surv_data$un,
                                               wuenic_data = surv_data$wuenic,
-                                              survey_data = surv_data$survdata,
+                                              survey_data = survdata(),
                                               sbr = rates$sbr,
                                               nmr = rates$nmr,
                                               pnmr = rates$pnmr,

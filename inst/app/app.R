@@ -36,7 +36,7 @@ source('modules/denominator_selection.R')
 source('modules/national_coverage.R')
 source('modules/subnational_coverage.R')
 source('modules/subnational_inequality.R')
-
+source('modules/subnational_mapping.R')
 
 ui <- dashboardPage(
   skin = 'green',
@@ -55,15 +55,15 @@ ui <- dashboardPage(
                menuSubItem('Reporting Rate',
                            tabName = 'reporting_rate',
                            icon = icon('chart-bar')),
-               menuSubItem('Data Completeness',
-                           tabName = 'data_completeness',
-                           icon = icon('check-square')),
-               menuSubItem('Consistency Check',
-                           tabName = 'consistency_check',
-                           icon = icon('tasks')),
                menuSubItem('Outlier Detection',
                            tabName = 'outlier_detection',
                            icon = icon('exclamation-triangle')),
+               menuSubItem('Consistency Check',
+                           tabName = 'consistency_check',
+                           icon = icon('tasks')),
+               menuSubItem('Data Completeness',
+                           tabName = 'data_completeness',
+                           icon = icon('check-square')),
                menuSubItem('Calculate Ratios',
                            tabName = 'calculate_ratios',
                            icon = icon('percent')),
@@ -77,8 +77,9 @@ ui <- dashboardPage(
       menuItem('Denominator Assessment', tabName = 'denominator_assessment', icon = icon('calculator')),
       menuItem('Denominator Selection', tabName = 'denominator_selection', icon = icon('filter')),
       menuItem('National Coverage', tabName = 'national_coverage', icon = icon('map-marked-alt')),
-      menuItem('Sub-National Coverage', tabName = 'subnational_coverage', icon = icon('map')),
+      menuItem('Subational Coverage', tabName = 'subnational_coverage', icon = icon('map-marked')),
       menuItem('Sub-National Inequality', tabName = 'subnational_inequality', icon = icon('balance-scale-right')),
+      menuItem('Sub-National Mapping', tabName = 'subnational_mapping', icon = icon('map')),
       menuItem('Download Report', tabName = 'download_report', icon = icon('download'))
     )
   ),
@@ -99,7 +100,8 @@ ui <- dashboardPage(
       tabItem(tabName = 'denominator_selection', denominatorSelectionUI('denominator_selection')),
       tabItem(tabName = 'national_coverage', nationalCoverageUI('national_coverage')),
       tabItem(tabName = 'subnational_coverage', subnationalCoverageUI('subnational_coverage')),
-      tabItem(tabName = 'subnational_inequality', subnationalInequalityUI('subnational_inequality'))
+      tabItem(tabName = 'subnational_inequality', subnationalInequalityUI('subnational_inequality')),
+      tabItem(tabName = 'subnational_mapping', subnationalMappingUI('subnational_mapping'))
     )
   )
 )
@@ -129,6 +131,7 @@ server <- function(input, output, session) {
   nationalCoverageServer('national_coverage', dt, national_values)
   subnationalCoverageServer('subnational_coverage', dt, national_values)
   subnationalInequalityServer('subnational_inequality', dt, national_values)
+  subnationalMappingServer('subnational_mapping', dt, national_values)
 
   observeEvent(input$tabs, {
     if (input$tabs == 'download_report') {

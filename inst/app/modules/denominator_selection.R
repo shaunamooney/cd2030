@@ -69,8 +69,8 @@ denominatorSelectionServer <- function(id, data, national_values) {
                                        pnmr = rates$pnmr,
                                        twin = rates$twin_rate,
                                        preg_loss = rates$preg_loss,
-                                       anc1survey = rates$anc1/100,
-                                       dpt1survey = rates$penta1/100)
+                                       anc1survey = rates$anc1,
+                                       dpt1survey = rates$penta1)
       })
 
       output$penta3 <- renderPlot({

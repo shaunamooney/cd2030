@@ -53,21 +53,23 @@
 #'
 #' @export
 analyze_national_coverage <- function(.data,
-                                     indicator = c('bcg', "anc1", "pcv3", "opv1", "opv2", "opv3",
-                                                   "penta2", "pcv1", "pcv2", "penta1", "penta3", "measles1",
-                                                   "rota1", "rota2", "instdeliveries", "measles2", "ipv1", "ipv2",
-                                                   "undervax", "dropout_penta13", "zerodose", "dropout_measles12", "dropout_penta3mcv1"),
-                                     denominator = c("dhis2", "anc1", "penta1"),
-                                     un_estimates,
-                                     survey_data,
-                                     wuenic_data,
-                                     sbr = 0.02,
-                                     nmr = 0.025,
-                                     pnmr = 0.024,
-                                     anc1survey = 0.98,
-                                     dpt1survey = 0.97,
-                                     twin = 0.015,
-                                     preg_loss = 0.03) {
+                                      admin_level = c('national', 'admin_level_1', 'district'),
+                                      indicator = c('bcg', "anc1", "pcv3", "opv1", "opv2", "opv3",
+                                                    "penta2", "pcv1", "pcv2", "penta1", "penta3", "measles1",
+                                                    "rota1", "rota2", "instdeliveries", "measles2", "ipv1", "ipv2",
+                                                    "undervax", "dropout_penta13", "zerodose", "dropout_measles12", "dropout_penta3mcv1"),
+                                      denominator = c("dhis2", "anc1", "penta1"),
+                                      un_estimates,
+                                      survey_data,
+                                      wuenic_data,
+                                      region = NULL,
+                                      sbr = 0.02,
+                                      nmr = 0.025,
+                                      pnmr = 0.024,
+                                      anc1survey = 0.98,
+                                      dpt1survey = 0.97,
+                                      twin = 0.015,
+                                      preg_loss = 0.03) {
 
   iso = year = value = NULL
 
@@ -78,6 +80,24 @@ analyze_national_coverage <- function(.data,
 
   indicator <- arg_match(indicator)
   denominator <- arg_match(denominator)
+  admin_level <- arg_match(admin_level)
+
+  if (admin_level == 'national' && !is.null(survey_data[['adminlevel_1']])) {
+    cd_abort(
+      c('x' = 'Regional survey data used in national level')
+    )
+  } else if (admin_level != 'national' && is.null(survey_data[['adminlevel_1']])) {
+    cd_abort(
+      c('x' = 'National survey data used in subnational level')
+    )
+  }
+
+  if (admin_level != 'national' && is.null(region)) {
+    cd_abort(
+      c('x' = 'Missing region',
+        '!' = '{.arg region} should not be null.')
+    )
+  }
 
   country_iso <- attr(.data, 'iso3')
 
@@ -89,24 +109,40 @@ analyze_national_coverage <- function(.data,
 
   # Calculate national data and include ISO3 code
   national_data <- calculate_indicator_coverage(.data,
+                                                admin_level = admin_level,
                                                 un_estimates = un_estimates,
                                                 sbr = sbr, nmr = nmr, pnmr = pnmr,
                                                 anc1survey = anc1survey,
                                                 dpt1survey = dpt1survey, twin = twin,
                                                 preg_loss = preg_loss) %>%
     mutate(iso = country_iso) %>%
-    select(iso, year, contains(dhis2_col))
+    select(iso, year, contains(dhis2_col), any_of(c('adminlevel_1', 'district')))
 
   # Prepare survey data with renaming and filtering
   survey_data <- survey_data %>%
-    select(iso, year, contains(survey_estimate_col), contains(lower_ci_col), contains(upper_ci_col))
+    select(iso, year, contains(survey_estimate_col), contains(lower_ci_col), contains(upper_ci_col), any_of(c('adminlevel_1', 'district')))
 
   wuenic_data <- wuenic_data %>%
     select(iso, year, contains(wuenic_col))
 
+  join_by <- switch (admin_level,
+    national = c('iso', 'year'),
+    admin_level_1 = c('iso', 'year', 'adminlevel_1'),
+    district = c('iso', 'year', 'district')
+  )
+
   combined_data <- national_data %>%
-    left_join(survey_data, by = c('iso', 'year')) %>%
-    left_join(wuenic_data, by = c('year', 'iso')) %>%
+    full_join(survey_data, by = join_by) %>%
+    left_join(wuenic_data, by = c('year', 'iso'))
+
+  if (admin_level != 'national') {
+    combined_data <- switch (admin_level,
+      admin_level_1 = combined_data %>% filter(adminlevel_1 == region),
+      district = combined_data %>% filter(district == region)
+    )
+  }
+
+  combined_data <- combined_data %>%
     pivot_longer(cols = contains(indicator), names_to = 'estimates') %>%
     pivot_wider(names_from = year, values_from = value) %>%
     mutate(
@@ -118,11 +154,13 @@ analyze_national_coverage <- function(.data,
         str_starts(estimates, 'ul') ~ '95% CI UL',
       )
     ) %>%
-    select(-iso)
+    select(-any_of(c('iso', 'adminlevel_1')))
 
   new_tibble(
     combined_data,
     class = 'cd_national_coverage',
+    admin_level = admin_level,
+    region = region,
     denominator = denominator
   )
 }

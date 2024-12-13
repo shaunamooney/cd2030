@@ -103,7 +103,7 @@ analyze_subnational_inequality <- function(.data,
     mutate(
       rd_max = round(if_else(all(is.na(!!sym(dhis2_col))), 100, max(!!sym(dhis2_col), na.rm = TRUE)), -1),
       rd_max = if_else(rd_max < max(!!sym(dhis2_col), na.rm = TRUE), rd_max + 10, rd_max),
-      rd_max = rd_max + 10,
+      rd_max = rd_max * 1.05,
       rd_max = if_else(rd_max %% 20 != 0, rd_max + 10, rd_max)
     )
 
@@ -114,35 +114,4 @@ analyze_subnational_inequality <- function(.data,
     denominator = denominator,
     level = level_name
   )
-}
-
-analyze_subnational_coverage <- function(.data,
-                                         level = c('admin_level_1', 'district'),
-                                         indicator = c('bcg', 'anc1', 'pcv3', 'opv1', 'opv2', 'opv3',
-                                                       'penta2', 'pcv1', 'pcv2', 'penta1', 'penta3', 'measles1',
-                                                       'rota1', 'rota2', 'instdeliveries', 'measles2', 'ipv1', 'ipv2',
-                                                       'undervax', 'dropout_penta13', 'zerodose', 'dropout_measles12', 'dropout_penta3mcv1'),
-                                         denominator = c('dhis2', 'anc1', 'penta1'),
-                                         un_estimates,
-                                         wuenvic_data,
-                                         survey_data,
-                                         sbr = 0.02,
-                                         nmr = 0.025,
-                                         pnmr = 0.024,
-                                         anc1survey = 0.98,
-                                         dpt1survey = 0.97,
-                                         twin = 0.015,
-                                         preg_loss = 0.03) {
-
-  check_cd_data(.data)
-  level <-  arg_match(level)
-  indicator <-  arg_match(indicator)
-  denominator <- arg_match(denominator)
-
-
-
-}
-
-map_subnational_coverage <- function(.data) {
-
 }

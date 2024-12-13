@@ -64,11 +64,11 @@ plot.cd_national_coverage <- function(x, ...) {
       names_repair = 'minimal'
     ) %>%
     mutate(
-      `DHIS2 estimate` = ifelse(!"DHIS2 estimate" %in% colnames(.), NA_real_, `DHIS2 estimate`),
-      `WUENIC estimates` = ifelse(!"WUENIC estimates" %in% colnames(.), NA_real_, `WUENIC estimates`),
-      `Survey estimates` = ifelse(!"Survey estimates" %in% colnames(.), NA_real_, `Survey estimates`),
-      `95% CI LL` = ifelse(!"95% CI LL" %in% colnames(.), NA_real_, `95% CI LL`),
-      `95% CI UL` = ifelse(!"95% CI UL" %in% colnames(.), NA_real_, `95% CI UL`)
+      `DHIS2 estimate` = denominator #,
+      # `WUENIC estimates` = ifelse(!"WUENIC estimates" %in% colnames(.), NA_real_, `WUENIC estimates`),
+      # `Survey estimates` = ifelse(!"Survey estimates" %in% colnames(.), NA_real_, `Survey estimates`),
+      # `95% CI LL` = ifelse(!"95% CI LL" %in% colnames(.), NA_real_, `95% CI LL`),
+      # `95% CI UL` = ifelse(!"95% CI UL" %in% colnames(.), NA_real_, `95% CI UL`)
     )
 
   data_long %>%
@@ -80,7 +80,7 @@ plot.cd_national_coverage <- function(x, ...) {
       geom_point(aes(y = `WUENIC estimates`, color = "WUENIC estimate"), size = 2) +
 
     # Add Survey estimates
-      geom_line(aes(y = `Survey estimates`, color = "Survey estimate"), size = 1) +
+      geom_line(aes(y = `Survey estimates`, color = "Survey estimate"), size = 1, group = 1, na.rm = TRUE) +
       geom_point(aes(y = `Survey estimates`, color = "Survey estimate"), size = 2) +
 
     # Add error bars for 95% CI
@@ -96,6 +96,9 @@ plot.cd_national_coverage <- function(x, ...) {
       scale_y_continuous(
         expand = c(0, 0),
         limits = c(min_y, max_y),
+        breaks = scales::pretty_breaks(11)
+      ) +
+      scale_x_continuous(
         breaks = scales::pretty_breaks(11)
       ) +
       scale_color_manual(

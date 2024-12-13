@@ -85,22 +85,34 @@ setupUI <- function(id) {
 
           uiOutput(ns("gregion_enhanced_feedback"))
         )
+      ),
+
+      fluidRow(
+        column(3, selectizeInput(ns('gregion_scale'),
+                                 label = 'Regional Survey Scale',
+                                 choices = c(1, 100)))
       )
     )
   )
 }
 
 setupServer <- function(id, data, survey_data) {
+  stopifnot(is.reactive(data))
   stopifnot(is.reactive(survey_data))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
 
+      un_path <- reactiveVal()
+      wuenic_path <- reactiveVal()
+      surv_path <- reactiveVal()
+      gregion_path <- reactiveVal()
+
       un_estimates <- reactiveVal()
       wuenic_data <- reactiveVal()
       survdata <- reactiveVal()
-      gregion <- reactiveVal()
+      gregion_data <- reactiveVal()
 
       upload_status <- reactiveValues(un =list(message = "Awaiting file upload...", color = "gray"),
                                       wuenic = list(message = "Awaiting file upload...", color = "gray"),
@@ -126,14 +138,14 @@ setupServer <- function(id, data, survey_data) {
             preg_loss = input$pregnancy_loss,
             sbr = input$stillbirth_rate,
             penta1_mort_rate = input$penta1_mortality_rate,
-            anc1 = input$anc1_prop,
-            penta1 = input$penta1_prop
+            anc1 = input$anc1_prop / 100,
+            penta1 = input$penta1_prop / 100
           ),
           data = list(
             un = un_estimates(),
             wuenic = wuenic_data(),
             survdata = survdata(),
-            gregion = gregion()
+            gregion = gregion_data()
           )
         )
       })
@@ -143,20 +155,49 @@ setupServer <- function(id, data, survey_data) {
 
         dt <- survey_data()
 
-        updateSliderInput(session, 'anc1_prop', value = dt$anc1)
-        updateSliderInput(session, 'penta1_prop', value = dt$penta1)
+        updateNumericInput(session, 'anc1_prop', value = dt$anc1)
+        updateNumericInput(session, 'penta1_prop', value = dt$penta1)
+      })
+
+      observeEvent(data(), {
+        start_year <- min(data()$year)
+        end_year <- max(data()$year)
+
+        if (!is.null(un_path())) {
+          un <- load_un_estimates(un_path(), country_iso(), start_year, end_year)
+          un_estimates(un)
+        }
+
+        if (!is.null(wuenic_path())) {
+          wuenic <- load_wuenic_data(wuenic_path(), country_iso())
+          wuenic_data(wuenic)
+        }
+
+        surv_path(NULL)
+        survdata(NULL)
+        upload_status$survdata <- list(
+          message = paste("Awaiting file upload..."),
+          color = "gray"
+        )
+
+        gregion_path(NULL)
+        gregion_data(NULL)
+        upload_status$gregion <- list(
+          message = paste("Awaiting file upload..."),
+          color = "gray"
+        )
       })
 
       observeEvent(input$un_data, {
         req(country_iso())
 
-        file_path <- input$un_data$datapath
         file_name <- input$un_data$name
+        un_path(input$un_data$datapath)
 
         tryCatch({
           start_year <- min(data()$year)
           end_year <- max(data()$year)
-          dt <- load_un_estimates(file_path, country_iso(), start_year, end_year)
+          dt <- load_un_estimates(un_path(), country_iso(), start_year, end_year)
 
           upload_status$un <- list(
             message = paste("Upload successful: File", file_name, "is ready."),
@@ -176,11 +217,11 @@ setupServer <- function(id, data, survey_data) {
       observeEvent(input$wuenic_data, {
         req(country_iso())
 
-        file_path <- input$wuenic_data$datapath
         file_name <- input$wuenic_data$name
+        wuenic_path(input$wuenic_data$datapath)
 
         tryCatch({
-          dt <- load_wuenic_data(file_path, country_iso())
+          dt <- load_wuenic_data(wuenic_path(), country_iso())
 
           upload_status$wuenic <- list(
             message = paste("Upload successful: File", file_name, "is ready."),
@@ -200,11 +241,11 @@ setupServer <- function(id, data, survey_data) {
       observeEvent(input$national_survey_data, {
         req(country_iso())
 
-        file_path <- input$national_survey_data$datapath
         file_name <- input$national_survey_data$name
+        surv_path(input$national_survey_data$datapath)
 
         tryCatch({
-          dt <- load_survey_data(file_path, country_iso(), 2015, 'national')
+          dt <- load_survey_data(surv_path(), country_iso(), 'national')
 
           upload_status$survdata <- list(
             message = paste("Upload successful: File", file_name, "is ready."),
@@ -223,24 +264,37 @@ setupServer <- function(id, data, survey_data) {
       observeEvent(input$regional_survey_data, {
         req(country_iso())
 
-        file_path <- input$regional_survey_data$datapath
         file_name <- input$regional_survey_data$name
+        gregion_path(input$regional_survey_data$datapath)
 
         tryCatch({
-          dt <- load_survey_data(file_path, country_iso(), 2015, 'regional')
+          dt <- load_survey_data(gregion_path(),
+                                 country_iso = country_iso(),
+                                 admin_level = 'admin_level_1',
+                                 scale = as.integer(input$gregion_scale))
 
           upload_status$gregion <- list(
             message = paste("Upload successful: File", file_name, "is ready."),
             color = "darkgreen"
           )
-          gregion(dt)
+          gregion_data(dt)
         }, error = function(e) {
           upload_status$gregion <- list(
             message = "Upload failed: Check the file format and try again.",
             color = "red"
           )
-          gregion(NULL)
+          gregion_data(NULL)
         })
+      })
+
+      observeEvent(input$gregion_scale, {
+        req(gregion_path(), country_iso(), input$gregion_scale)
+
+        dt <- load_survey_data(gregion_path(),
+                               country_iso = country_iso(),
+                               admin_level = 'admin_level_1',
+                               scale = as.integer(input$gregion_scale))
+        gregion_data(dt)
       })
 
       output$un_enhanced_feedback <- renderUI({

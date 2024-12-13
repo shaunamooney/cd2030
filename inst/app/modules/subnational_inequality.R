@@ -107,7 +107,7 @@ subnationalInequalityServer <- function(id, data, national_values) {
         surv_data <- national_data()
         rates <- national_rates()
 
-        coverage <- analyze_subnational_coverage(data(),
+        coverage <- analyze_subnational_inequality(data(),
                                                  level = input$level,
                                                  indicator = 'penta3',
                                                  denominator =  input$denominator,

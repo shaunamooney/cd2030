@@ -20,7 +20,6 @@ uploadDataServer <- function(id) {
       upload_dt <- uploadBoxServer('upload_box')
 
       observeEvent(dhis2_dt(), {
-        print(dhis2_dt())
         data(dhis2_dt())
       })
 
