@@ -15,6 +15,7 @@ analyze_coverage(
   un_estimates,
   survey_data,
   wuenic_data,
+  subnational_map = NULL,
   region = NULL,
   sbr = 0.02,
   nmr = 0.025,
@@ -47,6 +48,8 @@ estimates. Must be one of "dhis2", "anc1", or "penta1".}
 \item{survey_data}{description}
 
 \item{wuenic_data}{description}
+
+\item{subnational_map}{description}
 
 \item{sbr}{Numeric. The stillbirth rate.}
 

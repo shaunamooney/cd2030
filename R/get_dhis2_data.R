@@ -10,16 +10,16 @@
 #' @param timeout Numeric. Timeout for API calls in seconds. Default is 60.
 #'
 #' @return A list of class `cd_dhis2_hfd` containing:
-#' \describe{
-#'   \item{completeness}{Data frame of completeness data.}
-#'   \item{service}{Data frame of service data.}
-#'   \item{population}{Data frame of population data.}
-#'   \item{admin}{Data frame of administrative data.}
-#' }
+#'
+#' - **`completeness`**: Data frame of completeness data.
+#' - **`service`**: Data frame of service data.
+#' - **`population`**: Data frame of population data.
+#' - **`admin`**: Data frame of administrative data.
 #'
 #' @examples
-#' \dontrun {
-#'   hfd_data <- get_dhis2_hfd("KEN", "2020-01-01", "2024-01-01")
+#' \dontrun{
+#' # Retrieve data for Kenya from January 1, 2020, to January 1, 2024
+#' hfd_data <- get_dhis2_hfd("KEN", "2020-01-01", "2024-01-01")
 #' }
 #'
 #' @export

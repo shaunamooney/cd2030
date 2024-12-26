@@ -8,6 +8,7 @@ get_mapping_data(
   .data,
   un_estimates,
   rates,
+  subnational_map = NULL,
   level = c("admin_level_1", "district")
 )
 }

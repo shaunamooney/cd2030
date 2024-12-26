@@ -17,11 +17,11 @@ get_dhis2_hfd(country_iso3, start_date, end_date, timeout = 60)
 }
 \value{
 A list of class \code{cd_dhis2_hfd} containing:
-\describe{
-\item{completeness}{Data frame of completeness data.}
-\item{service}{Data frame of service data.}
-\item{population}{Data frame of population data.}
-\item{admin}{Data frame of administrative data.}
+\itemize{
+\item \strong{\code{completeness}}: Data frame of completeness data.
+\item \strong{\code{service}}: Data frame of service data.
+\item \strong{\code{population}}: Data frame of population data.
+\item \strong{\code{admin}}: Data frame of administrative data.
 }
 }
 \description{
@@ -30,8 +30,9 @@ specific country and date range. It collects completeness, service, population,
 and administrative data.
 }
 \examples{
-\dontrun {
-  hfd_data <- get_dhis2_hfd("KEN", "2020-01-01", "2024-01-01")
+\dontrun{
+# Retrieve data for Kenya from January 1, 2020, to January 1, 2024
+hfd_data <- get_dhis2_hfd("KEN", "2020-01-01", "2024-01-01")
 }
 
 }

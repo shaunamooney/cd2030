@@ -23,7 +23,7 @@ numerators for. Options are:
 }
 \value{
 A tibble with yearly totals for each indicator at the specified administrative
-level, grouped by country, year, and additional grouping variables as per the chosen level.
+level, grouped by year, and additional grouping variables as per the chosen level.
 }
 \description{
 \code{compute_indicator_numerator} calculates the numerators for various health indicators
@@ -36,10 +36,10 @@ This function performs the following steps:
 \enumerate{
 \item \strong{Validation}: Confirms that \code{.data} is a \code{cd_data} object and contains
 required columns for specified indicators.
-\item \strong{Aggregation}: Sums the counts for each indicator, grouped by \code{country},
-\code{year}, and additional grouping variables as per the chosen \code{admin_level}.
+\item \strong{Aggregation}: Sums the counts for each indicator, grouped by \code{year}, and
+additional grouping variables as per the chosen \code{admin_level}.
 \item \strong{Output}: Returns a tibble ordered by \code{year}, containing aggregated indicators
-alongside the \code{country}, \code{year}, and administrative level columns.
+alongside the \code{year}, and administrative level columns.
 }
 }
 \examples{

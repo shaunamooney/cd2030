@@ -200,7 +200,7 @@ server <- function(input, output, session) {
     )
 
     # Dynamically update the header
-    header <- htmltools::tagQuery(dashboardHeader(title = "cd2030", dropdownMenuCustom('download')))
+    header <- htmltools::tagQuery(dashboardHeader(title = "cd2030"))
     header <- header$
       addAttrs(style = "position: relative")$ # add some styles to the header
       find(".navbar.navbar-static-top")$      # find the header right side
