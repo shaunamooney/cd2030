@@ -3,7 +3,7 @@ subnationalMappingUI <- function(id) {
 
   fluidRow(
     box(
-      title = 'Level of analysis',
+      title = 'Analysis Options',
       status = 'success',
       width = 12,
       solidHeader = TRUE,
@@ -15,49 +15,59 @@ subnationalMappingUI <- function(id) {
                                  choices = c('DHIS2' = 'dhis2',
                                              'ANC 1' = 'anc1',
                                              'Penta 1' = 'penta1'))),
-        column(3, selectizeInput(ns('year'), label = 'Year', choices = NULL)),
-        column(3, selectizeInput(ns('palette'),
-                                 label = 'Palette',
-                                 choices = c("Reds", "Blues", "Greens", "Purples", "YlGnBu")))
+        column(3, selectizeInput(ns('palette'), label = 'Palette', choices = NULL))
       )
     ),
 
     tabBox(
+      id = ns('coverage'),
       title = 'Coverage/Utilization Level',
       width = 12,
 
       tabPanel(
-        'Penta1 - Penta3 Drop out',
-
-        fluidRow(column(12, plotOutput(ns('penta13_dropout'))))
-      ),
-
-      tabPanel(
-        'Penta3 - MCV3 Drop out',
-
-        fluidRow(column(12, plotOutput(ns('penta3mcv1_dropout'))))
-      ),
-
-      tabPanel(
         'Penta 3 Coverage',
-
-        fluidRow(column(12, plotOutput(ns('penta3_coverage'))))
+        fluidRow(
+          column(12, plotOutput(ns('penta3_coverage'))),
+          column(3, downloadUI(ns('penta3_download'), label = 'Download Plot')),
+        )
       ),
 
       tabPanel(
         'Measles 1 Coverage',
+        fluidRow(
+          column(12, plotOutput(ns('mcv1_coverage'))),
+          column(3, downloadUI(ns('mcv1_download'), label = 'Download Plot')),
+        )
+      ),
 
-        fluidRow(column(12, plotOutput(ns('mcv1_coverage'))))
+      tabPanel(
+        'Penta1 - Penta3 dropout',
+        fluidRow(
+          column(12, plotOutput(ns('penta13_dropout'))),
+          column(3, downloadUI(ns('penta13_dropout_download'), label = 'Download Plot')),
+        )
+      ),
+
+      tabPanel(
+        'Penta3 - MCV3 dropout',
+        fluidRow(
+          column(12, plotOutput(ns('penta3mcv1_dropout'))),
+          column(3, downloadUI(ns('penta3mcv1_droput_download'), label = 'Download Plot')),
+        )
       ),
 
       tabPanel(
         'Custom Check',
-
         fluidRow(
-          column(3, selectizeInput(ns('indicator'), label = 'Indicator', choices = NULL))
+          column(3, selectizeInput(ns('indicator'), label = 'Indicator',
+                                   choices = c('Select' = '0', "anc1", "bcg", "measles2", "measles3", "opv1", "opv2", "opv3",
+                                               "pcv1", "pcv2", "pcv3", "penta1", "penta2", "rota1", "rota2", "instdeliveries",
+                                               "ipv1", "ipv2", "undervax", "zerodose", "dropout_measles12")))
         ),
-
-        fluidRow(column(12, plotOutput(ns('custom'))))
+        fluidRow(
+          column(12, plotOutput(ns('custom'))),
+          column(3, downloadUI(ns('custom_download'), label = 'Download Plot')),
+        )
       )
     )
   )
@@ -73,7 +83,6 @@ subnationalMappingServer <- function(id, data, national_values) {
 
       country <- reactive({
         req(data())
-
         attr(data(), 'country')
       })
 
@@ -85,202 +94,217 @@ subnationalMappingServer <- function(id, data, national_values) {
         national_values()$data$un
       })
 
-      country_shp <- reactive({
-        req(country())
-
-        shapefile_path <- paste0("shapefiles/", country(), "/", country(), "_admin_1.shp")
-        validate(need(file.exists(shapefile_path), "Shapefile not found. Please check the country name."))
-        st_read(shapefile_path)
+      subnational_map <- reactive({
+        national_values()$data$map_map
       })
 
       dt <- reactive({
-        req(data(), un_estimates(), national_rates(), country_shp())
-
-        iso <-  attr(data(), 'iso3')
-        rates <- national_rates()
-
-        if (iso == 'KEN') {
-          merged_data <- data() %>%
-            calculate_indicator_coverage('district', un_estimates(),
-                                         sbr = rates$sbr, nmr = rates$nmr,
-                                         pnmr = rates$pnmr, anc1survey = rates$anc1,
-                                         dpt1survey = rates$penta1, twin = rates$twin_rate,
-                                         preg_loss = rates$preg_loss) %>%
-            select(-adminlevel_1) %>%
-            rename(
-              adminlevel_1 = district
-            )
-        } else {
-          merged_data <- data() %>%
-            calculate_indicator_coverage('admin_level_1', un_estimates(),
-                                         sbr = rates$sbr, nmr = rates$nmr,
-                                         pnmr = rates$pnmr, anc1survey = rates$anc1,
-                                         dpt1survey = rates$penta1, twin = rates$twin_rate,
-                                         preg_loss = rates$preg_loss)
+        if (!isTruthy(data()) || !isTruthy(un_estimates()) || !isTruthy(national_rates()) ||
+            !isTruthy(input$denominator) || !isTruthy(input$palette)) {
+          return(NULL)
         }
 
-        merged_data %>%
-          left_join(country_shp(), by = c('adminlevel_1' = 'NAME_1')) %>%
-          mutate(
-            centroid = st_centroid(geometry),
-            centroid_coords =st_coordinates(centroid)
-          )
+        get_mapping_data(data(), un_estimates(), national_rates(), subnational_map())
       })
 
       observe({
-        req(data())
+        req(input$coverage, input$indicator)
 
-        indicators <-  c("bcg", "anc1", "pcv3", "opv1", "opv2", "opv3", "penta2", "pcv1", "pcv2",
-                         "penta1", "rota1", "rota2", "instdeliveries", "measles2",
-                         "ipv1", "ipv2", "undervax", "zerodose", "dropout_measles12")
+        palette <- if (grepl('drop', input$coverage)) {
+          c("Reds", "Purples")
+        } else if (grepl('Coverage', input$coverage)) {
+          c("Greens", "Blues")
+        } else {
+          if (grepl('drop|under|zero', input$indicator)) {
+            c("Reds", "Purples")
+          } else {
+            c("Greens", "Blues")
+          }
+        }
 
-        names(indicators) <- indicators
-        indicators <- c('Select' = '0', indicators)
-
-        years <- data() %>%
-          distinct(year) %>%
-          arrange(desc(year)) %>%
-          pull(year)
-
-        updateSelectizeInput(session, 'indicator', choices = indicators)
-        updateSelectizeInput(session, 'year', choices = years)
+        updateSelectizeInput(session, 'palette', choices = palette)
       })
 
       output$penta13_dropout <- renderPlot({
         req(dt())
 
-        dt() %>%
-          filter(year == input$year) %>%
-          st_as_sf() %>%
-          ggplot() +
-            geom_sf(aes(fill = !!sym(paste0('cov_dropout_penta13_', input$denominator)))) +
-            scale_fill_gradientn(colors = RColorBrewer::brewer.pal(7, input$palette)) +
-            labs(
-              title = paste(input$year, "Distribution of Penta1 to Penta3 dropout in ", country(), "by Regions"),
-              fill = paste0('cov_', 'dropout_penta13_', input$denominator),
-              caption = "Data Source: DHIS-2 analysis"
-            ) +
-            theme_classic() +
-            theme(
-              legend.position = "bottom",
-              plot.title = element_text(hjust = 0.5, face = "bold"),
-              plot.caption = element_text(hjust = 1, face = "italic"),
-              axis.text = element_blank(),
-              axis.ticks = element_blank(),
-              axis.title = element_blank(),
-              axis.line = element_blank(),
-              panel.border = element_blank()
+        title <- paste("Distribution of Penta1 to Penta3 dropout in ", country(), "by Regions")
+
+        tryCatch(
+          plot(dt(), indicator = 'dropout_penta13',
+               denominator = input$denominator,
+               palette = input$palette,
+               title = title),
+          error = function(e) {
+            clean_message <- cli::ansi_strip(conditionMessage(e))
+            plot.new() # Start a blank plot
+            text(
+              x = 0.5, y = 0.5,
+              labels = paste("Error:", clean_message),
+              cex = 1.2, col = "red"
             )
+          }
+        )
       })
 
       output$penta3mcv1_dropout <- renderPlot({
         req(dt())
 
-        dt() %>%
-          filter(year == input$year) %>%
-          st_as_sf() %>%
-          ggplot() +
-          geom_sf(aes(fill = !!sym(paste0('cov_dropout_penta3mcv1_', input$denominator)))) +
-          scale_fill_gradientn(colors = RColorBrewer::brewer.pal(7, input$palette)) +
-          labs(
-            title = paste(input$year, "Distribution of Penta1 to Penta3 dropout in ", country(), "by Regions"),
-            fill = paste0('cov_', 'dropout_penta3mcv1_', input$denominator),
-            caption = "Data Source: DHIS-2 analysis"
-          ) +
-          theme_classic() +
-          theme(
-            legend.position = "bottom",
-            plot.title = element_text(hjust = 0.5, face = "bold"),
-            plot.caption = element_text(hjust = 1, face = "italic"),
-            axis.text = element_blank(),
-            axis.ticks = element_blank(),
-            axis.title = element_blank(),
-            axis.line = element_blank(),
-            panel.border = element_blank()
-          )
+        title <- paste("Distribution of Penta1 to Measles3 dropout in ", country(), "by Regions")
+
+        tryCatch(
+          plot(dt(), indicator = 'dropout_penta3mcv1',
+               denominator = input$denominator,
+               palette = input$palette,
+               title = title),
+          error = function(e) {
+            clean_message <- cli::ansi_strip(conditionMessage(e))
+            plot.new() # Start a blank plot
+            text(
+              x = 0.5, y = 0.5,
+              labels = paste("Error:", clean_message),
+              cex = 1.2, col = "red"
+            )
+          }
+        )
       })
 
       output$penta3_coverage <- renderPlot({
         req(dt())
 
-        dt() %>%
-          filter(year == input$year) %>%
-          st_as_sf() %>%
-          ggplot() +
-          geom_sf(aes(fill = !!sym(paste0('cov_penta3_', input$denominator)))) +
-          scale_fill_gradientn(colors = RColorBrewer::brewer.pal(7, input$palette)) +
-          labs(
-            title = paste(input$year, "Distribution of Penta3 Coverage in ", country(), "by Regions"),
-            fill = paste0('cov_', 'penta3_', input$denominator),
-            caption = "Data Source: DHIS-2 analysis"
-          ) +
-          theme_classic() +
-          theme(
-            legend.position = "bottom",
-            plot.title = element_text(hjust = 0.5, face = "bold"),
-            plot.caption = element_text(hjust = 1, face = "italic"),
-            axis.text = element_blank(),
-            axis.ticks = element_blank(),
-            axis.title = element_blank(),
-            axis.line = element_blank(),
-            panel.border = element_blank()
-          )
+        title <- paste("Distribution of Penta3 Coverage in ", country(), "by Regions")
+
+        tryCatch(
+          plot(dt(), indicator = 'penta3',
+               denominator = input$denominator,
+               palette = input$palette,
+               title = title),
+          error = function(e) {
+            clean_message <- cli::ansi_strip(conditionMessage(e))
+            plot.new() # Start a blank plot
+            text(
+              x = 0.5, y = 0.5,
+              labels = paste("Error:", clean_message),
+              cex = 1.2, col = "red"
+            )
+          }
+        )
       })
 
 
       output$mcv1_coverage <- renderPlot({
         req(dt())
 
-        dt() %>%
-          filter(year == input$year) %>%
-          st_as_sf() %>%
-          ggplot() +
-          geom_sf(aes(fill = !!sym(paste0('cov_measles1_', input$denominator)))) +
-          scale_fill_gradientn(colors = RColorBrewer::brewer.pal(7, input$palette)) +
-          labs(
-            title = paste(input$year, "Distribution of Measles 1 Coverage in ", country(), "by Regions"),
-            fill = paste0('cov_', 'measles1', input$denominator),
-            caption = "Data Source: DHIS-2 analysis"
-          ) +
-          theme_classic() +
-          theme(
-            legend.position = "bottom",
-            plot.title = element_text(hjust = 0.5, face = "bold"),
-            plot.caption = element_text(hjust = 1, face = "italic"),
-            axis.text = element_blank(),
-            axis.ticks = element_blank(),
-            axis.title = element_blank(),
-            axis.line = element_blank(),
-            panel.border = element_blank()
-          )
+        title <- paste("Distribution of Measles 1 Coverage in ", country(), "by Regions")
+
+        tryCatch(
+          plot(dt(), indicator = 'measles1',
+               denominator = input$denominator,
+               palette = input$palette,
+               title = title),
+          error = function(e) {
+            clean_message <- cli::ansi_strip(conditionMessage(e))
+            plot.new() # Start a blank plot
+            text(
+              x = 0.5, y = 0.5,
+              labels = paste("Error:", clean_message),
+              cex = 1.2, col = "red"
+            )
+          }
+        )
       })
 
       output$custom <- renderPlot({
         req(dt(), input$indicator != '0')
 
-        dt() %>%
-          filter(year == input$year) %>%
-          st_as_sf() %>%
-          ggplot() +
-          geom_sf(aes(fill = !!sym(paste0('cov_', input$indicator, '_', input$denominator)))) +
-          scale_fill_gradientn(colors = RColorBrewer::brewer.pal(7, input$palette)) +
-          labs(
-            title = paste(input$year, "Distribution of Measles 1 Coverage in ", country(), "by Regions"),
-            fill = paste0('cov_', input$indicator, input$denominator),
-            caption = "Data Source: DHIS-2 analysis"
-          ) +
-          theme_classic() +
-          theme(
-            legend.position = "bottom",
-            plot.title = element_text(hjust = 0.5, face = "bold"),
-            plot.caption = element_text(hjust = 1, face = "italic"),
-            axis.text = element_blank(),
-            axis.ticks = element_blank(),
-            axis.title = element_blank(),
-            axis.line = element_blank(),
-            panel.border = element_blank()
-          )
+        title <- paste('Distribution of ', input$indicator,' Coverage in ', country(), 'by Regions')
+
+        tryCatch(
+          plot(dt(), indicator = input$indicator,
+               denominator = input$denominator,
+               palette = input$palette,
+               title = title),
+          error = function(e) {
+            clean_message <- cli::ansi_strip(conditionMessage(e))
+            plot.new() # Start a blank plot
+            text(
+              x = 0.5, y = 0.5,
+              labels = paste("Error:", clean_message),
+              cex = 1.2, col = "red"
+            )
+          }
+        )
       })
+
+      downloadServer(
+        id = 'penta3_download',
+        filename = paste0('penta3_', input$level, '_map_', input$denominator),
+        extension = 'png',
+        content = function(file) {
+          plot(dt(), indicator = 'penta3',
+               denominator = input$denominator,
+               palette = input$palette,
+               title = paste("Distribution of Penta3 Coverage in ", country(), "by Regions"))
+          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
+        },
+        data = dt
+      )
+
+      downloadServer(
+        id = 'mcv1_download',
+        filename = paste0('mcv1_', input$level, '_map_', input$denominator),
+        extension = 'png',
+        content = function(file) {
+          plot(dt(), indicator = 'measles1',
+               denominator = input$denominator,
+               palette = input$palette,
+               title = paste("Distribution of Measles 1 Coverage in ", country(), "by Regions"))
+          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
+        },
+        data = dt
+      )
+
+      downloadServer(
+        id = 'penta13_dropout_download',
+        filename = paste0('penta13_dropout_', input$level, '_map_', input$denominator),
+        extension = 'png',
+        content = function(file) {
+          plot(dt(), indicator = 'dropout_penta13',
+               denominator = input$denominator,
+               palette = input$palette,
+               title = paste("Distribution of Penta1 to Penta3 dropout Coverage in ", country(), "by Regions"))
+          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
+        },
+        data = dt
+      )
+
+      downloadServer(
+        id = 'penta3mcv1_droput_download',
+        filename = paste0('penta3mcv1_droput_', input$level, '_map_', input$denominator),
+        extension = 'png',
+        content = function(file) {
+          plot(dt(), indicator = 'dropout_penta3mcv1',
+               denominator = input$denominator,
+               palette = input$palette,
+               title = paste("Distribution of Penta1 to Measles3 dropout in ", country(), "by Regions"))
+          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
+        },
+        data = dt
+      )
+
+      downloadServer(
+        id = 'custom_download',
+        filename = paste0(input$indicator, '_', input$level, '_map_', input$denominator),
+        extension = 'png',
+        content = function(file) {
+          plot(dt(), indicator = input$indicator,
+               denominator = input$denominator,
+               palette = input$palette,
+               title = paste('Distribution of ', input$indicator,' Coverage in ', country(), 'by Regions'))
+          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
+        },
+        data = dt
+      )
     }
   )
 }

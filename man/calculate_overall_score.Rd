@@ -4,11 +4,17 @@
 \alias{calculate_overall_score}
 \title{Calculate Overall Quality Score for Data Quality Metrics}
 \usage{
-calculate_overall_score(.data)
+calculate_overall_score(
+  .data,
+  ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3"),
+    ratioOO = c("opv1", "opv3"))
+)
 }
 \arguments{
 \item{.data}{A data frame of type \code{cd_data} containing facility data
 including annual reporting rates, completeness, and consistency indicators.}
+
+\item{ratio_pairs}{description}
 }
 \value{
 A tibble with calculated scores for each metric, including

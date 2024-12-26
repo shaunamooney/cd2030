@@ -89,7 +89,7 @@ adjust_service_data <- function(.data,
 
   indicator_groups = attr(.data, 'indicator_groups')
   all_indicators <- list_c(indicator_groups)
-  last_year <- max(.data$year)
+  last_year <- max(.data$year, na.rm = TRUE)
 
   merged_data <- .data %>%
     mutate(

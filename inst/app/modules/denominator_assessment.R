@@ -11,7 +11,7 @@ denominatorAssessmentUI <- function(id) {
         title = 'Total Population',
         fluidRow(
           column(12, plotOutput(ns('population'))),
-          column(3, downloadButton(ns('population_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
+          column(4, downloadUI(ns('population_plot'), label = 'Download Plot'))
         )
       ),
 
@@ -19,7 +19,7 @@ denominatorAssessmentUI <- function(id) {
         title = 'Births',
         fluidRow(
           column(12, plotOutput(ns('births'))),
-          column(3, downloadButton(ns('births_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
+          column(4, downloadUI(ns('births_plot'), label = 'Download Plot'))
         )
       )
     )
@@ -39,34 +39,42 @@ denominatorAssessmentServer <- function(id, data, national_values) {
       })
 
       denominators <- reactive({
-        req(un_estimates())
+        if (!isTruthy(un_estimates())) return(NULL)
 
         data() %>%
           prepare_population_metrics(un_estimates = un_estimates())
       })
 
       output$population <- renderPlot({
+        req(denominators())
         plot(denominators(), 'population')
       })
 
       output$births <- renderPlot({
+        req(denominators())
         plot(denominators(), 'births')
       })
 
-      output$population_plot <- downloadHandler(
-        filename = function() { paste0("population_plot_", Sys.Date(), ".png") },
+      downloadServer(
+        id = 'population_plot',
+        filename = 'population_plot',
+        extension = 'png',
         content = function(file) {
           plot(denominators(), 'population')
           ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        }
+        },
+        data = denominators
       )
 
-      output$births_plot <- downloadHandler(
-        filename = function() { paste0("births_plot_", Sys.Date(), ".png") },
+      downloadServer(
+        id = 'births_plot',
+        filename = 'births_plot',
+        extension = 'png',
         content = function(file) {
           plot(denominators(), 'births')
           ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        }
+        },
+        data = denominators
       )
     }
   )

@@ -58,7 +58,7 @@ calculate_indicator_coverage <- function(.data,
                                        sbr = sbr, nmr = nmr, pnmr = pnmr,
                                        anc1survey = anc1survey, dpt1survey = dpt1survey,
                                        twin = twin, preg_loss = preg_loss) %>%
-    select(any_of(c('country', 'year', 'adminlevel_1', 'district')), starts_with('cov_'))
+    select(any_of(c('year', 'adminlevel_1', 'district')), starts_with('cov_'))
 
   new_tibble(
     output_data,
@@ -84,7 +84,7 @@ calculate_populations <- function(.data,
     wom15_49_dhis2 = year = un_under5y = un_population = un_under1y = un_wom15_49 =
     tot_under5_dhis2 = tot_pop_dhis2 = tot_under1_dhis2 = tot_wom15_49_dhis2 =
     tot_livebirths_dhis2 = tot_allbirths_dhis2 = national = totcbr_dhis2 =
-    totpopgrowth = country = adminlevel_1 = district = totpop_dhis2 = totunder5_dhis2 =
+    totpopgrowth = adminlevel_1 = district = totpop_dhis2 = totunder5_dhis2 =
     totunder1_dhis2 = totlivebirths_dhis2 = un_births = totwom15_49_dhis2 =
     un_popgrowth = un_cbr = totpreg_dhis2 = totinftpenta_dhis2 =
     anc1 = totpreg_anc1 = totdeliv_anc1 = totbirths_anc1 =
@@ -102,10 +102,11 @@ calculate_populations <- function(.data,
   indicator_numerator <- compute_indicator_numerator(.data, admin_level = admin_level)
 
   admin_level <- arg_match(admin_level)
+
   group_vars <- switch(admin_level,
-                       national = c('country', 'year'),
-                       admin_level_1 = c('country', 'adminlevel_1', 'year'),
-                       district = c('country', 'adminlevel_1', 'district', 'year')
+                       national = c('year'),
+                       admin_level_1 = c('adminlevel_1', 'year'),
+                       district = c('adminlevel_1', 'district', 'year')
   )
 
   output_data <- national_population %>%

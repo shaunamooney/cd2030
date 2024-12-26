@@ -10,7 +10,7 @@ denominatorSelectionUI <- function(id) {
         title = 'Penta 3',
         fluidRow(
           column(12, plotOutput(ns('penta3'))),
-          column(3, downloadButton(ns('penta3_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
+          column(3, downloadUI(ns('penta3_plot'), label = 'Download Plot'))
         )
       ),
 
@@ -18,7 +18,7 @@ denominatorSelectionUI <- function(id) {
         title = 'Measles 1',
         fluidRow(
           column(12, plotOutput(ns('measles1'))),
-          column(3, downloadButton(ns('measles1_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
+          column(3, downloadUI(ns('measles1_plot'), label = 'Download Plot'))
         )
       ),
 
@@ -26,17 +26,18 @@ denominatorSelectionUI <- function(id) {
         title = 'BCG',
         fluidRow(
           column(12, plotOutput(ns('bcg'))),
-          column(3, downloadButton(ns('bcg_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
+          column(3, downloadUI(ns('bcg_plot'), label = 'Download Plot'))
         )
       ),
 
-      tabPanel(
-        title = 'Custom Checks',
-        fluidRow(
-          column(12, plotOutput(ns('custom'))),
-          column(3, downloadButton(ns('custom_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
-        )
-      )
+      # tabPanel(
+      #   title = 'Custom Checks',
+      #   fluidRow(
+      #     column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
+      #     column(12, plotOutput(ns('custom_plot'))),
+      #     column(3, downloadUI(ns('custom_download'), label = 'Download Plot'))
+      #   )
+      # )
     )
   )
 }
@@ -58,7 +59,7 @@ denominatorSelectionServer <- function(id, data, national_values) {
       })
 
       indicator_coverage <- reactive({
-        req(national_rates(), un_estimates())
+        if (!isTruthy(national_rates()) || !isTruthy(un_estimates())) return(NULL)
 
         rates <- national_rates()
 
@@ -73,42 +74,78 @@ denominatorSelectionServer <- function(id, data, national_values) {
                                        dpt1survey = rates$penta1)
       })
 
+      observe({
+        req(data())
+
+        indicator_groups <- attr(data(), 'indicator_groups')
+        inds <- indicator_groups$vacc
+
+        updateSelectizeInput(session, 'indicator', choices = inds)
+      })
+
       output$penta3 <- renderPlot({
+        req(indicator_coverage())
         plot_absolute_differences(indicator_coverage(), 'penta3')
       })
 
       output$measles1 <- renderPlot({
+        req(indicator_coverage())
         plot_absolute_differences(indicator_coverage(), 'measles1')
       })
 
       output$bcg <- renderPlot({
+        req(indicator_coverage())
         plot_absolute_differences(indicator_coverage(), 'bcg')
       })
 
-      output$penta3_plot <- downloadHandler(
-        filename = function() { paste0("penta3_plot_", Sys.Date(), ".png") },
+      output$custom_plot <- renderPlot({
+        req(indicator_coverage())
+        plot_absolute_differences(indicator_coverage(), input$indicator)
+      })
+
+      downloadServer(
+        id = 'penta3_plot',
+        filename = 'penta3_plot',
+        extension = 'png',
         content = function(file) {
           plot_absolute_differences(indicator_coverage(), 'penta3')
           ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        }
+        },
+        data = indicator_coverage
       )
 
-      output$measles1_plot <- downloadHandler(
-        filename = function() { paste0("measles1_plot_", Sys.Date(), ".png") },
+      downloadServer(
+        id = 'measles1_plot',
+        filename = 'measles1_plot',
+        extension = 'png',
         content = function(file) {
           plot_absolute_differences(indicator_coverage(), 'measles1')
           ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        }
+        },
+        data = indicator_coverage
       )
 
-      output$bcg_plot <- downloadHandler(
-        filename = function() { paste0("bcg_plot_", Sys.Date(), ".png") },
+      downloadServer(
+        id = 'bcg_plot',
+        filename = 'bcg_plot',
+        extension = 'png',
         content = function(file) {
           plot_absolute_differences(indicator_coverage(), 'bcg')
           ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        }
+        },
+        data = indicator_coverage
       )
 
+      # downloadServer(
+      #   id = 'custom_download',
+      #   filename = paste0(input$indicator, '_plot'),
+      #   extension = 'png',
+      #   content = function(file) {
+      #     plot_absolute_differences(indicator_coverage(), input$indicator)
+      #     ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
+      #   },
+      #   data = indicator_coverage
+      # )
     }
   )
 }

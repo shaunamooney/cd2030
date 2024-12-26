@@ -192,7 +192,7 @@ new_countdown <- function(.data, class = NULL, call = caller_env()) {
     .data,
     indicator_groups = indicator_groups,
     tracers = tracers,
-    country = country$country,
+    country = country$alternate,
     iso3 = country$iso3,
     class = c(class, 'cd_data')
   )
@@ -584,9 +584,9 @@ match_country <- function(country_name, call = caller_call()) {
 
   # Check if the closest match is within acceptable thresholds
   if (min_country_dist < 0.25 | min_alternate_dist < 0.25) {
-    return(closest_match %>% select(country, countrycode, iso3, iso2))
+    return(closest_match %>% select(alternate, countrycode, iso3, iso2))
   } else {
-    suggestion <- closest_match$country[1]
+    suggestion <- closest_match$alternate[1]
     cd_abort(
       c(
         'x' = 'The country in the document is not supported',

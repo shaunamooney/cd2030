@@ -9,7 +9,7 @@ dataCompletenessUI <- function(id) {
       width = 6,
       fluidRow(
         column(12, gt_output(ns('incomplete_district_summary'))),
-        column(3, downloadButton(ns('download_data'), label = 'Download Data', style = 'color:#2196F3;width:100%;margin-top:10px;'))
+        column(3, downloadUI(ns('download_data'), label = 'Download Data'))
       )
     ),
     box(
@@ -18,7 +18,8 @@ dataCompletenessUI <- function(id) {
       width = 6,
       fluidRow(
         column(2, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
-        column(2, selectizeInput(ns('year'), label = 'Year', choice = NULL))
+        column(2, selectizeInput(ns('year'), label = 'Year', choice = NULL)),
+        column(4, offset = 4, downloadUI(ns('download_incompletes'), label = 'Download Incompletes'))
       ),
       fluidRow(
         column(12, gt_output(ns('incomplete_district')))
@@ -69,9 +70,8 @@ dataCompletenessServer <- function(id, data) {
         updateSelectizeInput(session, 'year', choices = years)
       })
 
-
-      output$incomplete_district <- render_gt({
-        req(input$indicator, input$year, completeness_summary())
+      incomplete_district <- reactive({
+        if (!isTruthy(input$indicator) || !isTruthy(input$year) || !isTruthy(completeness_summary())) return(NULL)
 
         selected_year <- as.numeric(input$year)
         mis_column <- paste0('mis_', input$indicator)
@@ -80,6 +80,13 @@ dataCompletenessServer <- function(id, data) {
           select(district, year, month, any_of(mis_column)) %>%
           filter(year == selected_year, !!sym(mis_column) == 1) %>%
           select(-any_of(mis_column))
+      })
+
+
+      output$incomplete_district <- render_gt({
+        req(incomplete_district())
+
+        incomplete_district()
       })
 
       output$incomplete_district_summary <- render_gt({
@@ -112,12 +119,11 @@ dataCompletenessServer <- function(id, data) {
           )
       })
 
-      output$download_data <- downloadHandler(
-        filename = function() { paste0("checks-reporting_rate_", Sys.Date(), ".xlsx") },
+      downloadServer(
+        id = 'download_data',
+        filename = 'checks_reporting_rate',
+        extension = 'xlsx',
         content = function(file) {
-
-          req(data())
-
           wb <- createWorkbook()
           completeness_rate <- data() %>% calculate_completeness_summary()
           district_completeness_rate <- data() %>% calculate_district_completeness_summary()
@@ -135,7 +141,27 @@ dataCompletenessServer <- function(id, data) {
 
           # Save the workbook
           saveWorkbook(wb, file, overwrite = TRUE)
-        }
+        },
+        data = data
+      )
+
+      downloadServer(
+        id = 'download_incompletes',
+        filename = paste0('checks_incomplete_districts_', input$indicator, '_', input$year),
+        extension = 'xlsx',
+        content = function(file) {
+          wb <- createWorkbook()
+          district_incompletes_sum <- incomplete_district()
+
+          sheet_name_1 <- "Districts with Extreme Outliers"
+          addWorksheet(wb, sheet_name_1)
+          writeData(wb, sheet = sheet_name_1, x = paste0('Districts with incomplete data for ', input$indicator, ' in ', input$year), startCol = 1, startRow = 1)
+          writeData(wb, sheet = sheet_name_1, x = district_incompletes_sum, startCol = 1, startRow = 3)
+
+          # Save the workbook
+          saveWorkbook(wb, file, overwrite = TRUE)
+        },
+        data = incomplete_district
       )
     }
   )

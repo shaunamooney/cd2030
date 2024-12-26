@@ -58,6 +58,15 @@ check_survey_data <- function(.data, call = caller_env()) {
   }
 }
 
+check_equity_data <- function(.data, call = caller_env()) {
+
+  check_required(.data, call = call)
+
+  if (!inherits(.data, 'cd_equity_data')) {
+    cd_abort(c('x' = 'The data object must be of class "cd_un_estimates".'), call = call)
+  }
+}
+
 check_ratio_pairs <- function(.list, arg = call_args(.list), call = caller_env()) {
 
   check_required(.data, call = call)

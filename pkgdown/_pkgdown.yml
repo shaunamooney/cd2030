@@ -16,9 +16,13 @@ reference:
       - load_data
       - load_excel_data
       - load_un_estimates
-      - load_survey_data
       - load_wuenic_data
+      - load_survey_data
+      - load_equity_data
       - save_data
+      - save_dhis2_excel
+      - save_dhis2_master_data
+      - get_dhis2_hfd
 
   - title: "Data Quality Assessment"
     desc: >
@@ -92,15 +96,20 @@ reference:
     - tbl_sum.cd_indicator_coverage
     - tbl_sum.cd_national_denominators
 
-  - title: "National Coverage"
+  - title: "Calculate Coverage"
     desc: >
       To determine the coverage of various indicators
     contents:
-    - analyze_national_coverage
-    - analyze_subnational_coverage
-    - plot.cd_national_coverage
-    - plot.cd_subnational_coverage
-    - summary.cd_subnational_coverage
+    - analyze_coverage
+    - plot.cd_coverage
+    - analyze_inequality
+    - plot.cd_inequality
+    - get_mapping_data
+    - plot.cd_mapping
+    - equiplot
+    - equiplot_area
+    - equiplot_education
+    - equiplot_wealth
 
   - title: "Reporting"
     desc: >

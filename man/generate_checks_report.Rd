@@ -7,6 +7,7 @@
 generate_checks_report(
   .data,
   output_file,
+  un_estimates,
   output_format = c("html_document", "word_document"),
   threshold = 90
 )

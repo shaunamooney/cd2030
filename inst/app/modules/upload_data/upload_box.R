@@ -17,17 +17,15 @@ uploadBoxUI <- function(id) {
           inputId = ns('hfd_file'),
           label = 'Upload HFD data',
           buttonLabel = 'Browse or Drop...',
-          placeholder = 'Supported formats: .xls, .xlsx, .dta, .rds'
+          placeholder = 'Supported formats: .xls, .xlsx, .dta, .rds',
+          accept = c('.xls', '.xlsx', '.dta', 'rds')
         ),
 
         uiOutput(ns("enhanced_feedback"))
       )
     ),
     fluidRow(
-      column(
-        4,
-        downloadButton(ns('download_data'), label = "Download Master Dataset", style = "color:#2196F3;width:100%;margin-top:10px;")
-      )
+      column(4, downloadUI(ns('download_data'), label = "Download Master Dataset"))
     )
   )
 }
@@ -39,15 +37,10 @@ uploadBoxServer <- function(id) {
 
       file_status <- reactiveVal(list(message = "Awaiting file upload...", color = "gray"))
 
-      helpButtonServer(
-        id = 'upload_data',
-        title = 'Upload Data',
-        size = 'l',
-        file = '1_upload_data.md'
-      )
-
       data <- reactive({
-        req(input$hfd_file)
+        if (!isTruthy(input$hfd_file)) {
+          return(NULL)
+        }
 
         file_path <- input$hfd_file$datapath
         file_name <- input$hfd_file$name
@@ -91,12 +84,21 @@ uploadBoxServer <- function(id) {
         )
       })
 
-      output$download_data <- downloadHandler(
-        filename = function() { paste0("master_dataset", Sys.Date(), ".dta") },
+      downloadServer(
+        id = 'download_data',
+        filename = 'master_dataset',
+        extension = 'dta',
         content = function(file) {
-          req(!is.null(data())) # Ensure data is available
           haven::write_dta(data(), file)
-        }
+        },
+        data = data
+      )
+
+      helpButtonServer(
+        id = 'upload_data',
+        title = 'Upload Data',
+        size = 'l',
+        md_file = '1_upload_data.md'
       )
 
       return(data)

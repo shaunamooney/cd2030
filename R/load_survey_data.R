@@ -40,20 +40,19 @@ load_un_estimates <- function(path, country_iso, start_year, end_year) {
 #'
 #' This function loads and processes survey data from a specified file path.
 #' It performs data cleaning, renaming, and standardization while allowing for
-#' the alignment of state codes and filtering by year.
+#' the alignment of state codes.
 #'
 #' @param path Character. File path to the survey data file (DTA format).
 #' @param country_iso Character. ISO code of the country.
 #' @param admin_level description
-#' @param scale description
 #'
 #' @return A tibble containing cleaned and processed survey data, with aligned state codes.
+#'
 #' @export
-load_survey_data <- function(path, country_iso, admin_level = c('national', 'admin_level_1'), scale = 100) {
+load_survey_data <- function(path, country_iso, admin_level = c('national', 'admin_level_1')) {
 
   check_file_path(path)
   check_required(country_iso)
-  check_required(start_year)
 
   admin_level <- arg_match(admin_level)
 
@@ -80,13 +79,12 @@ load_survey_data <- function(path, country_iso, admin_level = c('national', 'adm
     rename_with(~ gsub("dpopv", "dropout_opv13", .x)) %>%
     # rename_with(~ gsub("measles22.*", "measles2", .x)) %>%
     # rename_with(~ gsub("measles12.*", "measles1", .x)) %>%
-    select(-ends_with("r"), -ends_with("24_35"), year) # %>%
-    # filter(year >= start_year)
+    select(-ends_with("r"), -ends_with("24_35"), year)
 
   if (admin_level == 'admin_level_1') {
 
     survdata <- survdata %>%
-      mutate(across(matches('^r_|^se_|^ll_|^ul_'), ~ . * scale)) %>%
+      # mutate(across(matches('^r_|^se_|^ll_|^ul_'), ~ .)) %>%
       separate_wider_delim(cols = 'level', delim = ' ', names = c('admin1_code', 'adminlevel_1'), too_many = 'merge') %>%
       filter(!(iso == 'TZA' & adminlevel_1 %in% c("Kaskazini Unguja","Pemba North",
                                                  "Kusini Pemba","Pemba South","Pemba",
@@ -104,6 +102,47 @@ load_survey_data <- function(path, country_iso, admin_level = c('national', 'adm
   new_tibble(
     survdata,
     class = 'cd_survey_data'
+  )
+}
+
+#' Load and Process Country-Specific Survey Equity Data
+#'
+#' `load_equity_data` loads and processes survey data from a specified file path.
+#' It performs data cleaning, renaming, and standardization while allowing for
+#' the alignment of state codes.
+#'
+#' @param path Character. File path to the survey data file (DTA format).
+#'
+#' @return A tibble containing cleaned and processed survey data.
+#'
+#' @export
+load_equity_data <- function(path) {
+
+  check_file_path(path)
+
+  file_extension <- file_ext(path)
+  survdata <- switch(file_extension,
+                     'dta' = read_dta(path),
+                     cd_abort(
+                       'x' = 'Unsupported file format: please provide a DTA file.')
+  )
+
+  survdata <- survdata %>%
+    select(-contains('_penta1'), -contains('24_35'), -matches('r1|r2|r3')) %>%
+    rename_with(~ gsub("dpt", "penta", .x)) %>%
+    rename_with(~ gsub("polio", "opv", .x)) %>%
+    rename_with(~ gsub("msl", "measles", .x)) %>%
+    rename_with(~ gsub("pneumo", "pcv", .x)) %>%
+    rename_with(~ gsub("full", "fic", .x)) %>%
+    rename_with(~ gsub("zero", "realzerodose", .x)) %>%
+    rename_with(~ gsub("zpenta", "zerodose", .x)) %>%
+    rename_with(~ gsub("invac", "undervax", .x)) %>%
+    rename_with(~ gsub("dppenta", "dropout_penta13", .x)) %>%
+    select(year, starts_with('r_'))
+
+  new_tibble(
+    survdata,
+    class = 'cd_equity_data'
   )
 }
 

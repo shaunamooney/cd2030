@@ -6,7 +6,7 @@ dhis2BoxUI <- function(id) {
       solidHeader = TRUE,
       width = 12,
       fluidRow(
-        column(3, offset = 9, helpButtonUI(ns('dhis2_download')))
+        column(2, offset = 10, helpButtonUI(ns('dhis2_download')))
       ),
       fluidRow(
         column(6, selectizeInput(ns('country'), 'Country', choices = NULL)),
@@ -30,8 +30,8 @@ dhis2BoxUI <- function(id) {
         column(12, uiOutput(ns("enhanced_feedback")))
       ),
       fluidRow(
-        column(4, downloadButton(ns('master_file'), 'Download Master File', style = 'color:#2196F3;width:100%;margin-top:10px;')),
-        column(4, downloadButton(ns('excel_file'), 'Download Excel File', style = 'color:#2196F3;width:100%;margin-top:10px;'))
+        column(4, downloadUI(ns('master_file'), 'Download Master File')),
+        column(4, downloadUI(ns('excel_file'), 'Download Excel File'))
       )
   )
 }
@@ -59,7 +59,9 @@ dhis2BoxServer <- function(id) {
       })
 
       data <- reactive({
-        req(input$login)
+        if (!isTruthy(input$login)) {
+          return(NULL)
+        }
 
         if (input$country == '0' || length(input$country) == 0) {
           file_status(list(
@@ -141,11 +143,6 @@ dhis2BoxServer <- function(id) {
         return(merged_data)
       })
 
-      helpButtonServer('dhis2_download',
-                       'DHIS2 Download',
-                       'l',
-                       '1_dhis2_login.md')
-
       output$enhanced_feedback <- renderUI({
         status <- file_status()
         tags$div(
@@ -154,20 +151,35 @@ dhis2BoxServer <- function(id) {
         )
       })
 
-      output$master_file <- downloadHandler(
-        filename = function() { paste0("master_dataset", Sys.Date(), ".dta") },
+      data_check <- reactive({
+        !is.null(data()) # TRUE if data is available, FALSE otherwise
+      })
+
+      downloadServer(
+        id = 'master_file',
+        filename = 'master_dataset',
+        extension = 'dta',
         content = function(file) {
-          req(data())
           save_data(data(), file)
-        }
+        },
+        data = data
       )
 
-      output$excel_file <- downloadHandler(
-        filename = function() { paste0("Country", Sys.Date(), ".xlsx") },
+      downloadServer(
+        id = 'excel_file',
+        filename = 'master_dataset',
+        extension = 'xlsx',
         content = function(file) {
-          req(data())
           save_dhis2_excel(dhis2_data(), file)
-        }
+        },
+        data = data
+      )
+
+      helpButtonServer(
+        id = 'dhis2_download',
+        title = 'DHIS2 Download',
+        size = 'l',
+        md_file = '1_dhis2_login.md'
       )
 
       return(data)

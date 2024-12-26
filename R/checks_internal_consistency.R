@@ -72,24 +72,21 @@ plot_comparison.cd_data <- function(.data, x_var, y_var, title = NULL, x_label =
   y_label <- y_label %||% y_var
 
   # Create the plot
-  plot <- ggplot(data_filtered, aes(x = .data[[x_var]], y = .data[[y_var]])) +
-    # Scatter plot points
-    geom_point(aes(colour = 'District'), size = 1.5) +
-    # Linear fit line
-    geom_smooth(aes(color = 'Linear fit'), method = 'lm', formula = y ~ x, linetype = 'solid', se = FALSE, size = 0.8) +
-    # Diagonal (identity) line
-    geom_segment(aes(x = min_x, y = min_x, xend = max_x, yend = max_x, colour = 'Diagonale'),
-                 linetype = 'dashed', size = 0.8) +
-    # Facet by year with a 3-col layout
-    facet_wrap(~year, scales = 'free_y', ncol = 3) +
-    labs(x = x_label, y = y_label, title = title, caption = paste("R-squared:", r_squared_value)) +
-    scale_x_continuous(labels = scales::label_number()) +
-    scale_y_continuous(labels = scales::label_number()) +
-    cd_plot_theme() +
-    scale_color_manual(
-      values = c('District' = 'navy', 'Linear fit' = 'black', 'Diagonale' = 'red'),
-      breaks = c('District', 'Linear fit', 'Diagonale')
-    )
+  plot <- data_filtered %>%
+    ggplot(aes(x = .data[[x_var]], y = .data[[y_var]])) +
+      geom_point(aes(colour = 'District'), size = 1.5) +
+      geom_smooth(aes(color = 'Linear fit'), method = 'lm', formula = y ~ x, linetype = 'solid', se = FALSE, size = 0.8) +
+      geom_segment(aes(x = min_x, y = min_x, xend = max_x, yend = max_x, colour = 'Diagonale'),
+                   linetype = 'dashed', size = 0.8) +
+      facet_wrap(~year, scales = 'free_y', ncol = 3) +
+      labs(x = x_label, y = y_label, title = title, caption = paste("R-squared:", r_squared_value)) +
+      scale_x_continuous(labels = scales::label_number()) +
+      scale_y_continuous(labels = scales::label_number()) +
+      cd_plot_theme() +
+      scale_color_manual(
+        values = c('District' = 'navy', 'Linear fit' = 'black', 'Diagonale' = 'red'),
+        breaks = c('District', 'Linear fit', 'Diagonale')
+      )
 
   return(plot)
 }

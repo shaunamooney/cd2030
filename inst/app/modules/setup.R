@@ -47,50 +47,45 @@ setupUI <- function(id) {
             inputId = ns('un_data'),
             label = 'Upload UN Estimates data',
             buttonLabel = 'Browse or Drop...',
-            placeholder = 'Supported formats: .dta'
+            placeholder = 'Supported formats: .dta',
+            accept = '.dta'
           ),
 
-          uiOutput(ns("un_enhanced_feedback"))
+          uiOutput(ns("un_enhanced_feedback")) %>%  tagAppendAttributes(style = "margin-top: 10px;")
         ),
         column(
           6,
           fileInput(
             inputId = ns('wuenic_data'),
-            label = 'Upload WUENIC data',
+            label = 'Upload WUENIC estimates',
             buttonLabel = 'Browse or Drop...',
-            placeholder = 'Supported formats: .dta'
+            placeholder = 'Supported formats: .dta',
+            accept = '.dta'
           ),
 
-          uiOutput(ns("wuenic_enhanced_feedback"))
+          uiOutput(ns("wuenic_enhanced_feedback")) %>%  tagAppendAttributes(style = "margin-top: 10px;")
         ),
         column(
           6,
-          fileInput(
-            inputId = ns('national_survey_data'),
-            label = 'Upload National Survey Data',
-            buttonLabel = 'Browse or Drop...',
-            placeholder = 'Supported formats: .dta'
+          tags$label("Survey Folder", style = 'font-weight: bold; margin-top: 10px; margin-bottom: 5px; display: block;'),
+          shinyDirButton(
+            id = ns('directory'),
+            label = 'Browse or Select...',
+            title = 'Choose a survey folder'
           ),
 
-          uiOutput(ns("survdata_enhanced_feedback"))
+          verbatimTextOutput(ns('selected_dir')) %>%
+            tagAppendAttributes(style = "border: 1px solid #ddd; padding: 5px; border-radius: 4px; margin-top: 10px")
         ),
         column(
           6,
-          fileInput(
-            inputId = ns('regional_survey_data'),
-            label = 'Upload Regional Survey Data',
-            buttonLabel = 'Browse or Drop...',
-            placeholder = 'Supported formats: .dta'
-          ),
+          tags$label("Subnational Data Mapping", style = 'font-weight: bold; margin-top: 10px; margin-bottom: 5px; display: block;'),
+          fluidRow(
+            column(6, actionButton(ns('survey_data'), 'Map Survey Data')),
+            column(6, actionButton(ns('map_data'), 'Map Mapping Data'))
+          )
 
-          uiOutput(ns("gregion_enhanced_feedback"))
         )
-      ),
-
-      fluidRow(
-        column(3, selectizeInput(ns('gregion_scale'),
-                                 label = 'Regional Survey Scale',
-                                 choices = c(1, 100)))
       )
     )
   )
@@ -104,20 +99,28 @@ setupServer <- function(id, data, survey_data) {
     id = id,
     module = function(input, output, session) {
 
+      log_messages <- reactiveVal('Survey folder not set')
+
       un_path <- reactiveVal()
       wuenic_path <- reactiveVal()
       surv_path <- reactiveVal()
       gregion_path <- reactiveVal()
+      area_path <- reactiveVal()
+      meduc_path <- reactiveVal()
+      wiq_path <- reactiveVal()
 
       un_estimates <- reactiveVal()
       wuenic_data <- reactiveVal()
       survdata <- reactiveVal()
       gregion_data <- reactiveVal()
+      area_data <- reactiveVal()
+      meduc_data <- reactiveVal()
+      wiq_data <- reactiveVal()
+      survey_mapping <- reactiveVal()
+      map_mapping <- reactiveVal()
 
       upload_status <- reactiveValues(un =list(message = "Awaiting file upload...", color = "gray"),
-                                      wuenic = list(message = "Awaiting file upload...", color = "gray"),
-                                      survdata = list(message = "Awaiting file upload...", color = "gray"),
-                                      gregion = list(message = "Awaiting file upload...", color = "gray"),)
+                                      wuenic = list(message = "Awaiting file upload...", color = "gray"))
 
       country <- reactive({
         req(data())
@@ -127,6 +130,188 @@ setupServer <- function(id, data, survey_data) {
       country_iso <- reactive({
         req(data())
         attr(data(), 'iso3')
+      })
+
+      # Set up roots for Windows, macOS, and Linux systems
+      roots <- if (.Platform$OS.type == "windows") {
+        drives <- system("wmic logicaldisk get name", intern = TRUE)
+        drives <- gsub("\\s+", "", drives)  # Trim whitespace
+        drives <- drives[nchar(drives) > 0] # Remove empty strings
+        drives <- drives[grepl(":", drives)]
+        setNames(drives, drives)
+      } else {
+        c(home = "~", root = "/") # For macOS and Linux
+      }
+
+      shinyDirChoose(input, 'directory', roots = roots, allowDirCreate = FALSE,
+                     filetypes = c('', 'dta'))
+
+      selected_dir <- eventReactive(input$directory, {
+        req(input$directory)
+
+        path <- parseDirPath(roots, input$directory)
+
+        if (!is.null(path) && length(path) > 0 && nchar(path) > 0) {
+          log_messages(paste0('Survey Folder: ', path))
+          return(path)
+        } else {
+          log_messages('Survey folder not set')
+          return(NULL)
+        }
+      })
+
+
+      survey_file_list <- reactive({
+        req(country())
+        prefix <- list('all_country.dta', 'gregion_country.dta', 'area_country.wide.dta', 'meduc_country.wide.dta', 'wiq_country.wide.dta')
+        gsub('country', country(), prefix)
+      })
+
+      observeEvent(selected_dir(), {
+
+        walk(isolate(survey_file_list()), ~ {
+
+          tryCatch({
+            file_path <- file.path(selected_dir(), .x)
+
+            if (!file.exists(file_path)) {
+              new_log <- paste0('Error: File "', .x, '" was not found in the folder.')
+              log_messages(paste(log_messages(), new_log, sep = "\n"))
+              return()
+            }
+
+            if (grepl('^all_', .x)) {
+              surv_path(file_path)
+              nat_survey <- load_survey_data(surv_path(), country_iso())
+              survdata(nat_survey)
+              new_log <- paste0('Loaded national survey data: "', .x, '".')
+            } else if (grepl('^gregion_', .x)) {
+              gregion_path(file_path)
+              gregion <- load_survey_data(gregion_path(), country_iso(), admin_level = 'admin_level_1')
+              gregion_data(gregion)
+              new_log <- paste0('Loaded regional survey data: "', .x, '".')
+            } else if (grepl('^area_', .x)) {
+              area_path(file_path)
+              area <- load_equity_data(area_path())
+              area_data(area)
+              new_log <- paste0('Loaded area survey data: "', .x, '".')
+            } else if (grepl('^meduc_', .x)) {
+              meduc_path(file_path)
+              meduc <- load_equity_data(meduc_path())
+              meduc_data(meduc)
+              new_log <- paste0('Loaded maternal education survey data: "', .x, '".')
+            } else if (grepl('^wiq', .x)) {
+              wiq_path(file_path)
+              wiq <- load_equity_data(wiq_path())
+              wiq_data(wiq)
+              new_log <- paste0('Loaded wealth index quintile survey data: "', .x, '".')
+            } else {
+              new_log <- paste0('File "', .x, '" does not match any known pattern.')
+            }
+
+            log_messages(paste(log_messages(), new_log, sep = "\n"))
+          }, error = function(e) {
+            new_log <- paste0('Error processing file "', .x, '": ', e$message)
+            log_messages(paste(log_messages(), new_log, sep = "\n"))
+          })
+        })
+      })
+
+      gregion_levels <- reactive({
+        req(data())
+
+        data() %>%
+          distinct(adminlevel_1) %>%
+          arrange(adminlevel_1) %>%
+          pull(adminlevel_1)
+      })
+
+      createMappingModal <- function(id, title, gregion, choices, type) {
+        showModal(
+          modalDialog(
+            title = title,
+            size = 'l',
+            fluidPage(
+              map(gregion, ~ {
+                tagList(
+                  fluidRow(
+                    column(6, strong(.x)),
+                    column(6, selectizeInput(
+                      inputId = NS(id, .x),
+                      label = NULL,
+                      choices = c('Select' = "", choices),
+                      selected = ""
+                    ))
+                  ),
+                  tags$hr(style = "margin: 0 0 10px;")
+                )
+              })
+            ),
+            footer = tagList(
+              actionButton(NS(id, type), "Save Mapping"),
+              modalButton("Cancel")
+            )
+          ))
+      }
+
+
+      observeEvent(input$survey_data, {
+        req(gregion_levels())
+
+        gregion <- gregion_levels()
+
+        dt <- gregion_data() %>%
+          distinct(adminlevel_1) %>%
+          arrange(adminlevel_1) %>%
+          pull(adminlevel_1)
+
+        createMappingModal(id, 'Manual Mapping of Survey Data', gregion, dt, type = 'save_survey_mapping')
+      })
+
+      observeEvent(input$save_survey_mapping, {
+        mapped_to <- map(gregion_levels(), ~ input[[.x]])
+        mapping_result <- tibble(
+          admin_level_1 = gregion_levels(),
+          adminlevel_1 = unlist(mapped_to, use.names = FALSE)
+        )
+
+        survey_mapping(mapping_result)
+        removeModal()  # Close the modal dialog
+      })
+
+      observeEvent(input$map_data, {
+        gregion <- if (country_iso() == 'KEN') {
+          data() %>%
+            distinct(district) %>%
+            arrange(district) %>%
+            pull(district)
+        } else {
+          gregion_levels()
+        }
+
+        req(gregion,  data())
+
+        dt <- get_country_shapefile(country_iso(), 'admin_level_1') %>%
+          distinct(NAME_1) %>%
+          arrange(NAME_1) %>%
+          pull(NAME_1)
+
+        createMappingModal(id, 'Manual Mapping of Map Data', gregion, dt, type = 'save_map_mapping')
+      })
+
+      observeEvent(input$save_map_mapping, {
+        mapped_to <- map(gregion_levels(), ~ input[[.x]])
+        mapping_result <- tibble(
+          adminlevel_1 = gregion_levels(),
+          NAME_1 = unlist(mapped_to, use.names = FALSE)
+        )
+
+        map_mapping(mapping_result)
+        removeModal()  # Close the modal dialog
+      })
+
+      output$selected_dir <- renderText({
+        log_messages()
       })
 
       setup_values <- reactive({
@@ -145,7 +330,12 @@ setupServer <- function(id, data, survey_data) {
             un = un_estimates(),
             wuenic = wuenic_data(),
             survdata = survdata(),
-            gregion = gregion_data()
+            gregion = gregion_data(),
+            area = area_data(),
+            meduc = meduc_data(),
+            wiq = wiq_data(),
+            survey_map = survey_mapping(),
+            map_map = map_mapping()
           )
         )
       })
@@ -172,20 +362,6 @@ setupServer <- function(id, data, survey_data) {
           wuenic <- load_wuenic_data(wuenic_path(), country_iso())
           wuenic_data(wuenic)
         }
-
-        surv_path(NULL)
-        survdata(NULL)
-        upload_status$survdata <- list(
-          message = paste("Awaiting file upload..."),
-          color = "gray"
-        )
-
-        gregion_path(NULL)
-        gregion_data(NULL)
-        upload_status$gregion <- list(
-          message = paste("Awaiting file upload..."),
-          color = "gray"
-        )
       })
 
       observeEvent(input$un_data, {
@@ -238,65 +414,6 @@ setupServer <- function(id, data, survey_data) {
         })
       })
 
-      observeEvent(input$national_survey_data, {
-        req(country_iso())
-
-        file_name <- input$national_survey_data$name
-        surv_path(input$national_survey_data$datapath)
-
-        tryCatch({
-          dt <- load_survey_data(surv_path(), country_iso(), 'national')
-
-          upload_status$survdata <- list(
-            message = paste("Upload successful: File", file_name, "is ready."),
-            color = "darkgreen"
-          )
-          survdata(dt)
-        }, error = function(e) {
-          upload_status$survdata <- list(
-            message = "Upload failed: Check the file format and try again.",
-            color = "red"
-          )
-          survdata(NULL)
-        })
-      })
-
-      observeEvent(input$regional_survey_data, {
-        req(country_iso())
-
-        file_name <- input$regional_survey_data$name
-        gregion_path(input$regional_survey_data$datapath)
-
-        tryCatch({
-          dt <- load_survey_data(gregion_path(),
-                                 country_iso = country_iso(),
-                                 admin_level = 'admin_level_1',
-                                 scale = as.integer(input$gregion_scale))
-
-          upload_status$gregion <- list(
-            message = paste("Upload successful: File", file_name, "is ready."),
-            color = "darkgreen"
-          )
-          gregion_data(dt)
-        }, error = function(e) {
-          upload_status$gregion <- list(
-            message = "Upload failed: Check the file format and try again.",
-            color = "red"
-          )
-          gregion_data(NULL)
-        })
-      })
-
-      observeEvent(input$gregion_scale, {
-        req(gregion_path(), country_iso(), input$gregion_scale)
-
-        dt <- load_survey_data(gregion_path(),
-                               country_iso = country_iso(),
-                               admin_level = 'admin_level_1',
-                               scale = as.integer(input$gregion_scale))
-        gregion_data(dt)
-      })
-
       output$un_enhanced_feedback <- renderUI({
         status <- upload_status$un
         tags$div(
@@ -307,22 +424,6 @@ setupServer <- function(id, data, survey_data) {
 
       output$wuenic_enhanced_feedback <- renderUI({
         status <- upload_status$wuenic
-        tags$div(
-          style = paste("color:", status$color, "; font-weight: bold;"),
-          status$message
-        )
-      })
-
-      output$survdata_enhanced_feedback <- renderUI({
-        status <- upload_status$survdata
-        tags$div(
-          style = paste("color:", status$color, "; font-weight: bold;"),
-          status$message
-        )
-      })
-
-      output$gregion_enhanced_feedback <- renderUI({
-        status <- upload_status$gregion
         tags$div(
           style = paste("color:", status$color, "; font-weight: bold;"),
           status$message

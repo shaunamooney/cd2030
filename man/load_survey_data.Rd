@@ -7,8 +7,7 @@
 load_survey_data(
   path,
   country_iso,
-  start_year,
-  level = c("national", "regional")
+  admin_level = c("national", "admin_level_1")
 )
 }
 \arguments{
@@ -16,9 +15,7 @@ load_survey_data(
 
 \item{country_iso}{Character. ISO code of the country.}
 
-\item{start_year}{Integer. Minimum year to include in the processed dataset.}
-
-\item{level}{description}
+\item{admin_level}{description}
 }
 \value{
 A tibble containing cleaned and processed survey data, with aligned state codes.
@@ -26,5 +23,5 @@ A tibble containing cleaned and processed survey data, with aligned state codes.
 \description{
 This function loads and processes survey data from a specified file path.
 It performs data cleaning, renaming, and standardization while allowing for
-the alignment of state codes and filtering by year.
+the alignment of state codes.
 }

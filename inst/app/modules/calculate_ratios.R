@@ -3,7 +3,7 @@ calculateRatiosUI <- function(id) {
 
   fluidRow(
     box(
-      title = 'Setup Survey Values',
+      title = 'Ratio Options',
       status = 'success',
       width = 12,
       fluidRow(
@@ -16,33 +16,16 @@ calculateRatiosUI <- function(id) {
         column(3, offset = 0, numericInput(ns('penta3_coverage'),
                                           'Penta3 Coverage (%)',
                                           min = 0, max = 100, value = 89, step = 1))
-      ),
-      fluidRow(
-
-        column(3, offset = 1, numericInput(ns('opv1_coverage'),
-                                          'OPV1 Coverage (%)',
-                                          min = 0, max = 100, value = 97, step = 1)),
-        column(3, offset = 0, numericInput(ns('opv3_coverage'),
-                                          'OPV3 Coverage (%)',
-                                          min = 0, max = 100, value = 78, step = 1)),
-        column(3, offset = 0, numericInput(ns('pcv1_coverage'),
-                                          'PCV1 Coverage (%)',
-                                          min = 0, max = 100, value = 97, step = 1))
-      ),
-      fluidRow(
-        column(3, offset = 1, numericInput(ns('rota1_coverage'),
-                                          'Rota1 Coverage (%)',
-                                          min = 0, max = 100, value = 96, step = 1))
       )
     ),
     box(
-      title = 'Set Survey Values',
+      title = 'Ratio Plots',
       status = 'success',
       width = 12,
       fluidRow(
-        column(2, offset = 10, helpButtonUI(ns('survey_values')), style = 'margin-bottom: 10px;'),
-        column(12, plotOutput(ns('ratios'))),
-        column(3, downloadButton(ns('ratio_plot_download'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
+        column(2, offset = 10, helpButtonUI(ns('ratios')), style = 'margin-bottom: 10px;'),
+        column(12, plotOutput(ns('ratios_plot'))),
+        column(4, downloadUI(ns('ratio_plot_download'), label = 'Download Plot'))
       )
     )
   )
@@ -65,21 +48,27 @@ calculateRatiosServer <- function(id, data) {
           rota1 = input$rota1_coverage)
       })
 
-      output$ratios <- renderPlot({
+      output$ratios_plot <- renderPlot({
         req(data())
         plot(calculate_ratios_summary(data(), survey_coverage = survey_coverage()))
       })
 
-      output$ratio_plot_download <- downloadHandler(
-        filename = function() { paste0("ratio_plot_", Sys.Date(), ".png") },
+      downloadServer(
+        id = 'ratio_plot_download',
+        filename = 'ratio_plot',
+        extension = 'png',
         content = function(file) {
-          req(data())
           plot(calculate_ratios_summary(data(), survey_coverage = survey_coverage()))
           ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        }
+        },
+        data = data
       )
 
-      helpButtonServer('survey_values', 'Ratios for Internal Consistency', 'l', '2_calculate_ratios.md')
+      helpButtonServer(
+        id = 'ratios',
+        title = 'Ratios for Internal Consistency',
+        size = 'l',
+        md_file = '2_calculate_ratios.md')
 
       return(reactive({
         list(anc1 = input$anc1_coverage,

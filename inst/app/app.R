@@ -5,6 +5,7 @@ options(shiny.maxRequestSize = 2000*1024^2)
 
 library(shiny)
 library(shinydashboard)
+library(shinyFiles)
 library(cd2030)
 library(cli)
 library(dplyr)
@@ -14,9 +15,11 @@ library(openxlsx)
 library(khisr)
 library(plotly)
 library(purrr)
+library(forcats)
 library(lubridate)
 library(RColorBrewer)
 library(sf)
+library(shinyjs)
 library(stringr)
 
 source('modules/help_button.R')
@@ -37,13 +40,12 @@ source('modules/national_coverage.R')
 source('modules/subnational_coverage.R')
 source('modules/subnational_inequality.R')
 source('modules/subnational_mapping.R')
+source('modules/equity.R')
+source('modules/download.R')
 
 ui <- dashboardPage(
   skin = 'green',
-  header = dashboardHeader(
-    title = 'cd2030',
-    dropdownMenuOutput('messageMenu')
-  ),
+  header = dashboardHeader(title = "cd2030"),
   sidebar = dashboardSidebar(
     sidebarMenu(
       id = 'tabs',
@@ -52,6 +54,7 @@ ui <- dashboardPage(
       menuItem('Quality Checks',
                tabName = 'quality_checks',
                icon = icon('check-circle'),
+               startExpanded  = TRUE,
                menuSubItem('Reporting Rate',
                            tabName = 'reporting_rate',
                            icon = icon('chart-bar')),
@@ -72,18 +75,50 @@ ui <- dashboardPage(
                            icon = icon('star'))
                ),
       menuItem('Remove Years', tabName = 'remove_years', icon = icon('trash')),
-      menuItem('Data Adjustment', tabName = 'data_adjustment', icon = icon('adjust')),
       menuItem('Analysis Setup', tabName = 'setup', icon = icon('sliders-h')),
-      menuItem('Denominator Assessment', tabName = 'denominator_assessment', icon = icon('calculator')),
-      menuItem('Denominator Selection', tabName = 'denominator_selection', icon = icon('filter')),
-      menuItem('National Coverage', tabName = 'national_coverage', icon = icon('map-marked-alt')),
-      menuItem('Subational Coverage', tabName = 'subnational_coverage', icon = icon('map-marked')),
-      menuItem('Sub-National Inequality', tabName = 'subnational_inequality', icon = icon('balance-scale-right')),
-      menuItem('Sub-National Mapping', tabName = 'subnational_mapping', icon = icon('map')),
+      menuItem('Data Adjustment', tabName = 'data_adjustment', icon = icon('adjust')),
+      menuItem('Denominator Selection',
+               tabName = 'denom_assess',
+               icon = icon('calculator'),
+               startExpanded  = TRUE,
+               menuSubItem('Denominator Assessment',
+                           tabName = 'denominator_assessment',
+                           icon = icon('calculator')),
+               menuSubItem('Denominator Selection',
+                           tabName = 'denominator_selection',
+                           icon = icon('filter'))
+               ),
+      menuItem('National Analysis',
+               tabName = 'national_analysis',
+               icon = icon('flag'),
+               startExpanded  = TRUE,
+               menuSubItem('National Coverage',
+                           tabName = 'national_coverage',
+                           icon = icon('map-marked-alt'))
+               ),
+      menuItem('Subnational Analysis',
+               tabName = 'subnational_analysis',
+               icon = icon('flag'),
+               startExpanded  = TRUE,
+               menuSubItem('Subational Coverage',
+                           tabName = 'subnational_coverage',
+                           icon = icon('map-marked')),
+               menuSubItem('Sub-National Inequality',
+                           tabName = 'subnational_inequality',
+                           icon = icon('balance-scale-right')),
+               menuSubItem('Sub-National Mapping',
+                           tabName = 'subnational_mapping',
+                           icon = icon('map'))
+               ),
+      menuItem('Equity Assessment', tabName = 'equity_assessment', icon = icon('balance-scale')),
       menuItem('Download Report', tabName = 'download_report', icon = icon('download'))
     )
   ),
   body = dashboardBody(
+    useShinyjs(),
+    tags$head(
+      tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
+    ),
     tabItems(
       tabItem(tabName = 'introduction', introductionUI('introduction')),
       tabItem(tabName = 'upload_data', uploadDataUI('upload_data')),
@@ -101,7 +136,8 @@ ui <- dashboardPage(
       tabItem(tabName = 'national_coverage', nationalCoverageUI('national_coverage')),
       tabItem(tabName = 'subnational_coverage', subnationalCoverageUI('subnational_coverage')),
       tabItem(tabName = 'subnational_inequality', subnationalInequalityUI('subnational_inequality')),
-      tabItem(tabName = 'subnational_mapping', subnationalMappingUI('subnational_mapping'))
+      tabItem(tabName = 'subnational_mapping', subnationalMappingUI('subnational_mapping')),
+      tabItem(tabName = 'equity_assessment', equityUI('equity_assessment'))
     )
   )
 )
@@ -132,6 +168,7 @@ server <- function(input, output, session) {
   subnationalCoverageServer('subnational_coverage', dt, national_values)
   subnationalInequalityServer('subnational_inequality', dt, national_values)
   subnationalMappingServer('subnational_mapping', dt, national_values)
+  equityServer('equity_assessment', national_values)
 
   observeEvent(input$tabs, {
     if (input$tabs == 'download_report') {
@@ -150,6 +187,36 @@ server <- function(input, output, session) {
         generate_checks_report(dt(), 'report.html', un_estimates = national_values()$data$un)
       }
     }
+  })
+
+  observe({
+    # Dynamic header title or content
+    req(data())
+
+    country <- attr(data(), 'country')
+    header_title <- div(
+      class = "navbar-header",
+      h4(HTML(paste0(country, ' &mdash; Countdown Analysis')), class = 'navbar-brand')
+    )
+
+    # Dynamically update the header
+    header <- htmltools::tagQuery(dashboardHeader(title = "cd2030", dropdownMenuCustom('download')))
+    header <- header$
+      addAttrs(style = "position: relative")$ # add some styles to the header
+      find(".navbar.navbar-static-top")$      # find the header right side
+      append(header_title)$                     # inject dynamic content
+      allTags()
+
+    removeUI(selector = "header.main-header", immediate = TRUE)
+
+    # Replace the header in the UI
+    insertUI(
+      selector = "body",
+      where = "afterBegin",
+      ui = header
+    )
+
+    shinyjs::addClass(selector = ".main-sidebar", class = "custom-main-sidebar")
   })
 }
 

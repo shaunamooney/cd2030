@@ -9,7 +9,7 @@ outlierDetectionUI <- function(id) {
       width = 6,
       fluidRow(
         column(12, gt_output(ns('outlier_summary'))),
-        column(3, downloadButton(ns('download_data'), label = 'Download Data', style = 'color:#2196F3;width:100%;margin-top:10px;'))
+        column(4, downloadUI(ns('download_data'), label = 'Download Data'))
       )
     ),
     box(
@@ -18,7 +18,8 @@ outlierDetectionUI <- function(id) {
       width = 6,
       fluidRow(
         column(2, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
-        column(2, selectizeInput(ns('year'), label = 'Year', choice = NULL))
+        column(2, selectizeInput(ns('year'), label = 'Year', choice = NULL)),
+        column(4, offset = 4, downloadUI(ns('download_outliers'), label = 'Download Outliers'))
       ),
       fluidRow(
         column(12, gt_output(ns('district_outlier_summary')))
@@ -64,16 +65,31 @@ outlierDetectionServer <- function(id, data) {
         updateSelectizeInput(session, 'year', choices = years)
       })
 
-      output$district_outlier_summary <- render_gt({
-        req(input$indicator, input$year, outlier_summary())
+      district_outliers <- reactive({
+        if (!isTruthy(input$indicator) || !isTruthy(input$year) || !isTruthy(outlier_summary())) return(NULL)
 
         selected_year <- as.numeric(input$year)
         outlier_column <- paste0(input$indicator, '_outlier5std')
 
+        last_year <- max(data()$year, na.rm = TRUE)
+
+        dt <- data() %>%
+          mutate(
+            district_mad =  round(mad(if_else(year < last_year, !!sym(input$indicator), NA_real_), na.rm = TRUE), 0),
+            district_median = round(median(if_else(year < last_year, !!sym(input$indicator), NA_real_), na.rm = TRUE), 0),
+            .by = district
+          )
+
         outlier_summary() %>%
-          select(district, year, month, any_of(outlier_column)) %>%
           filter(year == selected_year, !!sym(outlier_column) == 1) %>%
-          select(-any_of(outlier_column))
+          left_join(dt, by = c('year', 'month', 'district')) %>%
+          select(district, year, month, any_of(input$indicator), district_median, district_mad)
+      })
+
+      output$district_outlier_summary <- render_gt({
+        req(district_outliers())
+
+        district_outliers()
       })
 
       output$outlier_summary <- render_gt({
@@ -106,12 +122,11 @@ outlierDetectionServer <- function(id, data) {
           )
       })
 
-      output$download_data <- downloadHandler(
-        filename = function() { paste0("checks-reporting_rate_", Sys.Date(), ".xlsx") },
+      downloadServer(
+        id = 'download_data',
+        filename = 'checks_outlier_detection',
+        extension = 'xlsx',
         content = function(file) {
-
-          req(data())
-
           wb <- createWorkbook()
           completeness_rate <- data() %>% calculate_outliers_summary()
           district_completeness_rate <- data() %>% calculate_district_outlier_summary()
@@ -129,9 +144,28 @@ outlierDetectionServer <- function(id, data) {
 
           # Save the workbook
           saveWorkbook(wb, file, overwrite = TRUE)
-        }
+        },
+        data = data
       )
 
+      downloadServer(
+        id = 'download_outliers',
+        filename = paste0('checks_outlier_districts_', input$indicator, '_', input$year),
+        extension = 'xlsx',
+        content = function(file) {
+          wb <- createWorkbook()
+          district_outliers_sum <- district_outliers()
+
+          sheet_name_1 <- "Districts with Extreme Outliers"
+          addWorksheet(wb, sheet_name_1)
+          writeData(wb, sheet = sheet_name_1, x = paste0('Districts with extreme outliers for ', input$indicator, ' in ', input$year), startCol = 1, startRow = 1)
+          writeData(wb, sheet = sheet_name_1, x = district_outliers_sum, startCol = 1, startRow = 3)
+
+          # Save the workbook
+          saveWorkbook(wb, file, overwrite = TRUE)
+        },
+        data = district_outliers
+      )
 
     }
   )

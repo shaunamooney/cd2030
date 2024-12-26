@@ -29,6 +29,8 @@ Imports:
     scales,
     shiny,
     shinydashboard,
+    shinyFiles,
+    shinyjs,
     stats,
     stringdist,
     stringr,

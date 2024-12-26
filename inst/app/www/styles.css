@@ -1,0 +1,13 @@
+.main-header .navbar-brand{
+  margin: 0;
+}
+
+.main-sidebar.custom-main-sidebar{
+  margin-top: -50px;
+}
+
+@media (max-width: 767px) {
+  .sidebar-open .main-sidebar.custom-main-sidebar{
+    margin-top: -100px;
+  }
+}

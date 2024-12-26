@@ -14,16 +14,16 @@
 #'   - `"district"`: Aggregates data at the district level.
 #'
 #' @return A tibble with yearly totals for each indicator at the specified administrative
-#'   level, grouped by country, year, and additional grouping variables as per the chosen level.
+#'   level, grouped by year, and additional grouping variables as per the chosen level.
 #'
 #' @details
 #' This function performs the following steps:
 #' 1. **Validation**: Confirms that `.data` is a `cd_data` object and contains
 #'    required columns for specified indicators.
-#' 2. **Aggregation**: Sums the counts for each indicator, grouped by `country`,
-#'    `year`, and additional grouping variables as per the chosen `admin_level`.
+#' 2. **Aggregation**: Sums the counts for each indicator, grouped by `year`, and
+#'    additional grouping variables as per the chosen `admin_level`.
 #' 3. **Output**: Returns a tibble ordered by `year`, containing aggregated indicators
-#'    alongside the `country`, `year`, and administrative level columns.
+#'    alongside the `year`, and administrative level columns.
 #'
 #' @examples
 #' \dontrun{
@@ -43,9 +43,9 @@ compute_indicator_numerator <- function(.data, admin_level = c('national', 'admi
   admin_level <- arg_match(admin_level)
 
   group_vars <- switch(admin_level,
-                       national = c('country', 'year'),
-                       admin_level_1 = c('country', 'adminlevel_1', 'year'),
-                       district = c('country', 'adminlevel_1', 'district', 'year'))
+                       national = c('year'),
+                       admin_level_1 = c('adminlevel_1', 'year'),
+                       district = c('adminlevel_1', 'district', 'year'))
 
   indicator_groups <- attr(.data, 'indicator_groups')
   all_indicators <- list_c(indicator_groups)
