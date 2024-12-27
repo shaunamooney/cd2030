@@ -122,22 +122,22 @@ subnationalCoverageServer <- function(id, data, national_values) {
         rates <- national_rates()
         surv_data <- national_data()
 
-        coverage <- analyze_coverage(data(),
-                                     admin_level = 'admin_level_1',
-                                     region = input$region,
-                                     subnational_map = surv_data$survey_map,
-                                     indicator = 'measles1',
-                                     denominator = input$denominator,
-                                     un_estimates = surv_data$un,
-                                     survey_data = gregion(),
-                                     wuenic_data = surv_data$wuenic,
-                                     sbr = rates$sbr,
-                                     nmr = rates$nmr,
-                                     pnmr = rates$pnmr,
-                                     anc1survey =rates$anc1,
-                                     dpt1survey = rates$penta1,
-                                     twin = rates$twin_rate,
-                                     preg_loss = rates$preg_loss)
+        analyze_coverage(data(),
+                         admin_level = 'admin_level_1',
+                         region = input$region,
+                         subnational_map = surv_data$survey_map,
+                         indicator = 'measles1',
+                         denominator = input$denominator,
+                         un_estimates = surv_data$un,
+                         survey_data = gregion(),
+                         wuenic_data = surv_data$wuenic,
+                         sbr = rates$sbr,
+                         nmr = rates$nmr,
+                         pnmr = rates$pnmr,
+                         anc1survey =rates$anc1,
+                         dpt1survey = rates$penta1,
+                         twin = rates$twin_rate,
+                         preg_loss = rates$preg_loss)
       })
 
       penta3_coverage <- reactive({

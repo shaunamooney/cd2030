@@ -98,5 +98,5 @@ get_country_shapefile <- function(country_iso, level = c('admin_level_1', 'distr
     )
   }
 
-  st_read(shapefile_path)
+  st_read(shapefile_path, quiet = TRUE)
 }

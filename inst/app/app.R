@@ -18,6 +18,7 @@ library(purrr)
 library(forcats)
 library(lubridate)
 library(RColorBrewer)
+library(tidyr)
 library(sf)
 library(shinyjs)
 library(stringr)
@@ -42,6 +43,7 @@ source('modules/subnational_inequality.R')
 source('modules/subnational_mapping.R')
 source('modules/equity.R')
 source('modules/download.R')
+source('modules/adjustment_changes.R')
 
 ui <- dashboardPage(
   skin = 'green',
@@ -75,12 +77,12 @@ ui <- dashboardPage(
                            icon = icon('star'))
                ),
       menuItem('Remove Years', tabName = 'remove_years', icon = icon('trash')),
-      menuItem('Analysis Setup', tabName = 'setup', icon = icon('sliders-h')),
       menuItem('Data Adjustment', tabName = 'data_adjustment', icon = icon('adjust')),
+      menuItem('Data Adjustment Changes', tabName = 'data_adjustment_changes', icon = icon('adjust')),
+      menuItem('Analysis Setup', tabName = 'setup', icon = icon('sliders-h')),
       menuItem('Denominator Selection',
                tabName = 'denom_assess',
                icon = icon('calculator'),
-               startExpanded  = TRUE,
                menuSubItem('Denominator Assessment',
                            tabName = 'denominator_assessment',
                            icon = icon('calculator')),
@@ -91,7 +93,6 @@ ui <- dashboardPage(
       menuItem('National Analysis',
                tabName = 'national_analysis',
                icon = icon('flag'),
-               startExpanded  = TRUE,
                menuSubItem('National Coverage',
                            tabName = 'national_coverage',
                            icon = icon('map-marked-alt'))
@@ -99,7 +100,6 @@ ui <- dashboardPage(
       menuItem('Subnational Analysis',
                tabName = 'subnational_analysis',
                icon = icon('flag'),
-               startExpanded  = TRUE,
                menuSubItem('Subational Coverage',
                            tabName = 'subnational_coverage',
                            icon = icon('map-marked')),
@@ -130,6 +130,7 @@ ui <- dashboardPage(
       tabItem(tabName = 'overall_score', overallScoreUI('overall_score')),
       tabItem(tabName = 'remove_years', removeYearsUI('remove_years')),
       tabItem(tabName = 'data_adjustment', dataAjustmentUI('data_adjustment')),
+      tabItem(tabName = 'data_adjustment_changes', adjustmentChangesUI('data_adjustment_changes')),
       tabItem(tabName = 'setup', setupUI('setup')),
       tabItem(tabName = 'denominator_assessment', denominatorAssessmentUI('denominator_assessment')),
       tabItem(tabName = 'denominator_selection', denominatorSelectionUI('denominator_selection')),
@@ -143,6 +144,9 @@ ui <- dashboardPage(
 )
 
 server <- function(input, output, session) {
+
+  dt <- reactiveVal()
+  k_factors <- reactiveVal()
 
   introductionServer('introduction')
   data <- uploadDataServer('upload_data')
@@ -159,12 +163,19 @@ server <- function(input, output, session) {
   survey_data <- calculateRatiosServer('calculate_ratios', data)
   overallScoreServer('overall_score', data)
   removed_dt <- removeYearsServer('remove_years', data)
-  dt <- dataAdjustmentServer('data_adjustment', removed_dt)
+  adjusted_dt <- dataAdjustmentServer('data_adjustment', removed_dt)
 
-  national_values <- setupServer('setup', data, survey_data)
+  observeEvent(adjusted_dt(), {
+    req(adjusted_dt())
+    dt(adjusted_dt()$modified_data)
+    k_factors(adjusted_dt()$k_factors)
+  })
+
+  adjustmentChangesServer('data_adjustment_changes', dt, k_factors)
+  national_values <- setupServer('setup', dt, survey_data)
   denominatorAssessmentServer('denominator_assessment', dt, national_values)
   denominatorSelectionServer('denominator_selection', dt, national_values)
-  nationalCoverageServer('national_coverage', dt, national_values)
+  report_year <- nationalCoverageServer('national_coverage', dt, national_values)
   subnationalCoverageServer('subnational_coverage', dt, national_values)
   subnationalInequalityServer('subnational_inequality', dt, national_values)
   subnationalMappingServer('subnational_mapping', dt, national_values)
@@ -183,8 +194,25 @@ server <- function(input, output, session) {
           )
         )
       } else {
-        # Generate the report if data is available
-        generate_checks_report(dt(), 'report.html', un_estimates = national_values()$data$un)
+        showModal(
+          modalDialog(
+            title = "Download Options",
+            selectizeInput(
+              "denominator", "Select Denominator:",
+              choices = c('DHIS 2' = 'dhis2', 'ANC 1' = 'anc1', 'Penta 1' = 'penta1')
+            ),
+            selectizeInput(
+              "format", "Select Format:",
+              choices = c('Word' = 'word_document', 'PDF' = 'pdf_document')
+            ),
+            footer = tagList(
+              fluidRow(
+                column(6, align = "left", modalButton("Cancel")),
+                column(6, align = "right", downloadUI('download_data', 'Download Report'))
+              )
+            )
+          )
+        )
       }
     }
   })
@@ -218,6 +246,36 @@ server <- function(input, output, session) {
 
     shinyjs::addClass(selector = ".main-sidebar", class = "custom-main-sidebar")
   })
+
+  country <- reactive({
+    req(dt())
+    attr(dt(), 'country')
+  })
+
+  extension <- reactive({
+    req(input$format)
+
+    switch(input$format,
+           'word_document' = 'docx',
+           'pdf_document' = 'pdf',
+           'html_document' = 'html')
+  })
+
+  downloadServer(
+    id = 'download_data',
+    filename = paste0(country(), '_countdown_report'),
+    extension = extension(),
+    content = function(file) {
+      generate_checks_report(dt(), file,
+                             survey_values = national_values(),
+                             k_factors = k_factors(),
+                             country = country(),
+                             output_format = input$format,
+                             denominator = input$denominator,
+                             survey_start_year = report_year())
+    },
+    data = dt
+  )
 }
 
 shinyApp(ui = ui, server = server)

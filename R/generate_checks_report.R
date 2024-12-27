@@ -20,8 +20,12 @@
 #' @export
 generate_checks_report <- function(.data,
                           output_file,
-                          un_estimates,
-                          output_format = c('html_document', 'word_document'),
+                          survey_values,
+                          k_factors,
+                          country,
+                          denominator,
+                          survey_start_year,
+                          output_format = c('html_document', 'word_document', 'pdf_document'),
                           threshold = 90) {
 
   check_cd_data(.data)
@@ -43,9 +47,15 @@ generate_checks_report <- function(.data,
     input = paste0(system.file(package = "cd2030"), "/rmd/check_template.Rmd"),
     output_format = format,
     output_file = output_path,
-    params = list(data = .data, threshold = threshold, un_estimates = un_estimates),
+    params = list(data = .data,
+                  threshold = threshold,
+                  survey_values = survey_values,
+                  k_factors = k_factors,
+                  country = country,
+                  survey_start_year = survey_start_year,
+                  denominator = denominator),
     encoding = "UTF-8",
-    runtime = 'static',
+    runtime = 'auto',
     intermediates_dir = temp_dir,    # Set unique temp directory
     clean = TRUE                     # Clean up intermediate files
   )

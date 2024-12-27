@@ -116,35 +116,90 @@ cd_plot_theme <- function() {
   )
 }
 
-cd_report_theme <- function() {
-  theme(
-    panel.background = element_blank(),
-    panel.border = element_rect(color = "black", fill = NA, size = 0.8),
+cd_report_theme <- function(base_size = 10, base_family = "",
+                            base_line_size = base_size/22,
+                            base_rect_size = base_size/22) {
+  # theme(
+  #   panel.background = element_blank(),
+  #   panel.border = element_rect(color = "black", fill = NA, size = 0.8),
+  #
+  #   legend.background = element_rect(color = "black",size = 0.5),
+  #   legend.position = "bottom",
+  #   legend.title = element_blank(),
+  #   legend.text = element_text(size = 8),
+  #   # legend.text = element_text(size = 13),
+  #   # legend.key.size = unit(8, "mm"),
+  #
+  #   plot.title = element_text(size = 10, hjust = 0.5),
+  #   plot.subtitle = element_text(size = 10, hjust = 0.5),
+  #   plot.caption = element_text(hjust = 0),
+  #
+  #   # plot.title = element_text(size = 16, hjust = 0.5),
+  #   # plot.subtitle = element_text(size = 12, hjust = 0.5),
+  #   # plot.caption = element_text(size = 12, hjust = 0),
+  #
+  #   axis.text = element_text(size = 8),
+  #   # axis.text = element_text(size = 14),
+  #   axis.title = element_text(size = 10),
+  #   # axis.title = element_text(size = 18),
+  #
+  #   strip.background = element_blank(),
+  #   strip.text = element_text(size = 10),
+  #   # strip.text = element_text(size = 12)
+  # )
 
-    legend.background = element_rect(color = "black",size = 0.5),
-    legend.position = "bottom",
-    legend.title = element_blank(),
-    legend.text = element_text(size = 8),
-    # legend.text = element_text(size = 13),
-    # legend.key.size = unit(8, "mm"),
+  half_line <- base_size/2
+  small_rel <- 0.85
+  small_size <- base_size * small_rel
+  theme_bw(
+    base_size = base_size,
+    base_family = base_family,
+    base_line_size = base_line_size,
+    base_rect_size = base_rect_size
+  ) %>%
+    theme(
+      line = element_line(colour = "black", size = base_line_size,
+                          linetype = 1, lineend = "butt"),
+      rect = element_rect(fill = NA, colour = "black",
+                          size = base_rect_size, linetype = 1),
+      text = element_text(family = base_family, face = "plain",
+                          colour = "black", size = base_size,
+                          lineheight = 0.9, hjust = 0.5, vjust = 0.5,
+                          angle = 0, margin = margin(), debug = FALSE),
 
-    plot.title = element_text(size = 10, hjust = 0.5),
-    plot.subtitle = element_text(size = 10, hjust = 0.5),
-    plot.caption = element_text(hjust = 0),
+      axis.line = element_line(colour = "black", size = base_line_size),
+      axis.line.x = element_line(colour = "black", size = base_line_size),
+      axis.line.y = element_line(colour = "black", size = base_line_size),
+      axis.text = element_text(size = small_size),
+      axis.text.x = element_text(margin = margin(t = small_rel/2), vjust = 1),
+      axis.text.y = element_text(margin = margin(r = small_rel/2), hjust = 1),
+      axis.ticks = element_line(colour = "black", size = base_line_size),
+      axis.title = element_text(size = base_size),
+      axis.title.x = element_text(margin = margin(t = half_line)),
+      axis.title.y = element_text(angle = 90L, margin = margin(r = half_line)),
 
-    # plot.title = element_text(size = 16, hjust = 0.5),
-    # plot.subtitle = element_text(size = 12, hjust = 0.5),
-    # plot.caption = element_text(size = 12, hjust = 0),
+      legend.key = element_rect(fill = "white", colour = NA),
+      legend.key.size = unit(1.2, "lines"),
+      legend.background = element_rect(fill = alpha("white", 0)), # Transparent background
+      legend.position = "bottom", # or "bottom"
+      legend.text = element_text(size = small_size),
+      legend.title.text = element_text(size = small_size),
 
-    axis.text = element_text(size = 8),
-    # axis.text = element_text(size = 14),
-    axis.title = element_text(size = 10),
-    # axis.title = element_text(size = 18),
+      panel.background = element_blank(),
+      panel.border = element_rect(color = "black", fill = NA, size = 0.8),
+      panel.grid = element_blank(),
 
-    strip.background = element_blank(),
-    strip.text = element_text(size = 10),
-    # strip.text = element_text(size = 12)
-  )
+      # plot.background = element_rect(fill = NA, colour = NA),
+      plot.title = element_text(size = base_size, hjust = 0.5,
+                                margin = margin(b = half_line)),
+      plot.subtitle = element_text(size = base_size * 0.95, hjust = 0.5,
+                                   margin = margin(b = half_line)),
+      plot.caption = element_text(size = small_size, hjust = 0,
+                                  margin = margin(t = half_line)),
+
+      strip.background = element_blank(),
+      strip.text = element_text(colour = "black", size = small_size)
+    )
 }
 
 

@@ -47,7 +47,7 @@ outlierDetectionServer <- function(id, data) {
 
         data() %>%
           select(district, year, month, vaccines_indicator()) %>%
-          add_outlier5std_column(vaccines_indicator()) %>%
+          cd2030:::add_outlier5std_column(vaccines_indicator()) %>%
           summarise(across(ends_with('_outlier5std'), ~ mean(.x, na.rm = TRUE)), .by = c(year, month, district))
       })
 

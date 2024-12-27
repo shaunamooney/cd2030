@@ -313,6 +313,8 @@ nationalCoverageServer <- function(id, data, national_values) {
         },
         data = custom_coverage
       )
+
+      return(reactive(input$year))
     }
   )
 }

@@ -2,6 +2,26 @@ dataAjustmentUI <- function(id) {
   ns <- NS(id)
 
   fluidRow(
+    box(
+      title = 'K-Factors',
+      status = 'success',
+      solidHeader = TRUE,
+      width = 6,
+      fluidRow(
+        column(4, selectizeInput(ns('k_anc'),
+                                 selected = '0.25',
+                                 label = 'ANC K-Factor',
+                                 choices = c(0, 0.25, 0.5, 0.75))),
+        column(4, selectizeInput(ns('k_delivery'),
+                                 label = 'Delivery K-Factor',
+                                 selected = '0.25',
+                                 choices = c(0, 0.25, 0.5, 0.75))),
+        column(4, selectizeInput(ns('k_vaccines'),
+                                 label = 'Vaccines K-Factor',
+                                 selected = '0.25',
+                                 choices = c(0, 0.25, 0.5, 0.75)))
+      )
+    ),
 
     box(
       title = 'Adjust',
@@ -22,89 +42,10 @@ dataAjustmentUI <- function(id) {
         column(8, offset = 2, actionButton(ns('adjust_data'),
                                            label = 'Adjust Data',
                                            icon = icon('wrench'),
-                                           style = 'background-color: #FFEB3B;font-weight: 500;width:100%; margin-top: 15px;'))
-      ),
-
-      fluidRow(
-        column(12, offset = 2, uiOutput(ns("adjust_feedback")), style = 'margin-top: 10px;')
-      ),
-
-      fluidRow(
-        column(8, offset = 2, downloadButton(ns('download_data'),
-                                             label = "Download Adjusted Dataset",
-                                             style = "color:#2196F3;width:100%;margin-top:20px;")
-        )
+                                           style = 'background-color: #FFEB3B;font-weight: 500;width:100%; margin-top: 15px;')),
+        column(12, offset = 2, uiOutput(ns("adjust_feedback")), style = 'margin-top: 10px;'),
+        column(8, offset = 2, downloadUI(ns('download_data'), label = "Download Adjusted Dataset"))
       )
-    ),
-
-    box(
-      title = 'K-Factors',
-      status = 'success',
-      solidHeader = TRUE,
-      width = 6,
-      fluidRow(
-        column(4, selectizeInput(ns('k_anc'),
-                                 selected = '0.25',
-                                 label = 'ANC K-Factor',
-                                 choices = c(0, 0.25, 0.75))),
-        column(4, selectizeInput(ns('k_delivery'),
-                                 label = 'Delivery K-Factor',
-                                 selected = '0.25',
-                                 choices = c(0, 0.25, 0.75))),
-        column(4, selectizeInput(ns('k_vaccines'),
-                                 label = 'Vaccines K-Factor',
-                                 selected = '0.25',
-                                 choices = c(0, 0.25, 0.75)))
-      )
-    ),
-
-    tabBox(
-      title = 'Visualize effects of changes',
-      id = 'visualize_changes',
-      width = 12,
-
-      tabPanel(
-        title = 'Live Births',
-        fluidRow(
-          column(12, plotOutput(ns('live_births'))),
-          column(3, downloadButton(ns('live_births_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
-        )
-      ),
-
-      tabPanel(
-        title = 'Penta 1',
-        fluidRow(
-          column(12, plotOutput(ns('penta1'))),
-          column(3, downloadButton(ns('penta1_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
-        )
-      ),
-
-      tabPanel(
-        title = 'BCG',
-        fluidRow(
-          column(12, plotOutput(ns('bcg'))),
-          column(3, downloadButton(ns('bcg_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
-        )
-      ),
-
-      tabPanel(
-        title = 'Measles',
-        fluidRow(
-          column(12, plotOutput(ns('measles1'))),
-          column(3, downloadButton(ns('measles1_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
-        )
-      ),
-
-      tabPanel(
-        title = 'Custom Check',
-        fluidRow(
-          column(3, selectizeInput(ns('indicator'), label = 'Indicator', choices = NULL))
-        ),
-        fluidRow(
-          column(12, plotOutput(ns('custom_check'))),
-          column(3, downloadButton(ns('custom_check_plot'), label = 'Download Plot', style = 'color:#2196F3;width:100%;margin-top:10px;'))
-        )
-      ),
     )
   )
 }
@@ -124,13 +65,6 @@ dataAdjustmentServer <- function(id, data) {
           idelv = as.integer(input$k_delivery),
           vacc = as.integer(input$k_vaccines)
         )
-      })
-
-      adjustments <- reactive({
-        req(data())
-
-       data() %>%
-          generate_adjustment_values(adjustment = 'custom', k_factors = k_factors())
       })
 
       observe({
@@ -153,37 +87,6 @@ dataAdjustmentServer <- function(id, data) {
         )
       })
 
-      output$live_births <- renderPlot({
-        plot(adjustments(),
-             indicator = 'ideliv',
-             title = 'Figure 1c: Comparison of number of live births before and after adjustments for completness and outliers')
-      })
-
-      output$penta1 <- renderPlot({
-        plot(adjustments(),
-             indicator = 'penta1',
-             title = 'Figure 1d: Comparison of number of penta1 vaccination before and after adjustments for completness and outliers')
-      })
-
-      output$bcg <- renderPlot({
-        plot(adjustments(),
-             indicator = 'bcg',
-             title = 'Figure 1e: Comparison of number of BCG vaccination before and after adjustments for completness and outliers')
-      })
-
-      output$measles1 <- renderPlot({
-        plot(adjustments(),
-             indicator = 'measles1',
-             title = 'Figure 1f: Comparison of number of measles vaccination before and after adjustments for completness and outliers')
-      })
-
-      output$custom_check <- renderPlot({
-        req(input$indicator != '0')
-
-        plot(adjustments(),
-             indicator = input$indicator)
-      })
-
       modified_data <- reactiveVal()
 
       observeEvent(input$adjust_data, {
@@ -201,65 +104,21 @@ dataAdjustmentServer <- function(id, data) {
         modified_data(new_data)
       })
 
-      output$download_data <- downloadHandler(
-        filename = function() { paste0("master_adj_dataset", Sys.Date(), ".dta") },
+      downloadServer(
+        id = 'download_data',
+        filename = 'master_adj_dataset',
+        extension = 'dta',
         content = function(file) {
-          req(modified_data()) # Ensure data is available
           haven::write_dta(modified_data(), file)
-        }
-      )
-
-      output$live_births_plot <- downloadHandler(
-        filename = function() { paste0("live_births_plot_", Sys.Date(), ".png") },
-        content = function(file) {
-          plot(adjustments(),
-               indicator = 'ideliv',
-               title = 'Figure 1c: Comparison of number of live births before and after adjustments for completness and outliers')
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        }
-      )
-
-      output$penta1_plot <- downloadHandler(
-        filename = function() { paste0("penta1_plot_", Sys.Date(), ".png") },
-        content = function(file) {
-          plot(adjustments(),
-               indicator = 'penta1',
-               title = 'Figure 1d: Comparison of number of penta1 vaccination before and after adjustments for completness and outliers')
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        }
-      )
-
-      output$bcg_plot <- downloadHandler(
-        filename = function() { paste0("bcg_plot_", Sys.Date(), ".png") },
-        content = function(file) {
-          plot(adjustments(),
-               indicator = 'bcg',
-               title = 'Figure 1e: Comparison of number of BCG vaccination before and after adjustments for completness and outliers')
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        }
-      )
-
-      output$measles1_plot <- downloadHandler(
-        filename = function() { paste0("measles1_plot_", Sys.Date(), ".png") },
-        content = function(file) {
-          plot(adjustments(),
-               indicator = 'measles1',
-               title = 'Figure 1f: Comparison of number of measles vaccination before and after adjustments for completness and outliers')
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        }
-      )
-
-      output$custom_check_plot <- downloadHandler(
-        filename = function() { paste0("custom_check_plot_", Sys.Date(), ".png") },
-        content = function(file) {
-          plot(adjustments(),
-               indicator = input$indicator)
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        }
+        },
+        data = modified_data
       )
 
       return(reactive({
-        if (is.null(modified_data())) data() else modified_data()
+        list(
+          modified_data = if (is.null(modified_data())) data() else modified_data(),
+          k_factors = k_factors()
+        )
       }))
     }
   )
