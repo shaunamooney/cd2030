@@ -27,12 +27,19 @@ params:
     value: Country
 ---
 
+```{r title-block, echo=FALSE}
+cat("# Countdown Analysis Report for", params$country, "\n\n")
+```
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   include = TRUE,
   echo = FALSE,
   message = FALSE,
-  warning = FALSE)
+  warning = FALSE,
+  fig.width=6, 
+  fig.height=4, 
+  dpi=600)
 ```
 
 ```{r}
@@ -117,7 +124,7 @@ rows <- c("1a", "1b", "1c", "2a", "2b", "3f", "3g", "3h", "3i", "3j", '4')
 
 ```
 
-```{r}
+```{r, dpi=300}
 plot(calculate_district_reporting_rate(params$data, params$threshold)) +
   cd_report_theme()
 ```
