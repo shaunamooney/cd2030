@@ -1,5 +1,6 @@
 ---
-title: "Countdown Analysis Report"
+title: "Countdown Analysis Report for `r params$country`"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output: 
   html_document:
     toc: true
@@ -27,19 +28,16 @@ params:
     value: Country
 ---
 
-```{r title-block, echo=FALSE}
-cat("# Countdown Analysis Report for", params$country, "\n\n")
-```
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   include = TRUE,
   echo = FALSE,
   message = FALSE,
   warning = FALSE,
-  fig.width=6, 
-  fig.height=4, 
-  dpi=600)
+  fig.width=7, 
+  fig.height=5, 
+  dpi=1200
+)
 ```
 
 ```{r}
@@ -47,6 +45,7 @@ library(cd2030)
 library(dplyr)
 library(gt)
 library(reactable)
+library(gridExtra)
 
 rates <- survey_values$rates
 national_data <- survey_values$data
@@ -59,10 +58,25 @@ gregion <- national_data$gregion %>%
 subnational_map <- national_data$map_map
 ```
 
-### Health facility data quality assessment: numerators
+## 1. Health Facility Data Quality Assessment
 
-**BACKGROUND:** Routinely reported health facility data are an important data source for health indicators. The data are reported by health facilities on events such as immunizations given, or live births attended. As with any data, quality is an issue. Data are checked to consider completeness of reporting by health facilities, identify extreme outliers and internal consistency. 
+### Background
 
+Routinely reported health facility data are an important data source for health
+indicators. The data are reported by health facilities on events such as immunizations
+given, or live births attended. As with any data, quality is an issue. Data are checked
+to consider completeness of reporting by health facilities, identify extreme outliers
+and internal consistency. 
+
+::: {.box}
+#### Interpretation Guidance
+- Identify trends in completeness of reporting.
+- Note any districts with extreme outliers and inconsistencies.
+:::
+
+### Results
+
+#### Data Quality Sumary Table
 
 ```{r, results='asis'}
 rows <- c("1a", "1b", "1c", "2a", "2b", "3f", "3g", "3h", "3i", "3j", '4')
@@ -124,17 +138,21 @@ rows <- c("1a", "1b", "1c", "2a", "2b", "3f", "3g", "3h", "3i", "3j", '4')
 
 ```
 
-```{r, dpi=300}
+#### District Reporting Rates
+
+```{r district-reporting-rates}
 plot(calculate_district_reporting_rate(params$data, params$threshold)) +
   cd_report_theme()
 ```
 
+---
 
-### Health facility data quality assessment: numerators
+## 2. Health Facility Data Adjustments
 
-**BACKGROUND:** Routinely reported health facility data are essential for monitoring 
-immunization coverage. Data quality assessments often reveal discrepancies in the 
-Penta1/Penta3 ratio, which should ideally be close to 1.
+### Background
+
+Routinely reported health facility data are essential for monitoring immunization
+coverage. Data quality assessments often reveal discrepancies in the  Penta1/Penta3 ratio, which should ideally be close to 1.
 
 
 ```{r}

@@ -2,12 +2,12 @@
 % Please edit documentation in R/calculate_indicator_coverage.R
 \name{calculate_indicator_coverage}
 \alias{calculate_indicator_coverage}
-\title{Calculate Denominators and Coverage Indicators Across Administrative Levels}
+\title{Calculate Health Coverage Indicators}
 \usage{
 calculate_indicator_coverage(
   .data,
-  admin_level = c("national", "admin_level_1", "district"),
-  un_estimates,
+  admin_level = c("national", "adminlevel_1", "district"),
+  un_estimates = NULL,
   sbr = 0.02,
   nmr = 0.025,
   pnmr = 0.024,
@@ -18,55 +18,54 @@ calculate_indicator_coverage(
 )
 }
 \arguments{
-\item{.data}{A \code{cd_data} tibble containing DHIS-2, UN, ANC-1, and Penta-1 data.}
+\item{.data}{A \code{cd_data} tibble containing DHIS-2, UN, ANC-1, and Penta-1 data.
+This dataset must include columns for key population and vaccination metrics.}
 
-\item{admin_level}{Character. Specifies the level for calculations, options include:
-\itemize{
-\item \strong{"national"}: Aggregates data at the national level.
-\item \strong{"admin_level_1"}: Aggregates data at the first administrative level.
-\item \strong{"district"}: Aggregates data at the district level.
-}}
+\item{admin_level}{Character. Specifies the administrative level for calculations.
+Options include:\verb{"national", "adminlevel_1"}, and \code{"district"}.}
 
-\item{un_estimates}{Unestimates data}
+\item{un_estimates}{Optional. A tibble containing UN population estimates. Required
+for national-level calculations.}
 
-\item{sbr}{Numeric. The stillbirth rate.}
+\item{sbr}{Numeric. The stillbirth rate. Default is \code{0.02}.}
 
-\item{nmr}{Numeric. Neonatal mortality rate.}
+\item{nmr}{Numeric. Neonatal mortality rate. Default is \code{0.025}.}
 
-\item{pnmr}{Numeric. Post-neonatal mortality rate.}
+\item{pnmr}{Numeric. Post-neonatal mortality rate. Default is \code{0.024}.}
 
-\item{anc1survey}{Numeric. Survey coverage rate for ANC-1.}
+\item{anc1survey}{Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first visit). Default is \code{0.98}.}
 
-\item{dpt1survey}{Numeric. Survey coverage rate for Penta-1 (DPT1).}
+\item{dpt1survey}{Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination). Default is \code{0.97}.}
 
-\item{twin}{Numeric. Twin birth rate, default is 0.014.}
+\item{twin}{Numeric. Twin birth rate. Default is \code{0.015}.}
 
-\item{preg_loss}{Numeric. Pregnancy loss rate, default is 0.03.}
+\item{preg_loss}{Numeric. Pregnancy loss rate. Default is \code{0.03}.}
 }
 \value{
-A tibble of class \code{cd_indicator_coverage}, containing calculated
-denominators and coverage indicators for the specified administrative level.
+A tibble of class \code{cd_indicator_coverage} containing calculated coverage
+indicators for the specified administrative level.
 }
 \description{
-\code{calculate_indicator_coverage} computes denominators and coverage indicators for various
-health metrics at specified administrative levels (national, admin_level_1,
-and district). It integrates data from multiple sources, including DHIS-2,
-UN estimates, ANC-1, and Penta-1 survey data.
+\code{calculate_indicator_coverage} computes key health coverage indicators across
+specified administrative levels (national, adminlevel_1, and district). The function
+integrates data from multiple sources, including DHIS-2, UN estimates, ANC-1,
+and Penta-1 survey data. It calculates coverage rates for a variety of vaccinations
+and health metrics based on projected, survey-derived, and estimated denominators.
 }
-\details{
-This function processes demographic and health coverage indicators at various
-administrative levels, including:
-\itemize{
-\item \strong{DHIS-2 Projections}: Calculates indicators based on DHIS-2 projections for
-pregnancies, deliveries, births, and vaccination eligibility.
-\item \strong{UN Estimates} (national level only): Provides similar indicators but based
-on UN projections.
-\item \strong{ANC-1 Survey Data}: Uses ANC-1 survey coverage for estimating target
-population metrics.
-\item \strong{Penta-1 Survey Data}: Uses Penta-1 (DPT1) survey coverage for estimating
-vaccine eligibility.
+\examples{
+\dontrun{
+  # Calculate coverage indicators at the national level
+  coverage_data <- calculate_indicator_coverage(
+    .data = dhis2_data,
+    admin_level = "national",
+    un_estimates = un_data
+  )
+
+  # Calculate coverage indicators at the district level
+  coverage_data <- calculate_indicator_coverage(
+    .data = dhis2_data,
+    admin_level = "district"
+  )
 }
 
-The computed indicators support data-driven insights into healthcare coverage
-at selected administrative levels.
 }

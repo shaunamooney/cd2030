@@ -6,7 +6,7 @@
 \usage{
 analyze_inequality(
   .data,
-  level = c("admin_level_1", "district"),
+  admin_level = c("adminlevel_1", "district"),
   indicator = c("bcg", "anc1", "pcv3", "opv1", "opv2", "opv3", "penta2", "pcv1", "pcv2",
     "penta1", "penta3", "measles1", "rota1", "rota2", "instdeliveries", "measles2",
     "ipv1", "ipv2", "undervax", "dropout_penta13", "zerodose", "dropout_measles12",
@@ -23,32 +23,63 @@ analyze_inequality(
 )
 }
 \arguments{
-\item{.data}{A data frame containing the health coverage data.}
+\item{.data}{A data frame containing health coverage data for subnational units.}
 
-\item{level}{A character string specifying the administrative level to analyze
-(either "admin_level_1" or "district").}
+\item{admin_level}{A character string specifying the administrative level for analysis.
+Options: \code{"adminlevel_1"} or \code{"district"}.}
 
-\item{indicator}{A character string specifying the health indicator to analyze
-(e.g., "bcg", "measles1").}
+\item{indicator}{A character string specifying the health indicator to analyze.
+Supported indicators include \code{"bcg"}, \code{"measles1"}, \code{"penta3"}, etc.}
 
-\item{denominator}{A character string specifying the denominator to use for
-coverage calculations (e.g., "dhis2", "anc1", "penta1").}
+\item{denominator}{A character string specifying the denominator for coverage
+calculations.Options: \code{"dhis2"}, \code{"anc1"}, or \code{"penta1"}.}
+
+\item{un_estimates}{Optional. A data frame containing UN population estimates
+for national-level calculations.}
+
+\item{sbr}{Numeric. Stillbirth rate (default: 0.02).}
+
+\item{nmr}{Numeric. Neonatal mortality rate (default: 0.025).}
+
+\item{pnmr}{Numeric. Post-neonatal mortality rate (default: 0.024).}
+
+\item{anc1survey}{Numeric. Survey coverage rate for ANC-1 (default: 0.98).}
+
+\item{dpt1survey}{Numeric. Survey coverage rate for Penta-1 (default: 0.97).}
+
+\item{twin}{Numeric. Twin birth rate (default: 0.015).}
+
+\item{preg_loss}{Numeric. Pregnancy loss rate (default: 0.03).}
 }
 \value{
-A \code{cd_inequality} object containing calculated metrics such
-as coverage, MADM, MRDM, and population shares.
+A \code{cd_inequality} object containing subnational coverage metrics,
+population shares, MADM, MRDM, and other disparity metrics, grouped by year.
 }
 \description{
-\code{analyze_inequality} Calculates health coverage and disparity metrics,
-such as Mean Absolute Difference to the Mean (MADM), weighted MADM, Mean Relative
-Difference to the Mean (MRDM), and weighted MRDM, for a specified subnational
-level and health indicator. The function returns a \code{cd_inequality}
-object with calculated metrics for plotting and summarizing.
+\code{analyze_inequality} calculates health coverage and disparity metrics, such as:
+\itemize{
+\item \strong{Mean Absolute Difference to the Mean (MADM)}: Average absolute deviation
+from the national mean.
+\item \strong{Weighted MADM}: MADM adjusted for population share.
+\item \strong{Mean Relative Difference to the Mean (MRDM)}: MADM expressed as a
+percentage of the national mean.
+\item \strong{Weighted MRDM}: MRDM adjusted for population share.
+}
+}
+\details{
+The function processes subnational health coverage data at specified administrative
+levels and calculates metrics for disparities in health coverage. It supports
+multiple denominators and health indicators.
 }
 \examples{
 \dontrun{
-data <- analyze_inequality(.data, level = "district",
-                           indicator = "measles1", denominator = "penta1")
+  inequality_metrics <- analyze_inequality(
+    .data = health_data,
+    admin_level = "district",
+    indicator = "measles1",
+    denominator = "penta1",
+    un_estimates = un_data
+  )
 }
 
 }

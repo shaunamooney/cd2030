@@ -25,7 +25,7 @@ uploadBoxUI <- function(id) {
       )
     ),
     fluidRow(
-      column(4, downloadUI(ns('download_data'), label = "Download Master Dataset"))
+      column(4, downloadButtonUI(ns('download_data'), label = "Download Master Dataset"))
     )
   )
 }
@@ -84,7 +84,7 @@ uploadBoxServer <- function(id) {
         )
       })
 
-      downloadServer(
+      downloadButtonServer(
         id = 'download_data',
         filename = 'master_dataset',
         extension = 'dta',

@@ -2,100 +2,57 @@
 % Please edit documentation in R/prepare_population_metrics.R
 \name{prepare_population_metrics}
 \alias{prepare_population_metrics}
-\title{Compute Population Metrics for DHIS-2 Data at Various Administrative Levels}
+\title{Compute Population Metrics for DHIS-2 and UN Data}
 \usage{
 prepare_population_metrics(
   .data,
-  admin_level = c("national", "admin_level_1", "district"),
-  start_year = 2019,
-  end_year = 2023,
-  un_estimates
+  admin_level = c("national", "adminlevel_1", "district"),
+  un_estimates = NULL
 )
 }
 \arguments{
 \item{.data}{A \code{cd_data} tibble containing processed DHIS-2 health facility
-data with population indicators. This data is required for all administrative
-levels.}
+data with population indicators. This dataset must include columns for metrics
+like \code{total_pop}, \code{live_births}, and \code{pop_rate}.}
 
-\item{admin_level}{A character string specifying the administrative level for
-calculation. Available options are:
-\itemize{
-\item \code{"national"}: Aggregates data at the country level, including comparisons
-with UN estimates.
-\item \code{"admin_level_1"}: Aggregates data at the first administrative level,
-providing DHIS-2 projections only.
-\item \code{"district"}: Aggregates data at the district level, providing DHIS-2
-projections only.
-}}
+\item{admin_level}{Character. Specifies the administrative level for aggregation.
+Available options are: \code{'national'}, \code{'adminlevel_1'}, and \code{'district'}. Default
+is \code{'national'}.}
 
-\item{start_year}{The starting year for calculating demographic indicators
-(default is 2019).}
-
-\item{end_year}{The ending year for calculations (default is 2023).}
+\item{un_estimates}{Optional. A tibble containing UN population estimates with
+columns for \code{un_population}, \code{un_births}, \code{un_popgrowth}, and related metrics.
+This parameter is only required for national-level calculations.}
 }
 \value{
-A tibble of class \code{cd_population_metrics} containing demographic
-metrics for the specified country and years. This includes total population,
-live births, growth rates, and adjusted crude birth and death rates. For
-\code{national} data, both DHIS-2 and UN metrics are included; for \code{admin_level_1}
-and \code{district} levels, only DHIS-2 projections are calculated.
+A tibble of class \code{cd_population_metrics} containing demographic metrics
+for the specified administrative level and years. Metrics include:
+\itemize{
+\item \strong{For all levels}: DHIS-2 metrics such as \code{totpop_dhis2} (total population)
+and \code{totlivebirths_dhis2} (total live births).
+\item \strong{For national level}: Both DHIS-2 and UN metrics for comparison.
+}
 }
 \description{
-\code{prepare_population_metrics} processes DHIS-2 population data, and optionally
-UN data, to calculate demographic metrics such as total population, live births,
-growth rates, and related indicators. It supports calculation at different
-administrative levels, including national, admin_level_1, or district levels.
-}
-\details{
-This function processes data as follows:
-\enumerate{
-\item \strong{DHIS-2 Data Preparation}:
-\itemize{
-\item Selects and renames essential demographic columns from DHIS-2 data.
-\item Adds a \code{country} column based on \code{country_name}.
-\item Ensures unique rows per combination of \code{district}, \code{adminlevel_1}, and
-\code{year}.
-}
-\item \strong{Aggregate DHIS-2 Data}:
-\itemize{
-\item Summarizes population (\code{totpop_dhis2}) and live births (\code{totlivebirths_dhis2})
-for each year at the specified administrative level, scaling values to thousands.
-}
-\item \strong{UN Data Integration} (if \code{admin_level = "national"} only):
-\itemize{
-\item Filters UN data for \code{country_name} within the specified year range
-(\code{start_year} to \code{end_year}).
-\item Renames columns with a \code{un_} prefix for differentiation from DHIS-2 metrics.
-\item Merges DHIS-2 and UN data by \code{country} and \code{year} to provide national-level
-comparison.
-}
-\item \strong{Output}:
-\itemize{
-\item The resulting tibble of class \code{cd_population_metrics} contains DHIS-2 and
-UN data (for national level), with calculated demographic metrics. For
-subnational levels, the tibble contains DHIS-2 projections only.
-\item The tibble includes attributes indicating the administrative level used
-for aggregation.
-}
-}
+\code{prepare_population_metrics} calculates demographic metrics such as total
+population, live births, growth rates, and related indicators using DHIS-2
+population data. For national-level data, it optionally integrates UN estimates
+to provide comparative metrics. The function supports aggregation at different
+administrative levels, including national, adminlevel_1, and district levels.
 }
 \examples{
 \dontrun{
-# Calculate demographic metrics for Kenya at the national level
-population_data <- prepare_population_metrics(
-  .data = dhis2_data,
-  admin_level = "national",
-  start_year = 2019,
-  end_year = 2023
-)
+  # National-level demographic metrics
+  population_data <- prepare_population_metrics(
+    .data = dhis2_data,
+    admin_level = 'national',
+    un_estimates = un_data
+  )
 
-# Calculate demographic metrics for Kenya at the district level
-population_data <- prepare_population_metrics(
-  .data = dhis2_data,
-  admin_level = "district",
-  start_year = 2019,
-  end_year = 2023
-)
+  # District-level demographic metrics
+  population_data <- prepare_population_metrics(
+    .data = dhis2_data,
+    admin_level = 'district'
+  )
 }
 
 }

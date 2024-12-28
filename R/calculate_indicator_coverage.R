@@ -1,47 +1,48 @@
-#' Calculate Denominators and Coverage Indicators Across Administrative Levels
+#' Calculate Health Coverage Indicators
 #'
-#' `calculate_indicator_coverage` computes denominators and coverage indicators for various
-#' health metrics at specified administrative levels (national, admin_level_1,
-#' and district). It integrates data from multiple sources, including DHIS-2,
-#' UN estimates, ANC-1, and Penta-1 survey data.
+#' `calculate_indicator_coverage` computes key health coverage indicators across
+#' specified administrative levels (national, adminlevel_1, and district). The function
+#' integrates data from multiple sources, including DHIS-2, UN estimates, ANC-1,
+#' and Penta-1 survey data. It calculates coverage rates for a variety of vaccinations
+#' and health metrics based on projected, survey-derived, and estimated denominators.
 #'
 #' @param .data A `cd_data` tibble containing DHIS-2, UN, ANC-1, and Penta-1 data.
-#' @param admin_level Character. Specifies the level for calculations, options include:
-#'   - **"national"**: Aggregates data at the national level.
-#'   - **"admin_level_1"**: Aggregates data at the first administrative level.
-#'   - **"district"**: Aggregates data at the district level.
-#' @param un_estimates Unestimates data
-#' @param sbr Numeric. The stillbirth rate.
-#' @param nmr Numeric. Neonatal mortality rate.
-#' @param pnmr Numeric. Post-neonatal mortality rate.
-#' @param anc1survey Numeric. Survey coverage rate for ANC-1.
-#' @param dpt1survey Numeric. Survey coverage rate for Penta-1 (DPT1).
-#' @param twin Numeric. Twin birth rate, default is 0.014.
-#' @param preg_loss Numeric. Pregnancy loss rate, default is 0.03.
+#'   This dataset must include columns for key population and vaccination metrics.
+#' @param admin_level Character. Specifies the administrative level for calculations.
+#'   Options include:`"national", "adminlevel_1"`, and `"district"`.
+#' @param un_estimates Optional. A tibble containing UN population estimates. Required
+#'   for national-level calculations.
+#' @param sbr Numeric. The stillbirth rate. Default is `0.02`.
+#' @param nmr Numeric. Neonatal mortality rate. Default is `0.025`.
+#' @param pnmr Numeric. Post-neonatal mortality rate. Default is `0.024`.
+#' @param anc1survey Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first visit). Default is `0.98`.
+#' @param dpt1survey Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination). Default is `0.97`.
+#' @param twin Numeric. Twin birth rate. Default is `0.015`.
+#' @param preg_loss Numeric. Pregnancy loss rate. Default is `0.03`.
 #'
-#' @return A tibble of class `cd_indicator_coverage`, containing calculated
-#'    denominators and coverage indicators for the specified administrative level.
+#' @return A tibble of class `cd_indicator_coverage` containing calculated coverage
+#'   indicators for the specified administrative level.
 #'
-#' @details
-#' This function processes demographic and health coverage indicators at various
-#' administrative levels, including:
+#' @examples
+#' \dontrun{
+#'   # Calculate coverage indicators at the national level
+#'   coverage_data <- calculate_indicator_coverage(
+#'     .data = dhis2_data,
+#'     admin_level = "national",
+#'     un_estimates = un_data
+#'   )
 #'
-#' - **DHIS-2 Projections**: Calculates indicators based on DHIS-2 projections for
-#'    pregnancies, deliveries, births, and vaccination eligibility.
-#' - **UN Estimates** (national level only): Provides similar indicators but based
-#'    on UN projections.
-#' - **ANC-1 Survey Data**: Uses ANC-1 survey coverage for estimating target
-#'    population metrics.
-#' - **Penta-1 Survey Data**: Uses Penta-1 (DPT1) survey coverage for estimating
-#'   vaccine eligibility.
-#'
-#' The computed indicators support data-driven insights into healthcare coverage
-#' at selected administrative levels.
+#'   # Calculate coverage indicators at the district level
+#'   coverage_data <- calculate_indicator_coverage(
+#'     .data = dhis2_data,
+#'     admin_level = "district"
+#'   )
+#' }
 #'
 #' @export
 calculate_indicator_coverage <- function(.data,
-                                         admin_level = c('national', 'admin_level_1', 'district'),
-                                         un_estimates,
+                                         admin_level = c('national', 'adminlevel_1', 'district'),
+                                         un_estimates = NULL,
                                          sbr = 0.02,
                                          nmr = 0.025,
                                          pnmr = 0.024,
@@ -49,8 +50,9 @@ calculate_indicator_coverage <- function(.data,
                                          dpt1survey = 0.97,
                                          twin = 0.015,
                                          preg_loss = 0.03) {
-
+  check_cd_data(.data)
   admin_level <- arg_match(admin_level)
+  country_iso <- attr(.data, 'iso3')
 
   output_data <- calculate_populations(.data,
                                        admin_level = admin_level,
@@ -63,13 +65,14 @@ calculate_indicator_coverage <- function(.data,
   new_tibble(
     output_data,
     class = 'cd_indicator_coverage',
-    admin_level = admin_level
+    admin_level = admin_level,
+    iso3 = country_iso
   )
 }
 
 calculate_populations <- function(.data,
-                                  admin_level = c('national', 'admin_level_1', 'district'),
-                                  un_estimates,
+                                  admin_level = c('national', 'adminlevel_1', 'district'),
+                                  un_estimates = NULL,
                                   sbr = 0.02,
                                   nmr = 0.025,
                                   pnmr = 0.024,
@@ -105,7 +108,7 @@ calculate_populations <- function(.data,
 
   group_vars <- switch(admin_level,
                        national = c('year'),
-                       admin_level_1 = c('adminlevel_1', 'year'),
+                       adminlevel_1 = c('adminlevel_1', 'year'),
                        district = c('adminlevel_1', 'district', 'year')
   )
 
@@ -186,7 +189,7 @@ calculate_populations <- function(.data,
       )
   }
 
-  output_data <- output_data %>%
+  output_data %>%
     # Compute coverage  based on projected lives births in DHIS-2
     mutate(
       cov_anc1_dhis2 = 100 * anc1/(totpreg_dhis2 * 1000),

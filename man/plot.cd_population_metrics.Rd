@@ -13,8 +13,8 @@ data.}
 \item{metric}{A character string specifying the type of data to plot. It must
 be one of:
 \itemize{
-\item \strong{"population"}: Plots total population estimates in thousands from DHIS-2 and UN sources.
-\item \strong{"births"}: Plots total live births in thousands from DHIS-2 and UN sources.
+\item \strong{'population'}: Plots total population estimates in thousands from DHIS-2 and UN sources.
+\item \strong{'births'}: Plots total live births in thousands from DHIS-2 and UN sources.
 }}
 
 \item{...}{Additional arguments (not used in this function).}
@@ -44,10 +44,10 @@ at subnational levels. Attempting to plot subnational data will result in an err
 \examples{
 \dontrun{
   # Plot total population estimates at the national level
-  plot(population_metrics_data, metric = "population")
+  plot(population_metrics_data, metric = 'population')
 
   # Plot total live births estimates at the national level
-  plot(population_metrics_data, metric = "births")
+  plot(population_metrics_data, metric = 'births')
 }
 
 }

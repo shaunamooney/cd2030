@@ -44,7 +44,7 @@ dataAjustmentUI <- function(id) {
                                            icon = icon('wrench'),
                                            style = 'background-color: #FFEB3B;font-weight: 500;width:100%; margin-top: 15px;')),
         column(12, offset = 2, uiOutput(ns("adjust_feedback")), style = 'margin-top: 10px;'),
-        column(8, offset = 2, downloadUI(ns('download_data'), label = "Download Adjusted Dataset"))
+        column(8, offset = 2, downloadButtonUI(ns('download_data'), label = "Download Adjusted Dataset"))
       )
     )
   )
@@ -104,7 +104,7 @@ dataAdjustmentServer <- function(id, data) {
         modified_data(new_data)
       })
 
-      downloadServer(
+      downloadButtonServer(
         id = 'download_data',
         filename = 'master_adj_dataset',
         extension = 'dta',

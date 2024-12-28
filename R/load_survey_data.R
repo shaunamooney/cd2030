@@ -49,7 +49,7 @@ load_un_estimates <- function(path, country_iso, start_year, end_year) {
 #' @return A tibble containing cleaned and processed survey data, with aligned state codes.
 #'
 #' @export
-load_survey_data <- function(path, country_iso, admin_level = c('national', 'admin_level_1')) {
+load_survey_data <- function(path, country_iso, admin_level = c('national', 'adminlevel_1')) {
 
   check_file_path(path)
   check_required(country_iso)
@@ -62,7 +62,6 @@ load_survey_data <- function(path, country_iso, admin_level = c('national', 'adm
                        cd_abort(
                          'x' = 'Unsupported file format: please provide a DTA file.')
   )
-
 
   survdata <- survdata %>%
     select(-ends_with("_penta1")) %>%
@@ -81,7 +80,7 @@ load_survey_data <- function(path, country_iso, admin_level = c('national', 'adm
     # rename_with(~ gsub("measles12.*", "measles1", .x)) %>%
     select(-ends_with("r"), -ends_with("24_35"), year)
 
-  if (admin_level == 'admin_level_1') {
+  if (admin_level == 'adminlevel_1') {
 
     survdata <- survdata %>%
       # mutate(across(matches('^r_|^se_|^ll_|^ul_'), ~ .)) %>%

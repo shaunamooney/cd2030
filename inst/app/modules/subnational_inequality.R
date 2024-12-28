@@ -9,7 +9,7 @@ subnationalInequalityUI <- function(id) {
       solidHeader = TRUE,
       fluidRow(
         column(3, selectizeInput(ns('level'), label = 'Subnational Level',
-                                 choices = c('Admin Level 1' = 'admin_level_1',
+                                 choices = c('Admin Level 1' = 'adminlevel_1',
                                              'District' = 'district'))),
         column(3, selectizeInput(ns('denominator'), label = 'Denominator',
                                  choices = c('DHIS2' = 'dhis2',
@@ -26,8 +26,7 @@ subnationalInequalityUI <- function(id) {
         title = 'Measles 1',
         fluidRow(
           column(12, plotOutput(ns('measles1'))),
-          column(3, downloadUI(ns('measles1_download'), label = 'Download Plot')),
-          column(3, downloadUI(ns('measles1_data_download'), label = 'Download Data'))
+          downloadCoverageUI(ns('measles1_download'))
         )
       ),
 
@@ -35,8 +34,7 @@ subnationalInequalityUI <- function(id) {
         title = 'Penta 3',
         fluidRow(
           column(12, plotOutput(ns('penta3'))),
-          column(3, downloadUI(ns('penta3_download'), label = 'Download Plot')),
-          column(3, downloadUI(ns('penta3_data_download'), label = 'Download Data'))
+          downloadCoverageUI(ns('penta3_download'))
         )
       ),
 
@@ -51,8 +49,7 @@ subnationalInequalityUI <- function(id) {
         ),
         fluidRow(
           column(12, plotOutput(ns('custom_check'))),
-          column(3, downloadUI(ns('custom_download'), label = 'Download Plot')),
-          column(3, downloadUI(ns('custom_data_download'), label = 'Download Data'))
+          downloadCoverageUI(ns('custom_download'))
         )
       )
     )
@@ -85,7 +82,7 @@ subnationalInequalityServer <- function(id, data, national_values) {
         rates <- national_rates()
 
         analyze_inequality(data(),
-                           level = input$level,
+                           admin_level = input$level,
                            indicator = 'measles1',
                            denominator =  input$denominator,
                            un_estimates = surv_data$un,
@@ -108,7 +105,7 @@ subnationalInequalityServer <- function(id, data, national_values) {
         rates <- national_rates()
 
         analyze_inequality(data(),
-                           level = input$level,
+                           admin_level = input$level,
                            indicator = 'penta3',
                            denominator =  input$denominator,
                            un_estimates = surv_data$un,
@@ -131,7 +128,7 @@ subnationalInequalityServer <- function(id, data, national_values) {
         rates <- national_rates()
 
         analyze_inequality(data(),
-                           level = input$level,
+                           admin_level = input$level,
                            indicator = input$indicator,
                            denominator =  input$denominator,
                            un_estimates = surv_data$un,
@@ -147,142 +144,47 @@ subnationalInequalityServer <- function(id, data, national_values) {
       output$measles1 <- renderPlot({
         req(measles1_coverage())
 
-        tryCatch(
-          plot(measles1_coverage()),
-          error = function(e) {
-
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          })
+        render_with_error_handling({
+          plot(measles1_coverage())
+        })
       })
 
       output$penta3 <- renderPlot({
         req(penta3_coverage())
 
-        tryCatch(
-          plot(penta3_coverage()),
-          error = function(e) {
-
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          })
+        render_with_error_handling({
+          plot(penta3_coverage())
+        })
       })
 
       output$custom_check <- renderPlot({
         req(custom_coverage())
 
-        tryCatch(
-          plot(custom_coverage()),
-          error = function(e) {
-
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          })
+        render_with_error_handling({
+          plot(custom_coverage())
+        })
       })
 
-
-      downloadServer(
+      downloadCoverageServer(
         id = 'measles1_download',
+        data_fn = measles1_coverage,
         filename = paste0('measles1_', input$level, '_inequality_', input$denominator),
-        extension = 'png',
-        content = function(file) {
-          plot(measles1_coverage())
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = measles1_coverage
+        sheet_name = 'Measles 1 Inequality'
       )
 
-      downloadServer(
-        id = 'measles1_data_download',
-        filename = paste0('T3_measles1_', input$level, '_inequality_', input$denominator),
-        extension = 'xlsx',
-        content = function(file) {
-          wb <- createWorkbook()
-          coverage <- measles1_coverage()
-
-          sheet_name_1 <- "Measles 1 Coverage"
-          addWorksheet(wb, sheet_name_1)
-          writeData(wb, sheet = sheet_name_1, x = coverage, startCol = 1, startRow = 1)
-
-          # Save the workbook
-          saveWorkbook(wb, file, overwrite = TRUE)
-        },
-        data = measles1_coverage
-      )
-
-      downloadServer(
+      downloadCoverageServer(
         id = 'penta3_download',
+        data_fn = penta3_coverage,
         filename = paste0('penta3_', input$level, '_inequality_', input$denominator),
-        extension = 'png',
-        content = function(file) {
-          plot(penta3_coverage())
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = penta3_coverage
+        sheet_name = 'Penta 3 Inequality'
       )
 
-      downloadServer(
-        id = 'penta3_data_download',
-        filename = paste0('T3_penta3_', input$level, '_inequality_', input$denominator),
-        extension = 'xlsx',
-        content = function(file) {
-          wb <- createWorkbook()
-          coverage <- penta3_coverage()
-
-          sheet_name_1 <- "Penta 3 Coverage"
-          addWorksheet(wb, sheet_name_1)
-          writeData(wb, sheet = sheet_name_1, x = coverage, startCol = 1, startRow = 1)
-
-          # Save the workbook
-          saveWorkbook(wb, file, overwrite = TRUE)
-        },
-        data = penta3_coverage
-      )
-
-      downloadServer(
+      downloadCoverageServer(
         id = 'custom_download',
+        data_fn = custom_coverage,
         filename = paste0(input$indicator, '_', input$level, '_inequality_', input$denominator),
-        extension = 'png',
-        content = function(file) {
-          plot(custom_coverage())
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = custom_coverage
+        sheet_name = paste0(input$indicator, ' Inequality')
       )
-
-      downloadServer(
-        id = 'custom_data_download',
-        filename = paste0('T3_', input$indicator, '__', input$level, '_inequality_', input$denominator),
-        extension = 'xlsx',
-        content = function(file) {
-          wb <- createWorkbook()
-          coverage <- custom_coverage()
-
-          sheet_name_1 <- paste0(input$indicator, ' Coverage')
-          addWorksheet(wb, sheet_name_1)
-          writeData(wb, sheet = sheet_name_1, x = coverage, startCol = 1, startRow = 1)
-
-          # Save the workbook
-          saveWorkbook(wb, file, overwrite = TRUE)
-        },
-        data = custom_coverage
-      )
-
     }
   )
 }

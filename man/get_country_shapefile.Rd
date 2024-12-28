@@ -11,7 +11,7 @@ get_country_shapefile(country_iso, level = c("admin_level_1", "district"))
 
 \item{level}{A string specifying the level of analysis. Options are:
 \itemize{
-\item \code{"admin_level_1"}: First administrative level.
+\item \code{"adminlevel_1"}: First administrative level.
 \item \code{"district"}: District level.
 }}
 }

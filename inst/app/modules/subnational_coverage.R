@@ -8,6 +8,9 @@ subnationalCoverageUI <- function(id) {
       width = 12,
       solidHeader = TRUE,
       fluidRow(
+        column(3, selectizeInput(ns('admin_level'), label ='Admin Level',
+                                 choices = c('Admin Level 1' = 'adminlevel_1',
+                                             'District' = 'district'))),
         column(3, selectizeInput(ns('region'), label ='Admin Level 1', choices = NULL)),
         column(3, selectizeInput(ns('denominator'), label = 'Denominator',
                                  choices = c('DHIS2' = 'dhis2',
@@ -26,8 +29,7 @@ subnationalCoverageUI <- function(id) {
         title = 'Measles 1',
         fluidRow(
           column(12, plotOutput(ns('measles1'))),
-          column(3, downloadUI(ns('measles1_download'), label = 'Download Plot')),
-          column(3, downloadUI(ns('measles1_data_download'), label = 'Download Data'))
+          downloadCoverageUI(ns('measles1_download'))
         )
       ),
 
@@ -35,8 +37,7 @@ subnationalCoverageUI <- function(id) {
         title = 'Penta 3',
         fluidRow(
           column(12, plotOutput(ns('penta3'))),
-          column(3, downloadUI(ns('penta3_download'), label = 'Download Plot')),
-          column(3, downloadUI(ns('penta3_data_download'), label = 'Download Data'))
+          downloadCoverageUI(ns('penta3_download'))
         )
       ),
 
@@ -51,8 +52,7 @@ subnationalCoverageUI <- function(id) {
         ),
         fluidRow(
           column(12, plotOutput(ns('custom_check'))),
-          column(3, downloadUI(ns('custom_download'), label = 'Download Plot')),
-          column(3, downloadUI(ns('custom_data_download'), label = 'Download Data'))
+          downloadCoverageUI(ns('custom_download'))
         )
       )
     )
@@ -67,10 +67,6 @@ subnationalCoverageServer <- function(id, data, national_values) {
     id = id,
     module = function(input, output, session) {
 
-      national_rates <- reactive({
-        national_values()$rates
-      })
-
       national_data <- reactive({
         national_values()$data
       })
@@ -82,19 +78,38 @@ subnationalCoverageServer <- function(id, data, national_values) {
           filter(year >= as.numeric(input$year))
       })
 
+      indicator_coverage <- reactive({
+        if (!isTruthy(data()) || !isTruthy(input$admin_level)) return(NULL)
+
+        rates <- national_values()$rates
+        data() %>%
+          calculate_indicator_coverage(
+            admin_level = input$admin_level,
+            sbr = rates$sbr,
+            nmr = rates$nmr,
+            pnmr = rates$pnmr,
+            twin = rates$twin_rate,
+            preg_loss = rates$preg_loss,
+            anc1survey = rates$anc1,
+            dpt1survey = rates$penta1)
+      })
+
+
       observe({
-        req(data())
+        req(indicator_coverage())
 
         # Extract distinct values if column_name is valid
-        admin_level <- data() %>%
-          distinct(adminlevel_1) %>%
-          pull(adminlevel_1)
+        admin_level <- indicator_coverage() %>%
+          distinct(!!sym(input$admin_level)) %>%
+          arrange(!!sym(input$admin_level)) %>%
+          pull(!!sym(input$admin_level))
 
         # Update the select input
         updateSelectInput(
           session,
           'region',
-          choices = admin_level
+          choices = admin_level,
+          label = if (input$admin_level == 'adminlevel_1') 'Admin Level 1' else 'District'
         )
       })
 
@@ -114,228 +129,103 @@ subnationalCoverageServer <- function(id, data, national_values) {
       })
 
       measles1_coverage <- reactive({
-        if (!isTruthy(input$denominator) || !isTruthy(national_data()) || !isTruthy(national_data()$un) ||
-            !isTruthy(input$region) || !isTruthy(national_data()$wuenic) || !isTruthy(national_data()$gregion) || !isTruthy(national_rates())) {
+        if (!isTruthy(indicator_coverage()) || !isTruthy(input$denominator) || !isTruthy(national_data()) ||
+            !isTruthy(input$region) || !isTruthy(national_data()$wuenic) || !isTruthy(national_data()$gregion)) {
           return(NULL)
         }
 
-        rates <- national_rates()
-        surv_data <- national_data()
-
-        analyze_coverage(data(),
-                         admin_level = 'admin_level_1',
-                         region = input$region,
-                         subnational_map = surv_data$survey_map,
-                         indicator = 'measles1',
-                         denominator = input$denominator,
-                         un_estimates = surv_data$un,
-                         survey_data = gregion(),
-                         wuenic_data = surv_data$wuenic,
-                         sbr = rates$sbr,
-                         nmr = rates$nmr,
-                         pnmr = rates$pnmr,
-                         anc1survey =rates$anc1,
-                         dpt1survey = rates$penta1,
-                         twin = rates$twin_rate,
-                         preg_loss = rates$preg_loss)
+        indicator_coverage() %>%
+          analyze_coverage(
+            admin_level = input$admin_level,
+            indicator = 'measles1',
+            denominator = input$denominator,
+            survey_data = gregion(),
+            wuenic_data = national_data()$wuenic,
+            subnational_map = national_data()$survey_map,
+            region = input$region
+          )
       })
 
       penta3_coverage <- reactive({
-        if (!isTruthy(input$denominator) || !isTruthy(national_data()) || !isTruthy(national_data()$un) ||
-            !isTruthy(input$region) || !isTruthy(national_data()$wuenic) || !isTruthy(national_data()$gregion) || !isTruthy(national_rates())) {
+        if (!isTruthy(indicator_coverage()) || !isTruthy(input$denominator) || !isTruthy(national_data()) ||
+            !isTruthy(input$region) || !isTruthy(national_data()$wuenic) || !isTruthy(national_data()$gregion)) {
           return(NULL)
         }
 
-        rates <- national_rates()
-        surv_data <- national_data()
-
-        coverage <- analyze_coverage(data(),
-                                     admin_level = 'admin_level_1',
-                                     region = input$region,
-                                     subnational_map = surv_data$survey_map,
-                                     indicator = 'penta3',
-                                     denominator = input$denominator,
-                                     un_estimates = surv_data$un,
-                                     survey_data = gregion(),
-                                     wuenic_data = surv_data$wuenic,
-                                     sbr = rates$sbr,
-                                     nmr = rates$nmr,
-                                     pnmr = rates$pnmr,
-                                     anc1survey =rates$anc1,
-                                     dpt1survey = rates$penta1,
-                                     twin = rates$twin_rate,
-                                     preg_loss = rates$preg_loss)
+        indicator_coverage() %>%
+          analyze_coverage(
+            admin_level = input$admin_level,
+            indicator = 'penta3',
+            denominator = input$denominator,
+            survey_data = gregion(),
+            wuenic_data = national_data()$wuenic,
+            subnational_map = national_data()$survey_map,
+            region = input$region
+          )
       })
 
       custom_coverage <- reactive({
-        if (!isTruthy(input$indicator != '0') || !isTruthy(input$denominator) || !isTruthy(national_data()) || !isTruthy(national_data()$un) ||
-            !isTruthy(input$region) || !isTruthy(national_data()$wuenic) || !isTruthy(national_data()$gregion) || !isTruthy(national_rates())) {
+        if (!isTruthy(indicator_coverage()) || !isTruthy(input$indicator != '0') || !isTruthy(input$denominator) || !isTruthy(national_data()) ||
+            !isTruthy(input$region) || !isTruthy(national_data()$wuenic) || !isTruthy(national_data()$gregion)) {
           return(NULL)
         }
 
-        rates <- national_rates()
-        surv_data <- national_data()
-
-        coverage <- analyze_coverage(data(),
-                                     admin_level = 'admin_level_1',
-                                     region = input$region,
-                                     subnational_map = surv_data$survey_map,
-                                     indicator = input$indicator,
-                                     denominator = input$denominator,
-                                     un_estimates = surv_data$un,
-                                     survey_data = gregion(),
-                                     wuenic_data = surv_data$wuenic,
-                                     sbr = rates$sbr,
-                                     nmr = rates$nmr,
-                                     pnmr = rates$pnmr,
-                                     anc1survey =rates$anc1,
-                                     dpt1survey = rates$penta1,
-                                     twin = rates$twin_rate,
-                                     preg_loss = rates$preg_loss)
+        indicator_coverage() %>%
+          analyze_coverage(
+            admin_level = input$admin_level,
+            indicator = input$indicator,
+            denominator = input$denominator,
+            survey_data = gregion(),
+            wuenic_data = national_data()$wuenic,
+            subnational_map = national_data()$survey_map,
+            region = input$region
+          )
       })
 
       output$measles1 <- renderPlot({
         req(measles1_coverage())
 
-        tryCatch({
-
-            plot(measles1_coverage())
-          }, error = function(e) {
-
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
-
+        render_with_error_handling({
+          plot(measles1_coverage())
+        })
       })
 
       output$penta3 <- renderPlot({
         req(penta3_coverage())
 
-        tryCatch({
-            plot(penta3_coverage())
-          }, error = function(e) {
-
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
-
+        render_with_error_handling({
+          plot(penta3_coverage())
+        })
       })
 
       output$custom_check <- renderPlot({
         req(custom_coverage())
 
-        tryCatch({
+        render_with_error_handling({
           plot(custom_coverage())
-        }, error = function(e) {
-          clean_message <- cli::ansi_strip(conditionMessage(e))
-          plot.new() # Start a blank plot
-          text(
-            x = 0.5, y = 0.5,
-            labels = paste("Error:", clean_message),
-            cex = 1.2, col = "red"
-          )
         })
       })
 
-      downloadServer(
+      downloadCoverageServer(
         id = 'measles1_download',
+        data_fn = measles1_coverage,
         filename = paste0('measles1_', input$region, '_survey_', input$denominator),
-        extension = 'png',
-        content = function(file) {
-          plot(measles1_coverage())
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = measles1_coverage
+        sheet_name = 'Measles 1 Coverage'
       )
 
-      downloadServer(
-        id = 'measles1_data_download',
-        filename = paste0('T3_measles1_', input$region, '_survey_', input$denominator),
-        extension = 'xlsx',
-        content = function(file) {
-          wb <- createWorkbook()
-          coverage <- measles1_coverage()
-
-          sheet_name_1 <- "Measles 1 Coverage"
-          addWorksheet(wb, sheet_name_1)
-          writeData(wb, sheet = sheet_name_1, x = coverage, startCol = 1, startRow = 1)
-
-          # Save the workbook
-          saveWorkbook(wb, file, overwrite = TRUE)
-        },
-        data = measles1_coverage
-      )
-
-      downloadServer(
+      downloadCoverageServer(
         id = 'penta3_download',
+        data_fn = penta3_coverage,
         filename = paste0('penta3_', input$region, '_survey_', input$denominator),
-        extension = 'png',
-        content = function(file) {
-          plot(penta3_coverage())
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = penta3_coverage
+        sheet_name = 'Penta 3 Coverage'
       )
 
-      downloadServer(
-        id = 'penta3_data_download',
-        filename = paste0('T3_penta3_', input$region, '_survey_', input$denominator),
-        extension = 'xlsx',
-        content = function(file) {
-          wb <- createWorkbook()
-          coverage <- penta3_coverage()
-
-          sheet_name_1 <- "Penta 3 Coverage"
-          addWorksheet(wb, sheet_name_1)
-          writeData(wb, sheet = sheet_name_1, x = coverage, startCol = 1, startRow = 1)
-
-          # Save the workbook
-          saveWorkbook(wb, file, overwrite = TRUE)
-        },
-        data = penta3_coverage
-      )
-
-      downloadServer(
+      downloadCoverageServer(
         id = 'custom_download',
+        data_fn = penta3_coverage,
         filename = paste0(input$indicator, '_', input$region, '_survey_', input$denominator),
-        extension = 'png',
-        content = function(file) {
-          plot(custom_coverage())
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = custom_coverage
+        sheet_name = paste0(input$indicator, ' Coverage')
       )
-
-      downloadServer(
-        id = 'custom_data_download',
-        filename = paste0('T3_', input$indicator, '_', input$region, '_survey_', input$denominator),
-        extension = 'xlsx',
-        content = function(file) {
-          wb <- createWorkbook()
-          coverage <- custom_coverage()
-
-          sheet_name_1 <- paste0(input$indicator, ' Coverage')
-          addWorksheet(wb, sheet_name_1)
-          writeData(wb, sheet = sheet_name_1, x = coverage, startCol = 1, startRow = 1)
-
-          # Save the workbook
-          saveWorkbook(wb, file, overwrite = TRUE)
-        },
-        data = custom_coverage
-      )
-
     }
   )
 }

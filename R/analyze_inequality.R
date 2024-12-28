@@ -1,31 +1,51 @@
 #' Analyze Subnational Health Coverage Data with Disparity Metrics
 #'
-#' `analyze_inequality` Calculates health coverage and disparity metrics,
-#' such as Mean Absolute Difference to the Mean (MADM), weighted MADM, Mean Relative
-#' Difference to the Mean (MRDM), and weighted MRDM, for a specified subnational
-#' level and health indicator. The function returns a `cd_inequality`
-#' object with calculated metrics for plotting and summarizing.
+#' `analyze_inequality` calculates health coverage and disparity metrics, such as:
+#' - **Mean Absolute Difference to the Mean (MADM)**: Average absolute deviation
+#'   from the national mean.
+#' - **Weighted MADM**: MADM adjusted for population share.
+#' - **Mean Relative Difference to the Mean (MRDM)**: MADM expressed as a
+#'   percentage of the national mean.
+#' - **Weighted MRDM**: MRDM adjusted for population share.
 #'
-#' @param .data A data frame containing the health coverage data.
-#' @param level A character string specifying the administrative level to analyze
-#'   (either "admin_level_1" or "district").
-#' @param indicator A character string specifying the health indicator to analyze
-#'   (e.g., "bcg", "measles1").
-#' @param denominator A character string specifying the denominator to use for
-#'   coverage calculations (e.g., "dhis2", "anc1", "penta1").
+#' The function processes subnational health coverage data at specified administrative
+#' levels and calculates metrics for disparities in health coverage. It supports
+#' multiple denominators and health indicators.
 #'
-#' @return A `cd_inequality` object containing calculated metrics such
-#'   as coverage, MADM, MRDM, and population shares.
+#' @param .data A data frame containing health coverage data for subnational units.
+#' @param admin_level A character string specifying the administrative level for analysis.
+#'   Options: `"adminlevel_1"` or `"district"`.
+#' @param indicator A character string specifying the health indicator to analyze.
+#'   Supported indicators include `"bcg"`, `"measles1"`, `"penta3"`, etc.
+#' @param denominator A character string specifying the denominator for coverage
+#'   calculations.Options: `"dhis2"`, `"anc1"`, or `"penta1"`.
+#' @param un_estimates Optional. A data frame containing UN population estimates
+#'   for national-level calculations.
+#' @param sbr Numeric. Stillbirth rate (default: 0.02).
+#' @param nmr Numeric. Neonatal mortality rate (default: 0.025).
+#' @param pnmr Numeric. Post-neonatal mortality rate (default: 0.024).
+#' @param anc1survey Numeric. Survey coverage rate for ANC-1 (default: 0.98).
+#' @param dpt1survey Numeric. Survey coverage rate for Penta-1 (default: 0.97).
+#' @param twin Numeric. Twin birth rate (default: 0.015).
+#' @param preg_loss Numeric. Pregnancy loss rate (default: 0.03).
+#'
+#' @return A `cd_inequality` object containing subnational coverage metrics,
+#'   population shares, MADM, MRDM, and other disparity metrics, grouped by year.
 #'
 #' @examples
 #' \dontrun{
-#' data <- analyze_inequality(.data, level = "district",
-#'                            indicator = "measles1", denominator = "penta1")
+#'   inequality_metrics <- analyze_inequality(
+#'     .data = health_data,
+#'     admin_level = "district",
+#'     indicator = "measles1",
+#'     denominator = "penta1",
+#'     un_estimates = un_data
+#'   )
 #' }
 #'
 #' @export
 analyze_inequality <- function(.data,
-                               level = c('admin_level_1', 'district'),
+                               admin_level = c('adminlevel_1', 'district'),
                                indicator = c('bcg', 'anc1', 'pcv3', 'opv1', 'opv2', 'opv3',
                                              'penta2', 'pcv1', 'pcv2', 'penta1', 'penta3', 'measles1',
                                              'rota1', 'rota2', 'instdeliveries', 'measles2', 'ipv1', 'ipv2',
@@ -42,49 +62,50 @@ analyze_inequality <- function(.data,
 
   year = tot = national_mean = popshare = madm = madmpop = rd_max = NULL
 
+  # Validation
   check_cd_data(.data)
-  level <-  arg_match(level)
+  admin_level <-  arg_match(admin_level)
   indicator <-  arg_match(indicator)
   denominator <- arg_match(denominator)
 
-  level_name <- switch (level,
-    admin_level_1 = 'adminlevel_1',
-    district = 'district'
+  # Determine population column
+  population <- case_match(
+    indicator,
+    c('anc1', 'anc4') ~ 'totpreg',
+    c('bcg', 'instlivebirths') ~ if_else(denominator == 'dhis2', 'totbirths', 'totlbirths'),
+    c('penta1', 'penta3', 'pcv1', 'penta2', 'pcv2', 'pcv3', 'rota1',
+      'rota2', 'ipv1', 'ipv2', 'opv1', 'opv2', 'opv3') ~ 'totinftpenta',
+    'measles1' ~ 'totinftmeasles',
+    'measles2' ~ 'totmeasles2'
   )
 
-  population <- case_match(indicator,
-                           c('anc1', 'anc4') ~ 'totpreg',
-                           c('bcg', 'instlivebirths') ~ 'totlbirths',
-                           c('penta1', 'penta3', 'pcv1', 'penta2', 'pcv2', 'pcv3', 'rota1',
-                             'rota2', 'ipv1', 'ipv2', 'opv1', 'opv2', 'opv3') ~ 'totinftpenta',
-                           'measles1' ~ 'totinftmeasles',
-                           'measles2' ~ 'totmeasles2'
-                )
-
+  # Define column names for coverage and population
   dhis2_col <- paste0('cov_', indicator, '_', denominator)
   pop_col <- paste0(population, '_', denominator)
 
+  # National-level data
   national_data <- calculate_populations(.data,
                                          admin_level = 'national',
                                          un_estimates = un_estimates,
                                          sbr = sbr, nmr = nmr, pnmr = pnmr,
                                          anc1survey = anc1survey, dpt1survey = dpt1survey,
                                          twin = twin, preg_loss = preg_loss) %>%
-    # mutate(!!sym(level_name) := 'National') %>%
-    select(year, dhis2_col, pop_col) %>%
+    select(year, any_of(c(dhis2_col, pop_col))) %>%
     rename(national_mean = !!sym(dhis2_col),
            tot = !!sym(pop_col))
 
+  # Subnational-level data
   subnational_data <- calculate_populations(.data,
-                                            admin_level = level,
-                                            un_estimates = un_estimates,
+                                            admin_level = admin_level,
                                             sbr = sbr, nmr = nmr, pnmr = pnmr,
                                             anc1survey = anc1survey, dpt1survey = dpt1survey,
                                             twin = twin, preg_loss = preg_loss) %>%
-    select(year, level_name, dhis2_col, pop_col)
+    select(year, any_of(c(admin_level, dhis2_col, pop_col)))
 
+
+  # Combine and calculate metrics
   combined_data <- subnational_data %>%
-    left_join(national_data, by = c('year')) %>%
+    left_join(national_data, by = 'year') %>%
     mutate(
       popshare = !!sym(pop_col) / tot,
       diff = abs(!!sym(dhis2_col) - national_mean),
@@ -112,6 +133,6 @@ analyze_inequality <- function(.data,
     class = 'cd_inequality',
     indicator = indicator,
     denominator = denominator,
-    level = level_name
+    admin_level = admin_level
   )
 }

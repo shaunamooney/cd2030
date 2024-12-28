@@ -9,7 +9,7 @@ dataCompletenessUI <- function(id) {
       width = 6,
       fluidRow(
         column(12, gt_output(ns('incomplete_district_summary'))),
-        column(3, downloadUI(ns('download_data'), label = 'Download Data'))
+        column(3, downloadButtonUI(ns('download_data'), label = 'Download Data'))
       )
     ),
     box(
@@ -19,7 +19,7 @@ dataCompletenessUI <- function(id) {
       fluidRow(
         column(2, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
         column(2, selectizeInput(ns('year'), label = 'Year', choice = NULL)),
-        column(4, offset = 4, downloadUI(ns('download_incompletes'), label = 'Download Incompletes'))
+        column(4, offset = 4, downloadButtonUI(ns('download_incompletes'), label = 'Download Incompletes'))
       ),
       fluidRow(
         column(12, gt_output(ns('incomplete_district')))
@@ -119,7 +119,7 @@ dataCompletenessServer <- function(id, data) {
           )
       })
 
-      downloadServer(
+      downloadButtonServer(
         id = 'download_data',
         filename = 'checks_reporting_rate',
         extension = 'xlsx',
@@ -145,7 +145,7 @@ dataCompletenessServer <- function(id, data) {
         data = data
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'download_incompletes',
         filename = paste0('checks_incomplete_districts_', input$indicator, '_', input$year),
         extension = 'xlsx',

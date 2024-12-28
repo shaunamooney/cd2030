@@ -9,7 +9,7 @@ get_mapping_data(
   un_estimates,
   rates,
   subnational_map = NULL,
-  level = c("admin_level_1", "district")
+  admin_level = c("adminlevel_1", "district")
 )
 }
 \arguments{
@@ -30,7 +30,7 @@ get_mapping_data(
 
 \item{level}{A character string specifying the level of analysis. Options are:
 \itemize{
-\item \code{"admin_level_1"}: First administrative level.
+\item \code{"adminlevel_1"}: First administrative level.
 \item \code{"district"}: District level (default for Kenya).
 }}
 }
@@ -43,6 +43,6 @@ indicator coverage at the specified subnational level.
 }
 \examples{
 rates <- list(sbr = 0.02, nmr = 0.03, pnmr = 0.02, anc1 = 0.8, penta1 = 0.75, twin_rate = 0.015, preg_loss = 0.03)
-get_mapping_data(data, un_estimates, rates, level = "admin_level_1")
+get_mapping_data(data, un_estimates, rates, level = "adminlevel_1")
 
 }

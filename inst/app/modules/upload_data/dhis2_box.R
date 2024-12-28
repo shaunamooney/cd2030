@@ -30,8 +30,8 @@ dhis2BoxUI <- function(id) {
         column(12, uiOutput(ns("enhanced_feedback")))
       ),
       fluidRow(
-        column(4, downloadUI(ns('master_file'), 'Download Master File')),
-        column(4, downloadUI(ns('excel_file'), 'Download Excel File'))
+        column(4, downloadButtonUI(ns('master_file'), 'Download Master File')),
+        column(4, downloadButtonUI(ns('excel_file'), 'Download Excel File'))
       )
   )
 }

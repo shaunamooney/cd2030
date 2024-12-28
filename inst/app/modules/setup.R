@@ -187,7 +187,7 @@ setupServer <- function(id, data, survey_data) {
               new_log <- paste0('Loaded national survey data: "', .x, '".')
             } else if (grepl('^gregion_', .x)) {
               gregion_path(file_path)
-              gregion <- load_survey_data(gregion_path(), country_iso(), admin_level = 'admin_level_1')
+              gregion <- load_survey_data(gregion_path(), country_iso(), admin_level = 'adminlevel_1')
               gregion_data(gregion)
               new_log <- paste0('Loaded regional survey data: "', .x, '".')
             } else if (grepl('^area_', .x)) {

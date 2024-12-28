@@ -7,7 +7,7 @@
 load_survey_data(
   path,
   country_iso,
-  admin_level = c("national", "admin_level_1")
+  admin_level = c("national", "adminlevel_1")
 )
 }
 \arguments{

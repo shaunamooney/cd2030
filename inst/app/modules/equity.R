@@ -23,7 +23,7 @@ equityUI <- function(id) {
         title = 'Penta 3',
         fluidRow(
           column(12, plotOutput(ns('penta3'))),
-          column(3, downloadUI(ns('penta3_download'), label = 'Download Plot'))
+          column(3, downloadButtonUI(ns('penta3_download'), label = 'Download Plot'))
         )
       ),
 
@@ -31,7 +31,7 @@ equityUI <- function(id) {
         title = 'Measles 1',
         fluidRow(
           column(12, plotOutput(ns('measles1'))),
-          column(3, downloadUI(ns('measles1_download'), label = 'Download Plot'))
+          column(3, downloadButtonUI(ns('measles1_download'), label = 'Download Plot'))
         )
       ),
 
@@ -42,7 +42,7 @@ equityUI <- function(id) {
         ),
         fluidRow(
           column(12, plotOutput(ns('custom_check'))),
-          column(3, downloadUI(ns('custom_download'), label = 'Download Plot'))
+          column(3, downloadButtonUI(ns('custom_download'), label = 'Download Plot'))
         )
       )
 
@@ -161,7 +161,7 @@ equityServer <- function(id, data_values) {
         )
       })
 
-      downloadServer(
+      downloadButtonServer(
         id = 'penta3_download',
         filename = paste0('penta3_', input$type, '_equity'),
         extension = 'png',
@@ -172,7 +172,7 @@ equityServer <- function(id, data_values) {
         data = penta3_equiplot
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'measles1_download',
         filename = paste0('measles1_', input$type, '_equity'),
         extension = 'png',
@@ -183,7 +183,7 @@ equityServer <- function(id, data_values) {
         data = measles1_equiplot
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'custom_download',
         filename = paste0(input$indicator, '_', input$type, '_equity'),
         extension = 'png',

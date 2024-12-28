@@ -7,8 +7,12 @@
 generate_checks_report(
   .data,
   output_file,
-  un_estimates,
-  output_format = c("html_document", "word_document"),
+  survey_values,
+  k_factors,
+  country,
+  denominator,
+  survey_start_year,
+  output_format = c("html_document", "word_document", "pdf_document"),
   threshold = 90
 )
 }

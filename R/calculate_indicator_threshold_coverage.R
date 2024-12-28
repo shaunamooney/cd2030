@@ -118,14 +118,6 @@ calculate_dropout <- function(.data,
   source <- arg_match(source)
 
   admin_level <- attr(.data, 'admin_level')
-  admin_level <- switch(admin_level,
-                        admin_level_1 = 'adminlevel_1',
-                        district = 'district',
-                        cd_abort(
-                          c('x' = '{.field {admin_level}} is not supported. only {.field adminlevel1} and {.field district} are supported')
-                        )
-                      )
-
 
   column_name <- paste0('cov_', indicator, '_', source)
 

@@ -6,95 +6,76 @@
 \usage{
 analyze_coverage(
   .data,
-  admin_level = c("national", "admin_level_1", "district"),
+  admin_level = c("national", "adminlevel_1", "district"),
   indicator = c("bcg", "anc1", "pcv3", "opv1", "opv2", "opv3", "penta2", "pcv1", "pcv2",
     "penta1", "penta3", "measles1", "rota1", "rota2", "instdeliveries", "measles2",
     "ipv1", "ipv2", "undervax", "dropout_penta13", "zerodose", "dropout_measles12",
     "dropout_penta3mcv1"),
   denominator = c("dhis2", "anc1", "penta1"),
-  un_estimates,
   survey_data,
   wuenic_data,
   subnational_map = NULL,
-  region = NULL,
-  sbr = 0.02,
-  nmr = 0.025,
-  pnmr = 0.024,
-  anc1survey = 0.98,
-  dpt1survey = 0.97,
-  twin = 0.015,
-  preg_loss = 0.03
+  region = NULL
 )
 }
 \arguments{
-\item{.data}{A data frame of type \code{cd_data} containing immunization coverage data.}
+\item{.data}{A precomputed data frame of type \code{cd_indicator_coverage} containing
+immunization coverage data. This dataset should include calculated metrics such
+as coverage indicators.}
+
+\item{admin_level}{Character. Specifies the administrative level for analysis.
+Options include: \code{national}, \code{adminlevel_1} and \code{district}. Default is 'national'.}
 
 \item{indicator}{Character. The immunization indicator to analyze. Must be one
-of the supported values such as "bcg", "penta3", etc.
-Supported indicators include:
-\itemize{
-\item General vaccinations: "bcg", "anc1", "pcv3", "opv1", "opv2", "opv3"
-\item Dose-based vaccinations: "penta2", "penta1", "penta3", "measles1", "measles2"
-\item Additional vaccines: "rota1", "rota2", "ipv1", "ipv2"
-\item Other health indicators: "undervax", "dropout_penta13", "zerodose",
-"dropout_measles12", "dropout_penta3mcv1"
-}}
+of the supported values: \code{bcg}, \code{anc1}, \code{pcv3}, \code{opv1}, \code{opv2}, \code{opv3}, \code{penta2},
+\code{penta1}, \code{penta3}, \code{measles1}, \code{measles2}, \code{rota1}, \code{rota2}, \code{ipv1}, \code{ipv2},
+\code{undervax}, \code{dropout_penta13}, \code{zerodose}, and\code{dropout_measles12}, \code{dropout_penta3mcv1}}
 
-\item{denominator}{Character. The denominator used for calculating coverage
-estimates. Must be one of "dhis2", "anc1", or "penta1".}
+\item{denominator}{Character. The denominator used for calculating coverage estimates.
+Must be one of the following: \code{dhis2}, \code{anc1}, and\code{penta1}.}
 
-\item{un_estimates}{description}
+\item{survey_data}{A data frame containing survey estimates for immunization coverage.}
 
-\item{survey_data}{description}
+\item{wuenic_data}{A data frame containing WUENIC (WHO-UNICEF estimates) data
+for immunization coverage. This should include columns specific to WUENIC-based
+coverage estimates.}
 
-\item{wuenic_data}{description}
+\item{subnational_map}{A data frame used to link subnational regions (e.g.,
+districts or administrative level 1 areas) to their respective parent regions.
+This is required for subnational analyses. Default is \code{NULL}.}
 
-\item{subnational_map}{description}
-
-\item{sbr}{Numeric. The stillbirth rate.}
-
-\item{nmr}{Numeric. Neonatal mortality rate.}
-
-\item{pnmr}{Numeric. Post-neonatal mortality rate.}
-
-\item{anc1survey}{Numeric. Survey coverage rate for ANC-1.}
-
-\item{dpt1survey}{Numeric. Survey coverage rate for Penta-1 (DPT1).}
-
-\item{twin}{Numeric. Twin birth rate, default is 0.014.}
-
-\item{preg_loss}{Numeric. Pregnancy loss rate, default is 0.03.}
+\item{region}{Character. Specifies the region of interest for subnational analyses.
+Required if \code{admin_level} is not 'national'. Default is \code{NULL}.}
 }
 \value{
-A data frame of class \code{cd_coverage}, containing year-wise
-immunization coverage estimates from DHIS2, WUENIC, and Survey data, along
-with confidence intervals if available. The table provides organized coverage
-metrics and includes a new \code{cd_coverage} class for enhanced functionality.
+A data frame of class \code{cd_coverage}, containing year-wise immunization
+coverage estimates from DHIS2, WUENIC, and survey data, along with confidence
+intervals where available. The resulting table is formatted for further analysis
+or visualization, with metadata describing the chosen administrative level, region,
+and denominator.
 }
 \description{
-\code{analyze_coverage}, calculates and combines national immunization coverage data
-for a specified country, indicator, and denominator. It integrates internal data
-sources (\code{survey_data}, \code{wuenic_data})and processes the provided data source (\code{.data}).
+\code{analyze_coverage} calculates and combines national immunization coverage data
+for a specified country, indicator, and denominator. It integrates local survey
+data and WUENIC (WHO-UNICEF estimates) and processes the provided data source,
+which is precomputed as a \code{cd_indicator_coverage} data frame.
 }
 \details{
-The function performs the following steps:
-\enumerate{
-\item Validates \code{.data} and verifies required columns.
-\item Extracts the appropriate data columns from national, survey, and WUENIC data.
-\item Combines all relevant data into a single long-format table, including
-estimates and confidence intervals.
-\item Creates a new tibble with class \code{cd_coverage}, adding metadata
-such as the chosen denominator.
-}
-
 This function provides a flexible way to analyze immunization coverage by
-offering year-wise summaries and estimate categories. The final table format
-is ready for further analysis or visualization.
+combining data from multiple sources (survey data, WUENIC, and DHIS2). It supports
+analyses at different administrative levels and is designed for integration into
+dashboards, reports, or further data exploration workflows.
 }
 \examples{
 \dontrun{
-analyze_coverage(.data = my_data, indicator = "penta3",
-                 denominator = "penta1")
+analyze_coverage(
+  .data = precomputed_data,
+  admin_level = 'national',
+  indicator = 'penta3',
+  denominator = 'penta1',
+  survey_data = survey_df,
+  wuenic_data = wuenic_df
+)
 }
 
 }

@@ -9,8 +9,8 @@
 #'   data.
 #' @param metric A character string specifying the type of data to plot. It must
 #'   be one of:
-#'   - **"population"**: Plots total population estimates in thousands from DHIS-2 and UN sources.
-#'   - **"births"**: Plots total live births in thousands from DHIS-2 and UN sources.
+#'   - **'population'**: Plots total population estimates in thousands from DHIS-2 and UN sources.
+#'   - **'births'**: Plots total live births in thousands from DHIS-2 and UN sources.
 #' @param ... Additional arguments (not used in this function).
 #'
 #' @details
@@ -29,28 +29,28 @@
 #' @examples
 #' \dontrun{
 #'   # Plot total population estimates at the national level
-#'   plot(population_metrics_data, metric = "population")
+#'   plot(population_metrics_data, metric = 'population')
 #'
 #'   # Plot total live births estimates at the national level
-#'   plot(population_metrics_data, metric = "births")
+#'   plot(population_metrics_data, metric = 'births')
 #' }
 #'
 #' @export
-plot.cd_population_metrics <- function(x, metric = c("population", "births"), ...) {
+plot.cd_population_metrics <- function(x, metric = c('population', 'births'), ...) {
 
   year = un_population = totpop_dhis2 = un_births = totlivebirths_dhis2 = NULL
 
   # Match argument to enforce valid choices
   metric <- arg_match(metric)
 
-  admin_level <- attr(x, "admin_level")
+  admin_level <- attr(x, 'admin_level')
   if (admin_level != 'national') {
     cd_abort(
       c('x' = 'This plot supports only national-level data due to the requirement of UN estimates.')
     )
   }
 
-  if (metric == "population") {
+  if (metric == 'population') {
 
     plot_line_graph(
       .data = x,
@@ -61,7 +61,7 @@ plot.cd_population_metrics <- function(x, metric = c("population", "births"), ..
       y_axis_title = 'Population'
     )
 
-  } else if (metric == "births") {
+  } else if (metric == 'births') {
 
     plot_line_graph(
       .data = x,

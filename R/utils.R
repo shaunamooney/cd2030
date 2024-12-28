@@ -11,59 +11,95 @@ check_file_path <- function(path, call = caller_env()) {
   }
 }
 
-check_cd_indicator_coverage <- function(.data, call = caller_env()) {
+check_cd_indicator_coverage <- function(.data, arg = caller_arg(.data), call = caller_env()) {
 
-  check_required(.data, call = call)
+  check_required(.data, arg = arg, call = call)
 
   if (!inherits(.data, 'cd_indicator_coverage')) {
-    cd_abort(c('x' = 'The data object must be of class "cd_indicator_coverage".'), call = call)
+    cd_abort(c('x' = 'The data object must be of class {.field cd_indicator_coverage}.'), call = call)
   }
-
 }
 
-check_cd_data <- function(.data, call = caller_env()) {
+check_cd_data <- function(.data, arg = caller_arg(.data), call = caller_env()) {
 
-  check_required(.data, call = call)
+  check_required(.data, arg = arg, call = call)
 
   if (!inherits(.data, 'cd_data')) {
-    cd_abort(c('x' = 'The data object must be of class "cd_data".'), call = call)
-  }
-
-}
-
-check_un_estimates_data <- function(.data, call = caller_env()) {
-
-  check_required(.data, call = call)
-
-  if (!inherits(.data, 'cd_un_estimates')) {
-    cd_abort(c('x' = 'The data object must be of class "cd_un_estimates".'), call = call)
+    cd_abort(c('x' = 'The data object must be of class {.cls cd_data}.'), call = call)
   }
 }
 
-check_wuenic_data <- function(.data, call = caller_env()) {
+#' Validate UN Estimates Data for Population Metrics
+#'
+#' Ensures the provided UN estimates data is valid and appropriate for the selected
+#' administrative level.
+#'
+#' @param .data A tibble containing UN estimates data or `NULL`.
+#' @param admin_level Character. Specifies the administrative level for aggregation.
+#'   Must be one of `"national"`, `"adminlevel_1"`, or `"district"`.
+#' @param call The calling environment for error messages.
+#'
+#' @return Invisible `NULL`. Throws an error if the validation fails.
+#' @noRd
+check_un_estimates_data <- function(.data,
+                                    admin_level = c('national', 'adminlevel_1', 'district'),
+                                    arg = caller_arg(.data),
+                                    call = caller_env()) {
 
-  check_required(.data, call = call)
+  check_required(.data, arg = arg, call = call)
+  admin_level <- arg_match(admin_level)
+
+  if (!is.null(.data) && !inherits(.data, 'cd_un_estimates')) {
+    cd_abort(c('x' = 'The data object must be of class {.cls cd_un_estimates}.'), call = call)
+  }
+
+  if (is.null(.data) && admin_level == 'national') {
+    cd_abort(c('x' = '{.arg un_estimate} must be provided for {.val {admin_level}} metrics.'), call = call)
+  }
+}
+
+check_wuenic_data <- function(.data, arg = caller_arg(.data), call = caller_env()) {
+
+  check_required(.data, arg = arg, call = call)
 
   if (!inherits(.data, 'cd_wuenic_data')) {
-    cd_abort(c('x' = 'The data object must be of class "cd_un_estimates".'), call = call)
+    cd_abort(c('x' = 'The data object must be of class {.cls cd_wuenic_estimates}.'), call = call)
+  }
+
+  if (!all(c('iso', 'year') %in% colnames(.data))) {
+    cd_abort(c('x' = 'WUENIC data must contain {.field iso} and {.field year} columns.'), call = call)
   }
 }
 
-check_survey_data <- function(.data, call = caller_env()) {
+check_survey_data <- function(.data,
+                              admin_level = c('national', 'adminlevel_1', 'district'),
+                              arg = caller_arg(.data),
+                              call = caller_env()) {
 
-  check_required(.data, call = call)
+  check_required(.data, arg = arg, call = call)
+  admin_level <- arg_match(admin_level)
 
   if (!inherits(.data, 'cd_survey_data')) {
-    cd_abort(c('x' = 'The data object must be of class "cd_un_estimates".'), call = call)
+    cd_abort(c('x' = 'The data object must be of class {.cls cd_un_estimates}.'), call = call)
+  }
+
+  if (admin_level == 'national' && 'adminlevel_1' %in% colnames(.data)) {
+    cd_abort(c('x' = 'Regional survey data used in national level'), call = call)
+  } else if (admin_level != 'national' && !'adminlevel_1' %in% colnames(.data)) {
+    cd_abort(c('x' = 'National survey data used in subnational level'), call = call)
+  }
+
+  if (!all(c('iso', 'year') %in% colnames(.data))) {
+    cd_abort(c('x' = 'Survey data must contain {.field iso} and {.field year} columns.'), call = call)
   }
 }
 
-check_equity_data <- function(.data, call = caller_env()) {
+check_equity_data <- function(.data, arg = caller_arg(.data), call = caller_env()) {
 
-  check_required(.data, call = call)
+  check_required(.data, arg = arg, call = call)
 
   if (!inherits(.data, 'cd_equity_data')) {
-    cd_abort(c('x' = 'The data object must be of class "cd_un_estimates".'), call = call)
+    cd_abort(c('x' = 'The data object must be of class {.cls cd_equity_estimates}.'), call = call)
   }
 }
 

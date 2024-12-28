@@ -25,7 +25,7 @@ calculateRatiosUI <- function(id) {
       fluidRow(
         column(2, offset = 10, helpButtonUI(ns('ratios')), style = 'margin-bottom: 10px;'),
         column(12, plotOutput(ns('ratios_plot'))),
-        column(4, downloadUI(ns('ratio_plot_download'), label = 'Download Plot'))
+        column(4, downloadButtonUI(ns('ratio_plot_download'), label = 'Download Plot'))
       )
     )
   )
@@ -53,7 +53,7 @@ calculateRatiosServer <- function(id, data) {
         plot(calculate_ratios_summary(data(), survey_coverage = survey_coverage()))
       })
 
-      downloadServer(
+      downloadButtonServer(
         id = 'ratio_plot_download',
         filename = 'ratio_plot',
         extension = 'png',

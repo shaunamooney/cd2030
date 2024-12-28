@@ -59,10 +59,6 @@ plot.cd_indicator_coverage <- function(x,
   }
 
   if (!is.null(admin_level) && admin_level != 'national') {
-    admin_level <- switch (admin_level,
-      district = 'district',
-      admin_level_1 = 'adminlevel_1'
-    )
     x <- x %>%
       filter(!!sym(admin_level) == admin_name)
   }

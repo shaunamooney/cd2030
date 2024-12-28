@@ -12,8 +12,8 @@ reportingRateUI <- function(id) {
       ),
       fluidRow(
         column(12, plotOutput(ns('district_report_plot'))),
-        column(4, downloadUI(ns('download_plot'), label = 'Download Plot')),
-        column(4, downloadUI(ns('download_data'), label = 'Download Data'))
+        column(4, downloadButtonUI(ns('download_plot'), label = 'Download Plot')),
+        column(4, downloadButtonUI(ns('download_data'), label = 'Download Data'))
       )
     ),
     box(
@@ -27,7 +27,7 @@ reportingRateUI <- function(id) {
         column(3, selectizeInput(ns('year'),
                                  label = 'Year',
                                  choices =NULL)),
-        column(3, offset = 3, downloadUI(ns('download_districts'), label = 'Download Districts'))
+        column(3, offset = 3, downloadButtonUI(ns('download_districts'), label = 'Download Districts'))
       ),
       fluidRow(column(12, gt_output(ns('low_reporting'))))
     )
@@ -98,7 +98,7 @@ reportingRateServer <- function(id, data) {
 
       })
 
-      downloadServer(
+      downloadButtonServer(
         id = 'download_plot',
         filename = 'district_rr_plot',
         extension = 'png',
@@ -111,7 +111,7 @@ reportingRateServer <- function(id, data) {
         data = district_rr
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'download_data',
         filename = 'checks_reporting_rate',
         extension = 'xlsx',
@@ -137,7 +137,7 @@ reportingRateServer <- function(id, data) {
         data = average_rr
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'download_districts',
         filename = paste0('district_low_reporting_rate_', input$year),
         extension = 'xlsx',

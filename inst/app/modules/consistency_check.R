@@ -11,21 +11,21 @@ consistencyCheckUI <- function(id) {
         'ANC1 and Penta1',
         fluidRow(
           column(12, plotOutput(ns('anc1_penta1'))),
-          column(4, downloadUI(ns('anc1_penta1_plot'), label = 'Download Plot'))
+          column(4, downloadButtonUI(ns('anc1_penta1_plot'), label = 'Download Plot'))
         )
       ),
       tabPanel(
         'Penta1 and Penta3',
         fluidRow(
           column(12, plotOutput(ns('penta1_penta3'))),
-          column(4, downloadUI(ns('penta1_penta3_plot'), label = 'Download Plot'))
+          column(4, downloadButtonUI(ns('penta1_penta3_plot'), label = 'Download Plot'))
         )
       ),
       tabPanel(
         'OPV1 and OPV3',
         fluidRow(
           column(12, plotOutput(ns('opv1_opv3'))),
-          column(4, downloadUI(ns('opv1_opv3_plot'), label = 'Download Plot'))
+          column(4, downloadButtonUI(ns('opv1_opv3_plot'), label = 'Download Plot'))
         )
       ),
       tabPanel(
@@ -34,7 +34,7 @@ consistencyCheckUI <- function(id) {
           column(3, selectizeInput(ns('x_axis'), label = 'X axis', choices = NULL)),
           column(3, offset = 1, selectizeInput(ns('y_axis'), label = 'Y axis', choices = NULL)),
           column(12, plotOutput(ns('custom_graph'))),
-          column(4, downloadUI(ns('custom_graph_plot'), label = 'Download Plot'))
+          column(4, downloadButtonUI(ns('custom_graph_plot'), label = 'Download Plot'))
         )
       )
     )
@@ -81,7 +81,7 @@ consistencyCheckServer <- function(id, data) {
         plot_comparison(data(), input$x_axis, input$y_axis)
       })
 
-      downloadServer(
+      downloadButtonServer(
         id = 'anc1_penta1_plot',
         filename = 'anc1_penta1_plot',
         extension = 'png',
@@ -92,7 +92,7 @@ consistencyCheckServer <- function(id, data) {
         data = data
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'penta1_penta3_plot',
         filename = 'penta1_penta3_plot',
         extension = 'png',
@@ -103,7 +103,7 @@ consistencyCheckServer <- function(id, data) {
         data = data
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'opv1_opv3_plot',
         filename = 'opv1_opv3_plot',
         extension = 'png',
@@ -114,7 +114,7 @@ consistencyCheckServer <- function(id, data) {
         data = data
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'custom_graph_plot',
         filename = paste0(input$x_axis, '_', input$y_axis, '_plot'),
         extension = 'png',

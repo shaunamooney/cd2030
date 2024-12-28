@@ -42,7 +42,8 @@ source('modules/subnational_coverage.R')
 source('modules/subnational_inequality.R')
 source('modules/subnational_mapping.R')
 source('modules/equity.R')
-source('modules/download.R')
+source('modules/download/download_button.R')
+source('modules/download/download_coverage.R')
 source('modules/adjustment_changes.R')
 
 ui <- dashboardPage(
@@ -174,8 +175,8 @@ server <- function(input, output, session) {
   adjustmentChangesServer('data_adjustment_changes', dt, k_factors)
   national_values <- setupServer('setup', dt, survey_data)
   denominatorAssessmentServer('denominator_assessment', dt, national_values)
-  denominatorSelectionServer('denominator_selection', dt, national_values)
-  report_year <- nationalCoverageServer('national_coverage', dt, national_values)
+  indicator_coverage <- denominatorSelectionServer('denominator_selection', dt, national_values)
+  report_year <- nationalCoverageServer('national_coverage', indicator_coverage, national_values)
   subnationalCoverageServer('subnational_coverage', dt, national_values)
   subnationalInequalityServer('subnational_inequality', dt, national_values)
   subnationalMappingServer('subnational_mapping', dt, national_values)
@@ -208,7 +209,7 @@ server <- function(input, output, session) {
             footer = tagList(
               fluidRow(
                 column(6, align = "left", modalButton("Cancel")),
-                column(6, align = "right", downloadUI('download_data', 'Download Report'))
+                column(6, align = "right", downloadButtonUI('download_data', 'Download Report'))
               )
             )
           )
@@ -261,7 +262,7 @@ server <- function(input, output, session) {
            'html_document' = 'html')
   })
 
-  downloadServer(
+  downloadButtonServer(
     id = 'download_data',
     filename = paste0(country(), '_countdown_report'),
     extension = extension(),

@@ -10,7 +10,7 @@ denominatorSelectionUI <- function(id) {
         title = 'Penta 3',
         fluidRow(
           column(12, plotOutput(ns('penta3'))),
-          column(3, downloadUI(ns('penta3_plot'), label = 'Download Plot'))
+          column(3, downloadButtonUI(ns('penta3_plot'), label = 'Download Plot'))
         )
       ),
 
@@ -18,7 +18,7 @@ denominatorSelectionUI <- function(id) {
         title = 'Measles 1',
         fluidRow(
           column(12, plotOutput(ns('measles1'))),
-          column(3, downloadUI(ns('measles1_plot'), label = 'Download Plot'))
+          column(3, downloadButtonUI(ns('measles1_plot'), label = 'Download Plot'))
         )
       ),
 
@@ -26,7 +26,7 @@ denominatorSelectionUI <- function(id) {
         title = 'BCG',
         fluidRow(
           column(12, plotOutput(ns('bcg'))),
-          column(3, downloadUI(ns('bcg_plot'), label = 'Download Plot'))
+          column(3, downloadButtonUI(ns('bcg_plot'), label = 'Download Plot'))
         )
       ),
 
@@ -35,7 +35,7 @@ denominatorSelectionUI <- function(id) {
       #   fluidRow(
       #     column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
       #     column(12, plotOutput(ns('custom_plot'))),
-      #     column(3, downloadUI(ns('custom_download'), label = 'Download Plot'))
+      #     column(3, downloadButtonUI(ns('custom_download'), label = 'Download Plot'))
       #   )
       # )
     )
@@ -103,7 +103,7 @@ denominatorSelectionServer <- function(id, data, national_values) {
         plot_absolute_differences(indicator_coverage(), input$indicator)
       })
 
-      downloadServer(
+      downloadButtonServer(
         id = 'penta3_plot',
         filename = 'penta3_plot',
         extension = 'png',
@@ -114,7 +114,7 @@ denominatorSelectionServer <- function(id, data, national_values) {
         data = indicator_coverage
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'measles1_plot',
         filename = 'measles1_plot',
         extension = 'png',
@@ -125,7 +125,7 @@ denominatorSelectionServer <- function(id, data, national_values) {
         data = indicator_coverage
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'bcg_plot',
         filename = 'bcg_plot',
         extension = 'png',
@@ -146,6 +146,8 @@ denominatorSelectionServer <- function(id, data, national_values) {
       #   },
       #   data = indicator_coverage
       # )
+
+      return(indicator_coverage)
     }
   )
 }

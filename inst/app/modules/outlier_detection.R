@@ -9,7 +9,7 @@ outlierDetectionUI <- function(id) {
       width = 6,
       fluidRow(
         column(12, gt_output(ns('outlier_summary'))),
-        column(4, downloadUI(ns('download_data'), label = 'Download Data'))
+        column(4, downloadButtonUI(ns('download_data'), label = 'Download Data'))
       )
     ),
     box(
@@ -19,7 +19,7 @@ outlierDetectionUI <- function(id) {
       fluidRow(
         column(2, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
         column(2, selectizeInput(ns('year'), label = 'Year', choice = NULL)),
-        column(4, offset = 4, downloadUI(ns('download_outliers'), label = 'Download Outliers'))
+        column(4, offset = 4, downloadButtonUI(ns('download_outliers'), label = 'Download Outliers'))
       ),
       fluidRow(
         column(12, gt_output(ns('district_outlier_summary')))
@@ -122,7 +122,7 @@ outlierDetectionServer <- function(id, data) {
           )
       })
 
-      downloadServer(
+      downloadButtonServer(
         id = 'download_data',
         filename = 'checks_outlier_detection',
         extension = 'xlsx',
@@ -148,7 +148,7 @@ outlierDetectionServer <- function(id, data) {
         data = data
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'download_outliers',
         filename = paste0('checks_outlier_districts_', input$indicator, '_', input$year),
         extension = 'xlsx',

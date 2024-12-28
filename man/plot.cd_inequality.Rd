@@ -23,7 +23,7 @@ indicator, denominator, and level.
 }
 \examples{
 \dontrun{
-data <- analyze_inequality(.data, "Kenya", level = "district",
+data <- analyze_inequality(.data, "Kenya", admin_level = "district",
                            indicator = "measles1", denominator = "penta1")
 plot(data)
 }

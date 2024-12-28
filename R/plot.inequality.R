@@ -13,7 +13,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' data <- analyze_inequality(.data, "Kenya", level = "district",
+#' data <- analyze_inequality(.data, "Kenya", admin_level = "district",
 #'                            indicator = "measles1", denominator = "penta1")
 #' plot(data)
 #' }
@@ -25,7 +25,7 @@ plot.cd_inequality <- function(x, ...) {
 
   indicator <- attr(x, 'indicator')
   denominator <- attr(x, 'denominator')
-  level <- attr(x, 'level')
+  admin_level <- attr(x, 'admin_level')
 
   title <- switch (indicator,
                    anc1 = 'Antenatal care 1+ visits',
@@ -51,34 +51,36 @@ plot.cd_inequality <- function(x, ...) {
                    ipv2 = 'IPV vaccine - 2nd dose'
   )
 
-  subtitle <- switch (level,
+  subtitle <- switch (admin_level,
                       district = 'Subnational unit: district level',
-                      adminlevel_1 = 'Subnational unit: admin 1 level'
-  )
+                      adminlevel_1 = 'Subnational unit: admin 1 level')
 
   caption <- switch (denominator,
                      dhis2 = 'Denominators derived from projected live births (DHIS2)',
                      anc1 = 'Denominators derived from ANC1 estimates',
-                     penta1 = 'Denominators derived from Penta 1 estimates'
-  )
+                     penta1 = 'Denominators derived from Penta 1 estimates')
 
   y_label <- ifelse(indicator == "low_bweight", "Prevalence (%)", "Coverage (%)")
   max_y <- if(all(is.na(x$rd_max))) 100 else max(x$rd_max, na.rm = TRUE)
+  limits <- c(0, max_y)
+  breaks <- scales::pretty_breaks(n = 11)(limits)
+  second_last_break <- sort(breaks, decreasing = TRUE)[2]
+  max_break <- if(all(is.na(breaks))) 0 else max(breaks, na.rm = TRUE)
 
   ggplot(x) +
     geom_point(aes(x = year, y = !!sym(paste0("cov_", indicator, "_", denominator)), color = "Coverage at subnational unit"),
                size = 3) +
     geom_point(aes(x = year, y = national_mean, color = "National coverage"), size = 1.5, shape = 3, stroke = 1.5) +
-    geom_text(aes(x = year, y = max_y - 10, label = round(madm, 2)),
+    geom_text(aes(x = year, y = second_last_break, label = round(madm, 2)),
               color = "black", fontface = "bold", vjust = 0.5, size = 4) +
     geom_hline(yintercept = 100, linetype = "dashed", color = "gray60") +
     labs(x = "Year", y = y_label,
          title = title, subtitle = subtitle,
          caption = caption) +
     scale_y_continuous(expand = c(0, 0),
-                       limits = c(0, max_y),
-                       breaks = c(scales::pretty_breaks(10)(0:max_y), max_y - 10),  # Add max_y - 10 as a custom break
-                       labels = function(y) ifelse(y == max_y - 10, "MADM", y)  # Replace max_y - 10 with "MADM"
+                       limits = range(c(limits, max_break), na.rm = TRUE),
+                       breaks = breaks,
+                       labels = function(y) ifelse(y == second_last_break, "MADM", ifelse(y == max_break, '', as.character(y)))  # Replace max_y - 10 with "MADM"
     ) +
     scale_color_manual(values = c('Coverage at subnational unit' = 'skyblue3', 'National coverage' = 'red')) +
     cd_plot_theme() +

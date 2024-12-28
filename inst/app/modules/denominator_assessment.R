@@ -11,7 +11,7 @@ denominatorAssessmentUI <- function(id) {
         title = 'Total Population',
         fluidRow(
           column(12, plotOutput(ns('population'))),
-          column(4, downloadUI(ns('population_plot'), label = 'Download Plot'))
+          column(4, downloadButtonUI(ns('population_plot'), label = 'Download Plot'))
         )
       ),
 
@@ -19,7 +19,7 @@ denominatorAssessmentUI <- function(id) {
         title = 'Births',
         fluidRow(
           column(12, plotOutput(ns('births'))),
-          column(4, downloadUI(ns('births_plot'), label = 'Download Plot'))
+          column(4, downloadButtonUI(ns('births_plot'), label = 'Download Plot'))
         )
       )
     )
@@ -55,7 +55,7 @@ denominatorAssessmentServer <- function(id, data, national_values) {
         plot(denominators(), 'births')
       })
 
-      downloadServer(
+      downloadButtonServer(
         id = 'population_plot',
         filename = 'population_plot',
         extension = 'png',
@@ -66,7 +66,7 @@ denominatorAssessmentServer <- function(id, data, national_values) {
         data = denominators
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'births_plot',
         filename = 'births_plot',
         extension = 'png',

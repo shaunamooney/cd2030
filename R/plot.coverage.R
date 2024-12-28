@@ -38,9 +38,7 @@ plot.cd_coverage <- function(x, ...) {
   estimates = year = value = NULL
 
   if (ncol(x) <= 1) {
-    cd_abort(
-      c('x' = "The columns data is empty.")
-    )
+    cd_abort(c('x' = "The columns data is empty."))
   }
 
   data_long <- x %>%

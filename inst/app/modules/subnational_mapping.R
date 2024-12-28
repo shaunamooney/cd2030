@@ -9,7 +9,7 @@ subnationalMappingUI <- function(id) {
       solidHeader = TRUE,
       fluidRow(
         column(3, selectizeInput(ns('level'), label = 'Subnational Level',
-                                 choices = c('Admin Level 1' = 'admin_level_1',
+                                 choices = c('Admin Level 1' = 'adminlevel_1',
                                              'District' = 'district'))),
         column(3, selectizeInput(ns('denominator'), label = 'Denominator',
                                  choices = c('DHIS2' = 'dhis2',
@@ -28,7 +28,7 @@ subnationalMappingUI <- function(id) {
         'Penta 3 Coverage',
         fluidRow(
           column(12, plotOutput(ns('penta3_coverage'))),
-          column(3, downloadUI(ns('penta3_download'), label = 'Download Plot')),
+          column(3, downloadButtonUI(ns('penta3_download'), label = 'Download Plot')),
         )
       ),
 
@@ -36,7 +36,7 @@ subnationalMappingUI <- function(id) {
         'Measles 1 Coverage',
         fluidRow(
           column(12, plotOutput(ns('mcv1_coverage'))),
-          column(3, downloadUI(ns('mcv1_download'), label = 'Download Plot')),
+          column(3, downloadButtonUI(ns('mcv1_download'), label = 'Download Plot')),
         )
       ),
 
@@ -44,7 +44,7 @@ subnationalMappingUI <- function(id) {
         'Penta1 - Penta3 dropout',
         fluidRow(
           column(12, plotOutput(ns('penta13_dropout'))),
-          column(3, downloadUI(ns('penta13_dropout_download'), label = 'Download Plot')),
+          column(3, downloadButtonUI(ns('penta13_dropout_download'), label = 'Download Plot')),
         )
       ),
 
@@ -52,7 +52,7 @@ subnationalMappingUI <- function(id) {
         'Penta3 - MCV3 dropout',
         fluidRow(
           column(12, plotOutput(ns('penta3mcv1_dropout'))),
-          column(3, downloadUI(ns('penta3mcv1_droput_download'), label = 'Download Plot')),
+          column(3, downloadButtonUI(ns('penta3mcv1_droput_download'), label = 'Download Plot')),
         )
       ),
 
@@ -66,7 +66,7 @@ subnationalMappingUI <- function(id) {
         ),
         fluidRow(
           column(12, plotOutput(ns('custom'))),
-          column(3, downloadUI(ns('custom_download'), label = 'Download Plot')),
+          column(3, downloadButtonUI(ns('custom_download'), label = 'Download Plot')),
         )
       )
     )
@@ -130,21 +130,12 @@ subnationalMappingServer <- function(id, data, national_values) {
 
         title <- paste("Distribution of Penta1 to Penta3 dropout in ", country(), "by Regions")
 
-        tryCatch(
+        render_with_error_handling({
           plot(dt(), indicator = 'dropout_penta13',
                denominator = input$denominator,
                palette = input$palette,
-               title = title),
-          error = function(e) {
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
+               title = title)
+        })
       })
 
       output$penta3mcv1_dropout <- renderPlot({
@@ -152,21 +143,12 @@ subnationalMappingServer <- function(id, data, national_values) {
 
         title <- paste("Distribution of Penta1 to Measles3 dropout in ", country(), "by Regions")
 
-        tryCatch(
+        render_with_error_handling({
           plot(dt(), indicator = 'dropout_penta3mcv1',
                denominator = input$denominator,
                palette = input$palette,
-               title = title),
-          error = function(e) {
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
+               title = title)
+        })
       })
 
       output$penta3_coverage <- renderPlot({
@@ -174,21 +156,12 @@ subnationalMappingServer <- function(id, data, national_values) {
 
         title <- paste("Distribution of Penta3 Coverage in ", country(), "by Regions")
 
-        tryCatch(
+        render_with_error_handling({
           plot(dt(), indicator = 'penta3',
                denominator = input$denominator,
                palette = input$palette,
-               title = title),
-          error = function(e) {
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
+               title = title)
+        })
       })
 
 
@@ -197,27 +170,25 @@ subnationalMappingServer <- function(id, data, national_values) {
 
         title <- paste("Distribution of Measles 1 Coverage in ", country(), "by Regions")
 
-        tryCatch(
+        render_with_error_handling({
           plot(dt(), indicator = 'measles1',
                denominator = input$denominator,
                palette = input$palette,
-               title = title),
-          error = function(e) {
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
+               title = title)
+        })
       })
 
       output$custom <- renderPlot({
         req(dt(), input$indicator != '0')
 
         title <- paste('Distribution of ', input$indicator,' Coverage in ', country(), 'by Regions')
+
+        render_with_error_handling({
+          plot(dt(), indicator = input$indicator,
+               denominator = input$denominator,
+               palette = input$palette,
+               title = title)
+        })
 
         tryCatch(
           plot(dt(), indicator = input$indicator,
@@ -236,7 +207,7 @@ subnationalMappingServer <- function(id, data, national_values) {
         )
       })
 
-      downloadServer(
+      downloadButtonServer(
         id = 'penta3_download',
         filename = paste0('penta3_', input$level, '_map_', input$denominator),
         extension = 'png',
@@ -250,7 +221,7 @@ subnationalMappingServer <- function(id, data, national_values) {
         data = dt
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'mcv1_download',
         filename = paste0('mcv1_', input$level, '_map_', input$denominator),
         extension = 'png',
@@ -264,7 +235,7 @@ subnationalMappingServer <- function(id, data, national_values) {
         data = dt
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'penta13_dropout_download',
         filename = paste0('penta13_dropout_', input$level, '_map_', input$denominator),
         extension = 'png',
@@ -278,7 +249,7 @@ subnationalMappingServer <- function(id, data, national_values) {
         data = dt
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'penta3mcv1_droput_download',
         filename = paste0('penta3mcv1_droput_', input$level, '_map_', input$denominator),
         extension = 'png',
@@ -292,7 +263,7 @@ subnationalMappingServer <- function(id, data, national_values) {
         data = dt
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'custom_download',
         filename = paste0(input$indicator, '_', input$level, '_map_', input$denominator),
         extension = 'png',

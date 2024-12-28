@@ -11,7 +11,7 @@ adjustmentChangesUI <- function(id) {
         title = 'Live Births',
         fluidRow(
           column(12, plotOutput(ns('live_births'))),
-          column(3, downloadUI(ns('live_births_plot'), label = 'Download Plot'))
+          column(3, downloadButtonUI(ns('live_births_plot'), label = 'Download Plot'))
         )
       ),
 
@@ -19,7 +19,7 @@ adjustmentChangesUI <- function(id) {
         title = 'Penta 1',
         fluidRow(
           column(12, plotOutput(ns('penta1'))),
-          column(3, downloadUI(ns('penta1_plot'), label = 'Download Plot'))
+          column(3, downloadButtonUI(ns('penta1_plot'), label = 'Download Plot'))
         )
       ),
 
@@ -27,7 +27,7 @@ adjustmentChangesUI <- function(id) {
         title = 'BCG',
         fluidRow(
           column(12, plotOutput(ns('bcg'))),
-          column(3, downloadUI(ns('bcg_plot'), label = 'Download Plot'))
+          column(3, downloadButtonUI(ns('bcg_plot'), label = 'Download Plot'))
         )
       ),
 
@@ -35,7 +35,7 @@ adjustmentChangesUI <- function(id) {
         title = 'Measles',
         fluidRow(
           column(12, plotOutput(ns('measles1'))),
-          column(3, downloadUI(ns('measles1_plot'), label = 'Download Plot'))
+          column(3, downloadButtonUI(ns('measles1_plot'), label = 'Download Plot'))
         )
       ),
 
@@ -46,7 +46,7 @@ adjustmentChangesUI <- function(id) {
         ),
         fluidRow(
           column(12, plotOutput(ns('custom_check'))),
-          column(3, downloadUI(ns('custom_check_plot'), label = 'Download Plot'))
+          column(3, downloadButtonUI(ns('custom_check_plot'), label = 'Download Plot'))
         )
       ),
     )
@@ -104,7 +104,7 @@ adjustmentChangesServer <- function(id, data, k_factors) {
              indicator = input$indicator)
       })
 
-      downloadServer(
+      downloadButtonServer(
         id = 'live_births_plot',
         filename = 'live_births_plot',
         extension = 'png',
@@ -117,7 +117,7 @@ adjustmentChangesServer <- function(id, data, k_factors) {
         data = adjustments
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'penta1_plot',
         filename = 'penta1_plot',
         extension = 'png',
@@ -130,7 +130,7 @@ adjustmentChangesServer <- function(id, data, k_factors) {
         data = adjustments
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'bcg_plot',
         filename = 'bcg_plot',
         extension = 'png',
@@ -143,7 +143,7 @@ adjustmentChangesServer <- function(id, data, k_factors) {
         data = adjustments
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'measles1_plot',
         filename = 'measles1_plot',
         extension = 'png',
@@ -156,7 +156,7 @@ adjustmentChangesServer <- function(id, data, k_factors) {
         data = adjustments
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'custom_check_plot',
         filename = paste0(input$indicator, '_plot'),
         extension = 'png',
