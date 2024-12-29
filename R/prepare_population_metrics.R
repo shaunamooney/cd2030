@@ -85,7 +85,7 @@ prepare_population_metrics <- function(.data,
       .by = all_of(group_vars)
     ) %>%
     summarise(
-      totpop_dhis2 = if_else(all(is.na(totpop_dhis2)), NA, max(totpop_dhis2, na.rm = TRUE)),
+      totpop_dhis2 = robust_max(totpop_dhis2),
       totlivebirths_dhis2 = if_else(all(is.na(totpop_dhis2)), NA, max(totlivebirths_dhis2, na.rm = TRUE)),
       .by =all_of(group_vars)
     )
@@ -93,7 +93,6 @@ prepare_population_metrics <- function(.data,
   # Integrate UN estimates for national-level calculations
   if (admin_level == 'national' && !is.null(un_estimates)) {
     combined_data <- un_estimates %>%
-      filter(year %in% unique(dhis_data$year)) %>%
       inner_join(dhis_data, by = 'year')
   } else {
     combined_data <- dhis_data

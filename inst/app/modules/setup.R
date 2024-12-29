@@ -1,90 +1,89 @@
 setupUI <- function(id) {
   ns <- NS(id)
 
-  fluidRow(
-
-    column(4, offset = 8, helpButtonUI(ns('upload_data')), style = 'margin-bottom: 10px;'),
-
-    box(
-      title = 'Setup National Rates',
-      status = 'success',
-      solidHeader = TRUE,
-      width = 12,
-      fluidRow(
-        column(3, offset = 1, numericInput(ns('neonatal_mortality_rate'), 'Neonatal Mortality Rate',
-                                          min = 0, max = 0.05, value = 0.025, step = 0.001)),
-        column(3, offset = 0, numericInput(ns('post_neonatal_mortality_rate'), 'Post Neonatal Mortality Rate',
-                                          min = 0, max = 0.05, value = 0.024, step = 0.001)),
-        column(3, offset = 0, numericInput(ns('twin_rate'), 'Twin Rate',
-                                          min = 0, max = 0.05, value = 0.015, step = 0.001))
+  tagList(
+    contentHeader(ns('analysis_setup'), 'Analysis Setup'),
+    contentBody(
+      box(
+        title = 'Setup National Rates',
+        status = 'success',
+        solidHeader = TRUE,
+        width = 12,
+        fluidRow(
+          column(3, offset = 1, numericInput(ns('neonatal_mortality_rate'), 'Neonatal Mortality Rate',
+                                            min = 0, max = 0.05, value = 0.025, step = 0.001)),
+          column(3, offset = 0, numericInput(ns('post_neonatal_mortality_rate'), 'Post Neonatal Mortality Rate',
+                                            min = 0, max = 0.05, value = 0.024, step = 0.001)),
+          column(3, offset = 0, numericInput(ns('twin_rate'), 'Twin Rate',
+                                            min = 0, max = 0.05, value = 0.015, step = 0.001))
+        ),
+        fluidRow(
+          column(3, offset = 1, numericInput(ns('pregnancy_loss'), 'Pregnancy Loss',
+                                min = 0, max = 0.05, value = 0.03, step = 0.001)),
+          column(3, offset = 0, numericInput(ns('stillbirth_rate'), 'Still Birth Rate',
+                                min = 0, max = 0.05, value = 0.02, step = 0.001)),
+          column(3, offset = 0, numericInput(ns('penta1_mortality_rate'), 'ANC1 to Penta1 Mortality Rate',
+                                min = 0, max = 0.05, value = 0.025, step = 0.001))
+        ),
+        fluidRow(
+          column(3, offset = 1, numericInput(ns('anc1_prop'), 'ANC1 Survey',
+                                            min = 0, max = 100, value = 0, step = 1)),
+          column(3, offset = 0, numericInput(ns('penta1_prop'), 'Penta1 Survey',
+                                            min = 0, max = 100, value = 0, step = 1)),
+        )
       ),
-      fluidRow(
-        column(3, offset = 1, numericInput(ns('pregnancy_loss'), 'Pregnancy Loss',
-                              min = 0, max = 0.05, value = 0.03, step = 0.001)),
-        column(3, offset = 0, numericInput(ns('stillbirth_rate'), 'Still Birth Rate',
-                              min = 0, max = 0.05, value = 0.02, step = 0.001)),
-        column(3, offset = 0, numericInput(ns('penta1_mortality_rate'), 'ANC1 to Penta1 Mortality Rate',
-                              min = 0, max = 0.05, value = 0.025, step = 0.001))
-      ),
-      fluidRow(
-        column(3, offset = 1, numericInput(ns('anc1_prop'), 'ANC1 Survey',
-                                          min = 0, max = 100, value = 0, step = 1)),
-        column(3, offset = 0, numericInput(ns('penta1_prop'), 'Penta1 Survey',
-                                          min = 0, max = 100, value = 0, step = 1)),
-      )
-    ),
 
-    box(
-      title = 'Upload Survey Data',
-      status = 'success',
-      solidHeader = TRUE,
-      width = 12,
+      box(
+        title = 'Upload Survey Data',
+        status = 'success',
+        solidHeader = TRUE,
+        width = 12,
 
-      fluidRow(
-        column(
-          6,
-          fileInput(
-            inputId = ns('un_data'),
-            label = 'Upload UN Estimates data',
-            buttonLabel = 'Browse or Drop...',
-            placeholder = 'Supported formats: .dta',
-            accept = '.dta'
+        fluidRow(
+          column(
+            6,
+            fileInput(
+              inputId = ns('un_data'),
+              label = 'Upload UN Estimates data',
+              buttonLabel = 'Browse or Drop...',
+              placeholder = 'Supported formats: .dta',
+              accept = '.dta'
+            ),
+
+            uiOutput(ns("un_enhanced_feedback")) %>%  tagAppendAttributes(style = "margin-top: 10px;")
           ),
+          column(
+            6,
+            fileInput(
+              inputId = ns('wuenic_data'),
+              label = 'Upload WUENIC estimates',
+              buttonLabel = 'Browse or Drop...',
+              placeholder = 'Supported formats: .dta',
+              accept = '.dta'
+            ),
 
-          uiOutput(ns("un_enhanced_feedback")) %>%  tagAppendAttributes(style = "margin-top: 10px;")
-        ),
-        column(
-          6,
-          fileInput(
-            inputId = ns('wuenic_data'),
-            label = 'Upload WUENIC estimates',
-            buttonLabel = 'Browse or Drop...',
-            placeholder = 'Supported formats: .dta',
-            accept = '.dta'
+            uiOutput(ns("wuenic_enhanced_feedback")) %>%  tagAppendAttributes(style = "margin-top: 10px;")
           ),
+          column(
+            6,
+            tags$label("Survey Folder", style = 'font-weight: bold; margin-top: 10px; margin-bottom: 5px; display: block;'),
+            shinyDirButton(
+              id = ns('directory'),
+              label = 'Browse or Select...',
+              title = 'Choose a survey folder'
+            ),
 
-          uiOutput(ns("wuenic_enhanced_feedback")) %>%  tagAppendAttributes(style = "margin-top: 10px;")
-        ),
-        column(
-          6,
-          tags$label("Survey Folder", style = 'font-weight: bold; margin-top: 10px; margin-bottom: 5px; display: block;'),
-          shinyDirButton(
-            id = ns('directory'),
-            label = 'Browse or Select...',
-            title = 'Choose a survey folder'
+            verbatimTextOutput(ns('selected_dir')) %>%
+              tagAppendAttributes(style = "border: 1px solid #ddd; padding: 5px; border-radius: 4px; margin-top: 10px")
           ),
-
-          verbatimTextOutput(ns('selected_dir')) %>%
-            tagAppendAttributes(style = "border: 1px solid #ddd; padding: 5px; border-radius: 4px; margin-top: 10px")
-        ),
-        column(
-          6,
-          tags$label("Subnational Data Mapping", style = 'font-weight: bold; margin-top: 10px; margin-bottom: 5px; display: block;'),
-          fluidRow(
-            column(6, actionButton(ns('survey_data'), 'Map Survey Data')),
-            column(6, actionButton(ns('map_data'), 'Map Mapping Data'))
+          column(
+            6,
+            tags$label("Subnational Data Mapping", style = 'font-weight: bold; margin-top: 10px; margin-bottom: 5px; display: block;'),
+            fluidRow(
+              column(6, actionButton(ns('survey_data'), 'Map Survey Data')),
+              column(6, actionButton(ns('map_data'), 'Map Mapping Data'))
+            )
           )
-
         )
       )
     )
@@ -430,7 +429,11 @@ setupServer <- function(id, data, survey_data) {
         )
       })
 
-      helpButtonServer('upload_data', 'Upload required Data', 'l', '5_upload_data.md')
+      contentHeaderServer(
+        'analysis_setup',
+        md_title = 'Analysis Setup',
+        md_file = '5_upload_data.md'
+      )
 
       return(setup_values)
     }

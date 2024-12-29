@@ -1,25 +1,26 @@
 denominatorAssessmentUI <- function(id) {
   ns <- NS(id)
 
-  fluidRow(
+  tagList(
+    contentHeader(ns('denominator_assessment'), 'Denominator Assessment'),
+    contentBody(
+      tabBox(
+        title = 'Denominator Assessment',
+        width = 12,
+        tabPanel(
+          title = 'Total Population',
+          fluidRow(
+            column(12, plotOutput(ns('population'))),
+            column(4, downloadButtonUI(ns('population_plot'), label = 'Download Plot'))
+          )
+        ),
 
-    tabBox(
-      title = 'Denominator Assessment',
-      id = 'denominator_assessment',
-      width = 12,
-      tabPanel(
-        title = 'Total Population',
-        fluidRow(
-          column(12, plotOutput(ns('population'))),
-          column(4, downloadButtonUI(ns('population_plot'), label = 'Download Plot'))
-        )
-      ),
-
-      tabPanel(
-        title = 'Births',
-        fluidRow(
-          column(12, plotOutput(ns('births'))),
-          column(4, downloadButtonUI(ns('births_plot'), label = 'Download Plot'))
+        tabPanel(
+          title = 'Births',
+          fluidRow(
+            column(12, plotOutput(ns('births'))),
+            column(4, downloadButtonUI(ns('births_plot'), label = 'Download Plot'))
+          )
         )
       )
     )
@@ -75,6 +76,12 @@ denominatorAssessmentServer <- function(id, data, national_values) {
           ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
         },
         data = denominators
+      )
+
+      contentHeaderServer(
+        'denominator_assessment',
+        md_title = 'Denominator Assessment',
+        md_file = '2_reporting_rate.md'
       )
     }
   )

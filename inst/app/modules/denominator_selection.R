@@ -1,43 +1,45 @@
 denominatorSelectionUI <- function(id) {
   ns <- NS(id)
 
-  fluidRow(
-    tabBox(
-      title = 'Denominator Selection',
-      id = 'denominator_selection',
-      width = 12,
-      tabPanel(
-        title = 'Penta 3',
-        fluidRow(
-          column(12, plotOutput(ns('penta3'))),
-          column(3, downloadButtonUI(ns('penta3_plot'), label = 'Download Plot'))
-        )
-      ),
+  tagList(
+    contentHeader(ns('denominator_selection'), 'Denominator Selection'),
+    contentBody(
+      tabBox(
+        title = 'Denominator Selection',
+        width = 12,
+        tabPanel(
+          title = 'Penta 3',
+          fluidRow(
+            column(12, plotOutput(ns('penta3'))),
+            column(3, downloadButtonUI(ns('penta3_plot'), label = 'Download Plot'))
+          )
+        ),
 
-      tabPanel(
-        title = 'Measles 1',
-        fluidRow(
-          column(12, plotOutput(ns('measles1'))),
-          column(3, downloadButtonUI(ns('measles1_plot'), label = 'Download Plot'))
-        )
-      ),
+        tabPanel(
+          title = 'Measles 1',
+          fluidRow(
+            column(12, plotOutput(ns('measles1'))),
+            column(3, downloadButtonUI(ns('measles1_plot'), label = 'Download Plot'))
+          )
+        ),
 
-      tabPanel(
-        title = 'BCG',
-        fluidRow(
-          column(12, plotOutput(ns('bcg'))),
-          column(3, downloadButtonUI(ns('bcg_plot'), label = 'Download Plot'))
-        )
-      ),
+        tabPanel(
+          title = 'BCG',
+          fluidRow(
+            column(12, plotOutput(ns('bcg'))),
+            column(3, downloadButtonUI(ns('bcg_plot'), label = 'Download Plot'))
+          )
+        ),
 
-      # tabPanel(
-      #   title = 'Custom Checks',
-      #   fluidRow(
-      #     column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
-      #     column(12, plotOutput(ns('custom_plot'))),
-      #     column(3, downloadButtonUI(ns('custom_download'), label = 'Download Plot'))
-      #   )
-      # )
+        # tabPanel(
+        #   title = 'Custom Checks',
+        #   fluidRow(
+        #     column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
+        #     column(12, plotOutput(ns('custom_plot'))),
+        #     column(3, downloadButtonUI(ns('custom_download'), label = 'Download Plot'))
+        #   )
+        # )
+      )
     )
   )
 }
@@ -136,16 +138,11 @@ denominatorSelectionServer <- function(id, data, national_values) {
         data = indicator_coverage
       )
 
-      # downloadServer(
-      #   id = 'custom_download',
-      #   filename = paste0(input$indicator, '_plot'),
-      #   extension = 'png',
-      #   content = function(file) {
-      #     plot_absolute_differences(indicator_coverage(), input$indicator)
-      #     ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-      #   },
-      #   data = indicator_coverage
-      # )
+      contentHeaderServer(
+        'denominator_selection',
+        md_title = 'Denominator Selection',
+        md_file = '2_reporting_rate.md'
+      )
 
       return(indicator_coverage)
     }

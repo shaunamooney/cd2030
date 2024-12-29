@@ -1,35 +1,39 @@
+library(plotly)
+
 reportingRateUI <- function(id) {
   ns <- NS(id)
 
-  fluidRow(
-    box(
-      title = 'Reporting Rate Indicators',
-      status = 'success',
-      width = 12,
-      fluidRow(
-        column(3, numericInput(ns('threshold'), label = 'Performance Threshold', value = 90)),
-        column(2, offset = 7, helpButtonUI(ns('average_reporting')))
+  tagList(
+    contentHeader(ns('reporting_rate'), 'Reporting Rate'),
+    contentBody(
+      box(
+        title = 'Average Reporting Rate',
+        status = 'success',
+        width = 12,
+        fluidRow(
+          column(3, numericInput(ns('threshold'), label = 'Performance Threshold', value = 90)),
+        ),
+        fluidRow(
+          column(12, plotOutput(ns('district_report_plot'))),
+          column(4, downloadButtonUI(ns('download_plot'), label = 'Download Plot')),
+          column(4, downloadButtonUI(ns('download_data'), label = 'Download Data'))
+        )
       ),
-      fluidRow(
-        column(12, plotOutput(ns('district_report_plot'))),
-        column(4, downloadButtonUI(ns('download_plot'), label = 'Download Plot')),
-        column(4, downloadButtonUI(ns('download_data'), label = 'Download Data'))
+      box(
+        title = 'Districts with low reporting rate',
+        width = 12,
+        status = 'success',
+        fluidRow(
+          column(3, selectizeInput(ns('indicator'),
+                                   label = 'Indicator',
+                                   choices = c('ANC' = 'anc_rr', 'Institutional Delivery' = 'idelv_rr', 'Vaccination' = 'vacc_rr'))),
+          column(3, selectizeInput(ns('year'),
+                                   label = 'Year',
+                                   choices =NULL)),
+          column(3, offset = 3, downloadButtonUI(ns('download_districts'), label = 'Download Districts'))
+        ),
+        fluidRow(column(12, gt_output(ns('low_reporting'))))
       )
-    ),
-    box(
-      title = 'Districts with low reporting rate',
-      width = 12,
-      status = 'success',
-      fluidRow(
-        column(3, selectizeInput(ns('indicator'),
-                                 label = 'Indicator',
-                                 choices = c('ANC' = 'anc_rr', 'Institutional Delivery' = 'idelv_rr', 'Vaccination' = 'vacc_rr'))),
-        column(3, selectizeInput(ns('year'),
-                                 label = 'Year',
-                                 choices =NULL)),
-        column(3, offset = 3, downloadButtonUI(ns('download_districts'), label = 'Download Districts'))
-      ),
-      fluidRow(column(12, gt_output(ns('low_reporting'))))
     )
   )
 }
@@ -53,14 +57,14 @@ reportingRateServer <- function(id, data) {
         if (!isTruthy(data())) return(NULL)
 
         data() %>%
-          cd2030::calculate_district_reporting_rate(input$threshold)
+          calculate_district_reporting_rate(input$threshold)
       })
 
       average_rr <- reactive({
         if (!isTruthy(data())) return(NULL)
 
         data() %>%
-          cd2030::calculate_average_reporting_rate()
+          calculate_average_reporting_rate()
       })
 
       district_low_rr <- reactive({
@@ -156,11 +160,16 @@ reportingRateServer <- function(id, data) {
         data = district_low_rr
       )
 
-      helpButtonServer(
-        id = 'average_reporting',
-        title = 'Reporting Rate Indicators',
-        size = 'l',
-        md_file = '2_reporting_rate.md')
+      contentHeaderServer(
+        'reporting_rate',
+        md_title = 'Reporting Rate',
+        md_file = '2_reporting_rate.md'
+      )
+
+      return(reactive(list(
+        district_rr = district_rr(),
+        average_rr = average_rr()
+      )))
     }
   )
 }

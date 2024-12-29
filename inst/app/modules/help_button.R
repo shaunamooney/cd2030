@@ -1,10 +1,13 @@
-helpButtonUI <- function(id, text = 'Help') {
+helpButtonUI <- function(id, text = 'Get Help') {
   ns <- NS(id)
-
-  actionButton(ns('help'),
-               text,
-               icon = shiny::icon('question', verify_fa = FALSE),
-               style = 'background-color: #8bc34a;width:100%;')
+  actionButton(
+    inputId = ns('help'),
+    label = text,
+    icon = shiny::icon('question'),
+    class ='btn-sm',
+    # style = 'background-color: #8bc34a;width:100%;',
+    style = 'color: white; background-color: #8bc34a; margin-left:4px;'
+  )
 }
 
 helpButtonServer <- function(id, title, size, md_file) {

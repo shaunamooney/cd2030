@@ -1,40 +1,41 @@
 consistencyCheckUI <- function(id) {
   ns <- NS(id)
 
-  fluidRow(
-    column(6, h4('INTERNAL CONSISTENCY CHECKS')),
-    column(3, offset = 3, helpButtonUI(ns('internal_consistency_help')), style = 'margin-bottom:10px;'),
-    tabBox(
-      title = 'Consistency Checks',
-      width = 12,
-      tabPanel(
-        'ANC1 and Penta1',
-        fluidRow(
-          column(12, plotOutput(ns('anc1_penta1'))),
-          column(4, downloadButtonUI(ns('anc1_penta1_plot'), label = 'Download Plot'))
-        )
-      ),
-      tabPanel(
-        'Penta1 and Penta3',
-        fluidRow(
-          column(12, plotOutput(ns('penta1_penta3'))),
-          column(4, downloadButtonUI(ns('penta1_penta3_plot'), label = 'Download Plot'))
-        )
-      ),
-      tabPanel(
-        'OPV1 and OPV3',
-        fluidRow(
-          column(12, plotOutput(ns('opv1_opv3'))),
-          column(4, downloadButtonUI(ns('opv1_opv3_plot'), label = 'Download Plot'))
-        )
-      ),
-      tabPanel(
-        'Custom Check',
-        fluidRow(
-          column(3, selectizeInput(ns('x_axis'), label = 'X axis', choices = NULL)),
-          column(3, offset = 1, selectizeInput(ns('y_axis'), label = 'Y axis', choices = NULL)),
-          column(12, plotOutput(ns('custom_graph'))),
-          column(4, downloadButtonUI(ns('custom_graph_plot'), label = 'Download Plot'))
+  tagList(
+    contentHeader(ns('consistency_checks'), 'Internal Consistency Checks'),
+    contentBody(
+      tabBox(
+        title = 'Consistency Checks',
+        width = 12,
+        tabPanel(
+          'ANC1 and Penta1',
+          fluidRow(
+            column(12, plotOutput(ns('anc1_penta1'))),
+            column(4, downloadButtonUI(ns('anc1_penta1_plot'), label = 'Download Plot'))
+          )
+        ),
+        tabPanel(
+          'Penta1 and Penta3',
+          fluidRow(
+            column(12, plotOutput(ns('penta1_penta3'))),
+            column(4, downloadButtonUI(ns('penta1_penta3_plot'), label = 'Download Plot'))
+          )
+        ),
+        tabPanel(
+          'OPV1 and OPV3',
+          fluidRow(
+            column(12, plotOutput(ns('opv1_opv3'))),
+            column(4, downloadButtonUI(ns('opv1_opv3_plot'), label = 'Download Plot'))
+          )
+        ),
+        tabPanel(
+          'Custom Check',
+          fluidRow(
+            column(3, selectizeInput(ns('x_axis'), label = 'X axis', choices = NULL)),
+            column(3, offset = 1, selectizeInput(ns('y_axis'), label = 'Y axis', choices = NULL)),
+            column(12, plotOutput(ns('custom_graph'))),
+            column(4, downloadButtonUI(ns('custom_graph_plot'), label = 'Download Plot'))
+          )
         )
       )
     )
@@ -125,7 +126,11 @@ consistencyCheckServer <- function(id, data) {
         data = data
       )
 
-      helpButtonServer('internal_consistency_help', 'Internal Consistency', 'l', '2_internal_consistency.md')
+      contentHeaderServer(
+        'consistency_checks',
+        md_title = 'Internal Consistency Checks',
+        md_file = '2_internal_consistency.md'
+      )
     }
   )
 }

@@ -47,7 +47,7 @@ plot.cd_coverage <- function(x, ...) {
 
   min_y <- min(data_long$value, na.rm = TRUE)
   min_y <- if (min_y < 0) min_y * 1.05 else 0
-  max_y <- max(data_long$value, na.rm = TRUE) * 1.05
+  max_y <- robust_max(data_long$value) * 1.05
 
   data_long <- data_long %>%
     pivot_wider(

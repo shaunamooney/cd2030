@@ -1,50 +1,53 @@
 dataAjustmentUI <- function(id) {
   ns <- NS(id)
 
-  fluidRow(
-    box(
-      title = 'K-Factors',
-      status = 'success',
-      solidHeader = TRUE,
-      width = 6,
-      fluidRow(
-        column(4, selectizeInput(ns('k_anc'),
-                                 selected = '0.25',
-                                 label = 'ANC K-Factor',
-                                 choices = c(0, 0.25, 0.5, 0.75))),
-        column(4, selectizeInput(ns('k_delivery'),
-                                 label = 'Delivery K-Factor',
-                                 selected = '0.25',
-                                 choices = c(0, 0.25, 0.5, 0.75))),
-        column(4, selectizeInput(ns('k_vaccines'),
-                                 label = 'Vaccines K-Factor',
-                                 selected = '0.25',
-                                 choices = c(0, 0.25, 0.5, 0.75)))
-      )
-    ),
-
-    box(
-      title = 'Adjust',
-      status = 'danger',
-      width = 6,
-      solidHeader = TRUE,
-
-      fluidRow(
-        column(12, tags$p(
-          "Adjusting the data applies custom corrections, such as removing specific
-          years and scaling selected indicators. This process modifies the current
-          dataset to align with predefined criteria for completeness and consistency.",
-          style = "color: red; font-weight: bold; margin-bottom: 15px;"
-        ))
+  tagList(
+    contentHeader(ns('data_adjustment'), 'Data Adjustments'),
+    contentBody(
+      box(
+        title = 'K-Factors',
+        status = 'success',
+        solidHeader = TRUE,
+        width = 6,
+        fluidRow(
+          column(4, selectizeInput(ns('k_anc'),
+                                   selected = '0.25',
+                                   label = 'ANC K-Factor',
+                                   choices = c(0, 0.25, 0.5, 0.75))),
+          column(4, selectizeInput(ns('k_delivery'),
+                                   label = 'Delivery K-Factor',
+                                   selected = '0.25',
+                                   choices = c(0, 0.25, 0.5, 0.75))),
+          column(4, selectizeInput(ns('k_vaccines'),
+                                   label = 'Vaccines K-Factor',
+                                   selected = '0.25',
+                                   choices = c(0, 0.25, 0.5, 0.75)))
+        )
       ),
 
-      fluidRow(
-        column(8, offset = 2, actionButton(ns('adjust_data'),
-                                           label = 'Adjust Data',
-                                           icon = icon('wrench'),
-                                           style = 'background-color: #FFEB3B;font-weight: 500;width:100%; margin-top: 15px;')),
-        column(12, offset = 2, uiOutput(ns("adjust_feedback")), style = 'margin-top: 10px;'),
-        column(8, offset = 2, downloadButtonUI(ns('download_data'), label = "Download Adjusted Dataset"))
+      box(
+        title = 'Adjust',
+        status = 'danger',
+        width = 6,
+        solidHeader = TRUE,
+
+        fluidRow(
+          column(12, tags$p(
+            "Adjusting the data applies custom corrections, such as removing specific
+            years and scaling selected indicators. This process modifies the current
+            dataset to align with predefined criteria for completeness and consistency.",
+            style = "color: red; font-weight: bold; margin-bottom: 15px;"
+          ))
+        ),
+
+        fluidRow(
+          column(8, offset = 2, actionButton(ns('adjust_data'),
+                                             label = 'Adjust Data',
+                                             icon = icon('wrench'),
+                                             style = 'background-color: #FFEB3B;font-weight: 500;width:100%; margin-top: 15px;')),
+          column(12, offset = 2, uiOutput(ns("adjust_feedback")), style = 'margin-top: 10px;'),
+          column(8, offset = 2, downloadButtonUI(ns('download_data'), label = "Download Adjusted Dataset"))
+        )
       )
     )
   )
@@ -112,6 +115,12 @@ dataAdjustmentServer <- function(id, data) {
           haven::write_dta(modified_data(), file)
         },
         data = modified_data
+      )
+
+      contentHeaderServer(
+        'data_adjustment',
+        md_title = 'Data Adjustments',
+        md_file = '2_reporting_rate.md'
       )
 
       return(reactive({

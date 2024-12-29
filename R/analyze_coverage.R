@@ -88,30 +88,27 @@ analyze_coverage <- function(.data,
 
   # Prepare DHIS2 data
   .data <- .data %>%
-    mutate(iso = country_iso) %>%
-    select(iso, year, contains(dhis2_col), any_of(c('adminlevel_1', 'district')))
+    select(year, contains(dhis2_col), any_of(c('adminlevel_1', 'district')))
 
   # Prepare survey data
   survey_data <- survey_data %>%
-    select(iso, year, contains(survey_estimate_col), contains(lower_ci_col), contains(upper_ci_col), any_of(c('adminlevel_1', 'district'))) %>%
+    select(year, contains(survey_estimate_col), contains(lower_ci_col), contains(upper_ci_col), any_of(c('adminlevel_1', 'district'))) %>%
     join_subnational_map(admin_level, subnational_map) %>%
     check_district_column(admin_level, .data)
 
   # Prepare WUENIC data
   wuenic_data <- wuenic_data %>%
-    select(iso, year, contains(wuenic_col))
+    select(year, contains(wuenic_col))
 
-  join_column <- c('iso', 'year', if (admin_level != 'national') admin_level else NULL)
   join_column <- switch(admin_level,
-                        national = c('iso', 'year'),
-                        adminlevel_1 = c('iso', 'year', 'adminlevel_1'),
-                        district = c('iso', 'year', 'adminlevel_1', 'district')
-                        )
+                        national = 'year',
+                        adminlevel_1 = c('year', 'adminlevel_1'),
+                        district = c('year', 'adminlevel_1', 'district'))
 
   # Join and Transform data
   combined_data <- .data %>%
     full_join(survey_data, by = join_column, relationship = 'many-to-many') %>%
-    left_join(wuenic_data, by = c('year', 'iso')) %>%
+    left_join(wuenic_data, by = 'year') %>%
     filter(if (admin_level == 'national') TRUE else !!sym(admin_level) == region) %>% # Filter for region if applicable
     # Transform data
     mutate(
@@ -133,7 +130,7 @@ analyze_coverage <- function(.data,
                              upper_ci_col ~ '95% CI UL',
       )
     ) %>%
-    select(-any_of(c('iso', 'adminlevel_1', 'admin_level_1', 'district')))
+    select(-any_of(c('adminlevel_1', 'admin_level_1', 'district')))
 
   # Return result
   new_tibble(

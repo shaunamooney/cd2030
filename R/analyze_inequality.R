@@ -122,7 +122,7 @@ analyze_inequality <- function(.data,
       .by = year
     ) %>%
     mutate(
-      rd_max = round(if_else(all(is.na(!!sym(dhis2_col))), 100, max(!!sym(dhis2_col), na.rm = TRUE)), -1),
+      rd_max = round(robust_max(!!sym(dhis2_col), fallback = 100), -1),
       rd_max = if_else(rd_max < max(!!sym(dhis2_col), na.rm = TRUE), rd_max + 10, rd_max),
       rd_max = rd_max * 1.05,
       rd_max = if_else(rd_max %% 20 != 0, rd_max + 10, rd_max)

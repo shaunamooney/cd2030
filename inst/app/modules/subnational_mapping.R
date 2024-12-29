@@ -1,72 +1,75 @@
 subnationalMappingUI <- function(id) {
   ns <- NS(id)
 
-  fluidRow(
-    box(
-      title = 'Analysis Options',
-      status = 'success',
-      width = 12,
-      solidHeader = TRUE,
-      fluidRow(
-        column(3, selectizeInput(ns('level'), label = 'Subnational Level',
-                                 choices = c('Admin Level 1' = 'adminlevel_1',
-                                             'District' = 'district'))),
-        column(3, selectizeInput(ns('denominator'), label = 'Denominator',
-                                 choices = c('DHIS2' = 'dhis2',
-                                             'ANC 1' = 'anc1',
-                                             'Penta 1' = 'penta1'))),
-        column(3, selectizeInput(ns('palette'), label = 'Palette', choices = NULL))
-      )
-    ),
-
-    tabBox(
-      id = ns('coverage'),
-      title = 'Coverage/Utilization Level',
-      width = 12,
-
-      tabPanel(
-        'Penta 3 Coverage',
+  tagList(
+    contentHeader(ns('mapping'), 'Mapping'),
+    contentBody(
+      box(
+        title = 'Analysis Options',
+        status = 'success',
+        width = 12,
+        solidHeader = TRUE,
         fluidRow(
-          column(12, plotOutput(ns('penta3_coverage'))),
-          column(3, downloadButtonUI(ns('penta3_download'), label = 'Download Plot')),
+          column(3, selectizeInput(ns('level'), label = 'Subnational Level',
+                                   choices = c('Admin Level 1' = 'adminlevel_1',
+                                               'District' = 'district'))),
+          column(3, selectizeInput(ns('denominator'), label = 'Denominator',
+                                   choices = c('DHIS2' = 'dhis2',
+                                               'ANC 1' = 'anc1',
+                                               'Penta 1' = 'penta1'))),
+          column(3, selectizeInput(ns('palette'), label = 'Palette', choices = NULL))
         )
       ),
 
-      tabPanel(
-        'Measles 1 Coverage',
-        fluidRow(
-          column(12, plotOutput(ns('mcv1_coverage'))),
-          column(3, downloadButtonUI(ns('mcv1_download'), label = 'Download Plot')),
-        )
-      ),
+      tabBox(
+        id = ns('coverage'),
+        title = 'Coverage/Utilization Level',
+        width = 12,
 
-      tabPanel(
-        'Penta1 - Penta3 dropout',
-        fluidRow(
-          column(12, plotOutput(ns('penta13_dropout'))),
-          column(3, downloadButtonUI(ns('penta13_dropout_download'), label = 'Download Plot')),
-        )
-      ),
-
-      tabPanel(
-        'Penta3 - MCV3 dropout',
-        fluidRow(
-          column(12, plotOutput(ns('penta3mcv1_dropout'))),
-          column(3, downloadButtonUI(ns('penta3mcv1_droput_download'), label = 'Download Plot')),
-        )
-      ),
-
-      tabPanel(
-        'Custom Check',
-        fluidRow(
-          column(3, selectizeInput(ns('indicator'), label = 'Indicator',
-                                   choices = c('Select' = '0', "anc1", "bcg", "measles2", "measles3", "opv1", "opv2", "opv3",
-                                               "pcv1", "pcv2", "pcv3", "penta1", "penta2", "rota1", "rota2", "instdeliveries",
-                                               "ipv1", "ipv2", "undervax", "zerodose", "dropout_measles12")))
+        tabPanel(
+          'Penta 3 Coverage',
+          fluidRow(
+            column(12, plotOutput(ns('penta3_coverage'))),
+            column(3, downloadButtonUI(ns('penta3_download'), label = 'Download Plot')),
+          )
         ),
-        fluidRow(
-          column(12, plotOutput(ns('custom'))),
-          column(3, downloadButtonUI(ns('custom_download'), label = 'Download Plot')),
+
+        tabPanel(
+          'Measles 1 Coverage',
+          fluidRow(
+            column(12, plotOutput(ns('mcv1_coverage'))),
+            column(3, downloadButtonUI(ns('mcv1_download'), label = 'Download Plot')),
+          )
+        ),
+
+        tabPanel(
+          'Penta1 - Penta3 dropout',
+          fluidRow(
+            column(12, plotOutput(ns('penta13_dropout'))),
+            column(3, downloadButtonUI(ns('penta13_dropout_download'), label = 'Download Plot')),
+          )
+        ),
+
+        tabPanel(
+          'Penta3 - MCV3 dropout',
+          fluidRow(
+            column(12, plotOutput(ns('penta3mcv1_dropout'))),
+            column(3, downloadButtonUI(ns('penta3mcv1_droput_download'), label = 'Download Plot')),
+          )
+        ),
+
+        tabPanel(
+          'Custom Check',
+          fluidRow(
+            column(3, selectizeInput(ns('indicator'), label = 'Indicator',
+                                     choices = c('Select' = '0', "anc1", "bcg", "measles2", "measles3", "opv1", "opv2", "opv3",
+                                                 "pcv1", "pcv2", "pcv3", "penta1", "penta2", "rota1", "rota2", "instdeliveries",
+                                                 "ipv1", "ipv2", "undervax", "zerodose", "dropout_measles12")))
+          ),
+          fluidRow(
+            column(12, plotOutput(ns('custom'))),
+            column(3, downloadButtonUI(ns('custom_download'), label = 'Download Plot')),
+          )
         )
       )
     )
@@ -275,6 +278,12 @@ subnationalMappingServer <- function(id, data, national_values) {
           ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
         },
         data = dt
+      )
+
+      contentHeaderServer(
+        'mapping',
+        md_title = 'Mapping',
+        md_file = '2_reporting_rate.md'
       )
     }
   )

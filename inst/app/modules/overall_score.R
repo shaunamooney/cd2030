@@ -1,13 +1,16 @@
 overallScoreUI <- function(id) {
   ns <- NS(id)
 
-  fluidRow(
-    box(
-      title = 'Overall Score',
-      status = 'success',
-      width = 12,
-      fluidRow(
-        column(12, gt_output(ns('overall_score')))
+  tagList(
+    contentHeader(ns('overall_scoring'), 'Overall Score'),
+    contentBody(
+      box(
+        title = 'Overall Score',
+        status = 'success',
+        width = 12,
+        fluidRow(
+          column(12, gt_output(ns('overall_score')))
+        )
       )
     )
   )
@@ -26,7 +29,7 @@ overallScoreServer <- function(id, data) {
         rows <- c("1a", "1b", "1c", "2a", "2b", "3f", "3g", "3h", "3i", "3j", '4')
 
         data() %>%
-          cd2030::calculate_overall_score() %>%
+          calculate_overall_score() %>%
           gt() %>%
           tab_header(
             title = md("**Table 1a: Summary of data quality for reported immunization health facility data**")
@@ -79,6 +82,12 @@ overallScoreServer <- function(id, data) {
         #   )
         # )
       })
+
+      contentHeaderServer(
+        'overall_scoring',
+        md_title = 'Overall Score',
+        md_file = '2_reporting_rate.md'
+      )
 
     }
   )

@@ -89,7 +89,7 @@ adjust_service_data <- function(.data,
 
   indicator_groups = attr(.data, 'indicator_groups')
   all_indicators <- list_c(indicator_groups)
-  last_year <- max(.data$year, na.rm = TRUE)
+  last_year <- robust_max(.data$year)
 
   merged_data <- .data %>%
     mutate(
@@ -139,11 +139,7 @@ adjust_service_data <- function(.data,
           outlier <- get(paste0(cur_column(), '_outlier5std'))
           med <- round(median(if_else(outlier != 1, ., NA_real_), na.rm = TRUE), 0)
 
-          if_else(
-            outlier == 1,
-            if (all(is.na(med))) NA_real_ else max(med, na.rm = TRUE),
-            .
-          )
+          if_else(outlier == 1, robust_max(med), .)
         }
       ),
 

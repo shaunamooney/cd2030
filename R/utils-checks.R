@@ -40,7 +40,7 @@ calculate_quality_metrics <- function(.data, call = caller_env()) {
   allindicators <- list_c(indicator_groups)
 
   # Get the latest year in the dataset
-  lastyear <- max(.data$year, na.rm = TRUE)
+  lastyear <- robust_max(.data$year)
 
   outliers_summary <- .data %>%
     select(district, year, allindicators) %>%
@@ -56,43 +56,30 @@ calculate_quality_metrics <- function(.data, call = caller_env()) {
   return(outliers_summary)
 }
 
-add_outlier5std_column <- function(.data, indicators) {
+#' Robust Maximum Value Calculation
+#'
+#' `robust_max` calculates the maximum value of a numeric vector while handling
+#' missing values. If all values in the vector are `NA`, the function returns `NA`
+#' instead of raising an error.
+#'
+#' @param x A numeric vector.
+#' @param fallback argument allows you to specify a value to return when all elements are NA
+#'
+#' @return The maximum value of `x`, or `NA` if all values are `NA`.
+#'
+#' @examples
+#' # Example usage
+#' robust_max(c(1, 2, 3, NA))  # Returns 3
+#' robust_max(c(NA, NA))       # Returns NA
+#' robust_max(c(-Inf, 0, 10))  # Returns 10
+#'
+#' @export
+robust_max <- function(x, fallback = NA_real_) {
+  if (all(is.na(x))) {
+    # Return the fallback value if all elements are NA
+    return(fallback)
+  }
 
-  district = NULL
-
-  check_cd_data(.data, call = call)
-  check_required(indicators)
-
-  last_year <- max(.data$year, na.rm = TRUE)
-
-  .data %>%
-    mutate(
-      # Step 2: Calculate outlier flags based on bounds
-      across(
-        all_of(indicators),
-        ~ {
-          mad <-  mad(if_else(year < last_year, ., NA_real_), na.rm = TRUE)
-          med <-  median(if_else(year < last_year, ., NA_real_), na.rm = TRUE)
-
-          med <- if_else(
-            is.na(med),
-            if (all(is.na(med))) NA_real_ else max(med, na.rm = TRUE),
-            med
-          )
-          mad <- if_else(
-            is.na(mad),
-            if (all(is.na(mad))) NA_real_ else max(mad, na.rm = TRUE),
-            mad
-          )
-
-          lower_bound <- round(med - 5 * mad, 1)
-          upper_bound <- round(med + 5 * mad, 1)
-
-          if_else(!is.na(.) & (. < lower_bound | . > upper_bound), 1, 0)
-        },
-        .names = '{.col}_outlier5std'
-      ),
-
-      .by = district
-    )
+  # Return the maximum value, ignoring NA values
+  max(x, na.rm = TRUE)  # Use base::max for consistency
 }

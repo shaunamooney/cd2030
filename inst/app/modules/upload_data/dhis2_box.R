@@ -155,7 +155,7 @@ dhis2BoxServer <- function(id) {
         !is.null(data()) # TRUE if data is available, FALSE otherwise
       })
 
-      downloadServer(
+      downloadButtonServer(
         id = 'master_file',
         filename = 'master_dataset',
         extension = 'dta',
@@ -165,7 +165,7 @@ dhis2BoxServer <- function(id) {
         data = data
       )
 
-      downloadServer(
+      downloadButtonServer(
         id = 'excel_file',
         filename = 'master_dataset',
         extension = 'xlsx',

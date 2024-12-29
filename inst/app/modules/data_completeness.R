@@ -1,28 +1,30 @@
 dataCompletenessUI <- function(id) {
   ns <- NS(id)
 
-  fluidRow(
-    column(2, offset = 10, helpButtonUI(ns('completeness_help')), style = 'margin-bottom: 10px;'),
-    box(
-      title = 'Indicators with Missing Data',
-      status = 'success',
-      width = 6,
-      fluidRow(
-        column(12, gt_output(ns('incomplete_district_summary'))),
-        column(3, downloadButtonUI(ns('download_data'), label = 'Download Data'))
-      )
-    ),
-    box(
-      title = 'Districts with Missing Data',
-      status = 'success',
-      width = 6,
-      fluidRow(
-        column(2, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
-        column(2, selectizeInput(ns('year'), label = 'Year', choice = NULL)),
-        column(4, offset = 4, downloadButtonUI(ns('download_incompletes'), label = 'Download Incompletes'))
+  tagList(
+    contentHeader(ns('data_completeness'), 'Data Completeness'),
+    contentBody(
+      box(
+        title = 'Indicators with Missing Data',
+        status = 'success',
+        width = 6,
+        fluidRow(
+          column(12, gt_output(ns('incomplete_district_summary'))),
+          column(3, downloadButtonUI(ns('download_data'), label = 'Download Data'))
+        )
       ),
-      fluidRow(
-        column(12, gt_output(ns('incomplete_district')))
+      box(
+        title = 'Districts with Missing Data',
+        status = 'success',
+        width = 6,
+        fluidRow(
+          column(2, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
+          column(2, selectizeInput(ns('year'), label = 'Year', choice = NULL)),
+          column(4, offset = 4, downloadButtonUI(ns('download_incompletes'), label = 'Download Incompletes'))
+        ),
+        fluidRow(
+          column(12, gt_output(ns('incomplete_district')))
+        )
       )
     )
   )
@@ -162,6 +164,12 @@ dataCompletenessServer <- function(id, data) {
           saveWorkbook(wb, file, overwrite = TRUE)
         },
         data = incomplete_district
+      )
+
+      contentHeaderServer(
+        'data_completeness',
+        md_title = 'Data Completeness',
+        md_file = '2_reporting_rate.md'
       )
     }
   )

@@ -54,7 +54,7 @@ plot_comparison.cd_data <- function(.data, x_var, y_var, title = NULL, x_label =
     # Add min and max for the diagonal line
     mutate(
       min_x = min(!!sym(x_var), na.rm = TRUE),
-      max_x = max(!!sym(x_var), na.rm = TRUE),
+      max_x = robust_max(!!sym(x_var)),
       .by = year
     )
 

@@ -1,55 +1,58 @@
 subnationalInequalityUI <- function(id) {
   ns <- NS(id)
 
-  fluidRow(
-    box(
-      title = 'Analysis Options',
-      status = 'success',
-      width = 12,
-      solidHeader = TRUE,
-      fluidRow(
-        column(3, selectizeInput(ns('level'), label = 'Subnational Level',
-                                 choices = c('Admin Level 1' = 'adminlevel_1',
-                                             'District' = 'district'))),
-        column(3, selectizeInput(ns('denominator'), label = 'Denominator',
-                                 choices = c('DHIS2' = 'dhis2',
-                                             'ANC 1' = 'anc1',
-                                             'Penta 1' = 'penta1')))
-      )
-    ),
-
-    tabBox(
-      title = 'Subnational Inequality',
-      width = 12,
-
-      tabPanel(
-        title = 'Measles 1',
+  tagList(
+    contentHeader(ns('subnational_inequality'), 'Subnational Inequality'),
+    contentBody(
+      box(
+        title = 'Analysis Options',
+        status = 'success',
+        width = 12,
+        solidHeader = TRUE,
         fluidRow(
-          column(12, plotOutput(ns('measles1'))),
-          downloadCoverageUI(ns('measles1_download'))
+          column(3, selectizeInput(ns('level'), label = 'Subnational Level',
+                                   choices = c('Admin Level 1' = 'adminlevel_1',
+                                               'District' = 'district'))),
+          column(3, selectizeInput(ns('denominator'), label = 'Denominator',
+                                   choices = c('DHIS2' = 'dhis2',
+                                               'ANC 1' = 'anc1',
+                                               'Penta 1' = 'penta1')))
         )
       ),
 
-      tabPanel(
-        title = 'Penta 3',
-        fluidRow(
-          column(12, plotOutput(ns('penta3'))),
-          downloadCoverageUI(ns('penta3_download'))
-        )
-      ),
+      tabBox(
+        title = 'Subnational Inequality',
+        width = 12,
 
-      tabPanel(
-        'Custom Check',
-        fluidRow(
-          column(3, selectizeInput(ns('indicator'), label = 'Indicator',
-                                   choices = c('Select' = '0', "bcg", "anc1", "opv1", "opv2", "opv3", "pcv1", "pcv2", "pcv3",
-                                               "penta1", "penta2", "rota1", "rota2", "instdeliveries", "measles2",
-                                               "ipv1", "ipv2", "undervax", "dropout_penta13", "zerodose", "dropout_measles12",
-                                               "dropout_penta3mcv1")))
+        tabPanel(
+          title = 'Measles 1',
+          fluidRow(
+            column(12, plotOutput(ns('measles1'))),
+            downloadCoverageUI(ns('measles1_download'))
+          )
         ),
-        fluidRow(
-          column(12, plotOutput(ns('custom_check'))),
-          downloadCoverageUI(ns('custom_download'))
+
+        tabPanel(
+          title = 'Penta 3',
+          fluidRow(
+            column(12, plotOutput(ns('penta3'))),
+            downloadCoverageUI(ns('penta3_download'))
+          )
+        ),
+
+        tabPanel(
+          'Custom Check',
+          fluidRow(
+            column(3, selectizeInput(ns('indicator'), label = 'Indicator',
+                                     choices = c('Select' = '0', "bcg", "anc1", "opv1", "opv2", "opv3", "pcv1", "pcv2", "pcv3",
+                                                 "penta1", "penta2", "rota1", "rota2", "instdeliveries", "measles2",
+                                                 "ipv1", "ipv2", "undervax", "dropout_penta13", "zerodose", "dropout_measles12",
+                                                 "dropout_penta3mcv1")))
+          ),
+          fluidRow(
+            column(12, plotOutput(ns('custom_check'))),
+            downloadCoverageUI(ns('custom_download'))
+          )
         )
       )
     )
@@ -184,6 +187,12 @@ subnationalInequalityServer <- function(id, data, national_values) {
         data_fn = custom_coverage,
         filename = paste0(input$indicator, '_', input$level, '_inequality_', input$denominator),
         sheet_name = paste0(input$indicator, ' Inequality')
+      )
+
+      contentHeaderServer(
+        'subnational_inequality',
+        md_title = 'Subnational Inequality',
+        md_file = '2_reporting_rate.md'
       )
     }
   )

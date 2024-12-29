@@ -44,7 +44,11 @@ source('modules/subnational_mapping.R')
 source('modules/equity.R')
 source('modules/download/download_button.R')
 source('modules/download/download_coverage.R')
+source('modules/download/download_report.R')
 source('modules/adjustment_changes.R')
+source('modules/documentation_button.R')
+source('modules/content_header.R')
+source('modules/content_body.R')
 
 ui <- dashboardPage(
   skin = 'green',
@@ -111,8 +115,7 @@ ui <- dashboardPage(
                            tabName = 'subnational_mapping',
                            icon = icon('map'))
                ),
-      menuItem('Equity Assessment', tabName = 'equity_assessment', icon = icon('balance-scale')),
-      menuItem('Download Report', tabName = 'download_report', icon = icon('download'))
+      menuItem('Equity Assessment', tabName = 'equity_assessment', icon = icon('balance-scale'))
     )
   ),
   body = dashboardBody(
@@ -154,7 +157,40 @@ server <- function(input, output, session) {
 
   observeEvent(data(), {
     req(data())
-    updateTabItems(session, "tabs", "reporting_rate")
+
+    shinyjs::delay(500, {
+      country <- attr(data(), 'country')
+      header_title <- div(
+        class = "navbar-header",
+        h4(HTML(paste0(country, ' &mdash; Countdown Analysis')), class = 'navbar-brand')
+      )
+
+      # Dynamically update the header
+      header <- htmltools::tagQuery(
+        dashboardHeader(
+          title = "cd2030",
+          tags$li(class = "dropdown", downloadReportUI('download_report'))
+        )
+      )
+      header <- header$
+        addAttrs(style = "position: relative")$ # add some styles to the header
+        find(".navbar.navbar-static-top")$      # find the header right side
+        append(header_title)$                     # inject dynamic content
+        allTags()
+
+      removeUI(selector = "header.main-header", immediate = TRUE)
+
+      # Replace the header in the UI
+      insertUI(
+        selector = "body",
+        where = "afterBegin",
+        ui = header
+      )
+
+      shinyjs::addClass(selector = ".main-sidebar", class = "custom-main-sidebar")
+
+      updateTabItems(session, "tabs", "reporting_rate")
+    })
   })
 
   reportingRateServer('reporting_rate', data)
@@ -181,102 +217,7 @@ server <- function(input, output, session) {
   subnationalInequalityServer('subnational_inequality', dt, national_values)
   subnationalMappingServer('subnational_mapping', dt, national_values)
   equityServer('equity_assessment', national_values)
-
-  observeEvent(input$tabs, {
-    if (input$tabs == 'download_report') {
-      if (is.null(dt()) || is.null(national_values()$data$un)) {
-        # Show an error dialog if data is not available
-        showModal(
-          modalDialog(
-            title = "Error",
-            "The necessary data for generating the report is not available. Please ensure that the data is uploaded and processed correctly.",
-            easyClose = TRUE,
-            footer = modalButton("OK")
-          )
-        )
-      } else {
-        showModal(
-          modalDialog(
-            title = "Download Options",
-            selectizeInput(
-              "denominator", "Select Denominator:",
-              choices = c('DHIS 2' = 'dhis2', 'ANC 1' = 'anc1', 'Penta 1' = 'penta1')
-            ),
-            selectizeInput(
-              "format", "Select Format:",
-              choices = c('Word' = 'word_document', 'PDF' = 'pdf_document')
-            ),
-            footer = tagList(
-              fluidRow(
-                column(6, align = "left", modalButton("Cancel")),
-                column(6, align = "right", downloadButtonUI('download_data', 'Download Report'))
-              )
-            )
-          )
-        )
-      }
-    }
-  })
-
-  observe({
-    # Dynamic header title or content
-    req(data())
-
-    country <- attr(data(), 'country')
-    header_title <- div(
-      class = "navbar-header",
-      h4(HTML(paste0(country, ' &mdash; Countdown Analysis')), class = 'navbar-brand')
-    )
-
-    # Dynamically update the header
-    header <- htmltools::tagQuery(dashboardHeader(title = "cd2030"))
-    header <- header$
-      addAttrs(style = "position: relative")$ # add some styles to the header
-      find(".navbar.navbar-static-top")$      # find the header right side
-      append(header_title)$                     # inject dynamic content
-      allTags()
-
-    removeUI(selector = "header.main-header", immediate = TRUE)
-
-    # Replace the header in the UI
-    insertUI(
-      selector = "body",
-      where = "afterBegin",
-      ui = header
-    )
-
-    shinyjs::addClass(selector = ".main-sidebar", class = "custom-main-sidebar")
-  })
-
-  country <- reactive({
-    req(dt())
-    attr(dt(), 'country')
-  })
-
-  extension <- reactive({
-    req(input$format)
-
-    switch(input$format,
-           'word_document' = 'docx',
-           'pdf_document' = 'pdf',
-           'html_document' = 'html')
-  })
-
-  downloadButtonServer(
-    id = 'download_data',
-    filename = paste0(country(), '_countdown_report'),
-    extension = extension(),
-    content = function(file) {
-      generate_checks_report(dt(), file,
-                             survey_values = national_values(),
-                             k_factors = k_factors(),
-                             country = country(),
-                             output_format = input$format,
-                             denominator = input$denominator,
-                             survey_start_year = report_year())
-    },
-    data = dt
-  )
+  downloadReportServer('download_report', dt, national_values, k_factors, report_year)
 }
 
 shinyApp(ui = ui, server = server)

@@ -61,11 +61,11 @@ plot.cd_inequality <- function(x, ...) {
                      penta1 = 'Denominators derived from Penta 1 estimates')
 
   y_label <- ifelse(indicator == "low_bweight", "Prevalence (%)", "Coverage (%)")
-  max_y <- if(all(is.na(x$rd_max))) 100 else max(x$rd_max, na.rm = TRUE)
+  max_y <- robust_max(x$rd_max, 100)
   limits <- c(0, max_y)
   breaks <- scales::pretty_breaks(n = 11)(limits)
   second_last_break <- sort(breaks, decreasing = TRUE)[2]
-  max_break <- if(all(is.na(breaks))) 0 else max(breaks, na.rm = TRUE)
+  max_break <- robust_max(breaks, 0)
 
   ggplot(x) +
     geom_point(aes(x = year, y = !!sym(paste0("cov_", indicator, "_", denominator)), color = "Coverage at subnational unit"),

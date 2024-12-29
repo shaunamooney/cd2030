@@ -114,11 +114,8 @@ calculate_district_outlier_summary <- function(.data) {
   data <- .data %>%
     calculate_quality_metrics() %>%
     summarise(
-      across(
-        ends_with('_outlier5std'),
-        ~ if(all(is.na(.))) NA else max(., na.rm = TRUE)
-      ),
-      .by = c(district, year)
+      across(ends_with('_outlier5std'), ~ if(all(is.na(.))) NA else max(., na.rm = TRUE)),
+      .by - c(district, year)
     ) %>%
     summarise(across(ends_with('_outlier5std'), mean, na.rm = TRUE), .by = year) %>%
     mutate(

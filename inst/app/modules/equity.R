@@ -1,51 +1,54 @@
 equityUI <- function(id) {
   ns <- NS(id)
 
-  fluidRow(
-    box(
-      title = 'Analysis Options',
-      status = 'success',
-      width = 12,
-      solidHeader = TRUE,
-      fluidRow(
-        column(3, selectizeInput(ns('type'), label = 'Equity Type',
-                                 choices = c('Area' = 'area',
-                                             'Maternal Education' = 'meduc',
-                                             'Wealth Quintile' = 'wiq')))
-      )
-    ),
-
-    tabBox(
-      title = 'Equity Analysis',
-      width = 12,
-
-      tabPanel(
-        title = 'Penta 3',
+  tagList(
+    contentHeader(ns('equity_assessment'), 'Equity Assessment'),
+    contentBody(
+      box(
+        title = 'Analysis Options',
+        status = 'success',
+        width = 12,
+        solidHeader = TRUE,
         fluidRow(
-          column(12, plotOutput(ns('penta3'))),
-          column(3, downloadButtonUI(ns('penta3_download'), label = 'Download Plot'))
+          column(3, selectizeInput(ns('type'), label = 'Equity Type',
+                                   choices = c('Area' = 'area',
+                                               'Maternal Education' = 'meduc',
+                                               'Wealth Quintile' = 'wiq')))
         )
       ),
 
-      tabPanel(
-        title = 'Measles 1',
-        fluidRow(
-          column(12, plotOutput(ns('measles1'))),
-          column(3, downloadButtonUI(ns('measles1_download'), label = 'Download Plot'))
-        )
-      ),
+      tabBox(
+        title = 'Equity Analysis',
+        width = 12,
 
-      tabPanel(
-        'Custom Check',
-        fluidRow(
-          column(3, selectizeInput(ns('indicator'), label = 'Indicator', choices = NULL))
+        tabPanel(
+          title = 'Penta 3',
+          fluidRow(
+            column(12, plotOutput(ns('penta3'))),
+            column(3, downloadButtonUI(ns('penta3_download'), label = 'Download Plot'))
+          )
         ),
-        fluidRow(
-          column(12, plotOutput(ns('custom_check'))),
-          column(3, downloadButtonUI(ns('custom_download'), label = 'Download Plot'))
-        )
-      )
 
+        tabPanel(
+          title = 'Measles 1',
+          fluidRow(
+            column(12, plotOutput(ns('measles1'))),
+            column(3, downloadButtonUI(ns('measles1_download'), label = 'Download Plot'))
+          )
+        ),
+
+        tabPanel(
+          'Custom Check',
+          fluidRow(
+            column(3, selectizeInput(ns('indicator'), label = 'Indicator', choices = NULL))
+          ),
+          fluidRow(
+            column(12, plotOutput(ns('custom_check'))),
+            column(3, downloadButtonUI(ns('custom_download'), label = 'Download Plot'))
+          )
+        )
+
+      )
     )
   )
 }
@@ -192,6 +195,12 @@ equityServer <- function(id, data_values) {
           ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
         },
         data = custom_equiplot
+      )
+
+      contentHeaderServer(
+        'equity_assessment',
+        md_title = 'Equity Assessment',
+        md_file = '2_reporting_rate.md'
       )
     }
   )

@@ -1,54 +1,57 @@
 adjustmentChangesUI <- function(id) {
   ns <- NS(id)
 
-  fluidRow(
-    tabBox(
-      title = 'Visualize effects of changes',
-      id = 'visualize_changes',
-      width = 12,
+  tagList(
+    contentHeader(ns('adjustment_changes'), 'Data Adjustment Changes'),
+    contentBody(
+      tabBox(
+        title = 'Visualize effects of changes',
+        id = 'visualize_changes',
+        width = 12,
 
-      tabPanel(
-        title = 'Live Births',
-        fluidRow(
-          column(12, plotOutput(ns('live_births'))),
-          column(3, downloadButtonUI(ns('live_births_plot'), label = 'Download Plot'))
-        )
-      ),
-
-      tabPanel(
-        title = 'Penta 1',
-        fluidRow(
-          column(12, plotOutput(ns('penta1'))),
-          column(3, downloadButtonUI(ns('penta1_plot'), label = 'Download Plot'))
-        )
-      ),
-
-      tabPanel(
-        title = 'BCG',
-        fluidRow(
-          column(12, plotOutput(ns('bcg'))),
-          column(3, downloadButtonUI(ns('bcg_plot'), label = 'Download Plot'))
-        )
-      ),
-
-      tabPanel(
-        title = 'Measles',
-        fluidRow(
-          column(12, plotOutput(ns('measles1'))),
-          column(3, downloadButtonUI(ns('measles1_plot'), label = 'Download Plot'))
-        )
-      ),
-
-      tabPanel(
-        title = 'Custom Check',
-        fluidRow(
-          column(3, selectizeInput(ns('indicator'), label = 'Indicator', choices = NULL))
+        tabPanel(
+          title = 'Live Births',
+          fluidRow(
+            column(12, plotOutput(ns('live_births'))),
+            column(3, downloadButtonUI(ns('live_births_plot'), label = 'Download Plot'))
+          )
         ),
-        fluidRow(
-          column(12, plotOutput(ns('custom_check'))),
-          column(3, downloadButtonUI(ns('custom_check_plot'), label = 'Download Plot'))
+
+        tabPanel(
+          title = 'Penta 1',
+          fluidRow(
+            column(12, plotOutput(ns('penta1'))),
+            column(3, downloadButtonUI(ns('penta1_plot'), label = 'Download Plot'))
+          )
+        ),
+
+        tabPanel(
+          title = 'BCG',
+          fluidRow(
+            column(12, plotOutput(ns('bcg'))),
+            column(3, downloadButtonUI(ns('bcg_plot'), label = 'Download Plot'))
+          )
+        ),
+
+        tabPanel(
+          title = 'Measles',
+          fluidRow(
+            column(12, plotOutput(ns('measles1'))),
+            column(3, downloadButtonUI(ns('measles1_plot'), label = 'Download Plot'))
+          )
+        ),
+
+        tabPanel(
+          title = 'Custom Check',
+          fluidRow(
+            column(3, selectizeInput(ns('indicator'), label = 'Indicator', choices = NULL))
+          ),
+          fluidRow(
+            column(12, plotOutput(ns('custom_check'))),
+            column(3, downloadButtonUI(ns('custom_check_plot'), label = 'Download Plot'))
+          )
         )
-      ),
+      )
     )
   )
 }
@@ -166,6 +169,12 @@ adjustmentChangesServer <- function(id, data, k_factors) {
           ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
         },
         data = adjustments
+      )
+
+      contentHeaderServer(
+        'adjustment_changes',
+        md_title = 'Data Adjustments Changes',
+        md_file = '2_reporting_rate.md'
       )
     }
   )
