@@ -5,12 +5,14 @@ dataCompletenessUI <- function(id) {
     contentHeader(ns('data_completeness'), 'Data Completeness'),
     contentBody(
       box(
-        title = 'Indicators with Missing Data',
+        title = tags$span(icon('chart-line'), 'Indicators with Missing Data'),
         status = 'success',
-        width = 6,
+        collapsible = TRUE,
+        width = 12,
         fluidRow(
-          column(12, gt_output(ns('incomplete_district_summary'))),
-          column(3, downloadButtonUI(ns('download_data'), label = 'Download Data'))
+          column(3, selectizeInput(ns('year'), label = 'Year', choice = NULL)),
+          column(12, plotlyOutput(ns('district_missing_heatmap'), height = '100%')),
+          column(4, align = 'right', downloadButtonUI(ns('download_data'), label = 'Download Data'))
         )
       ),
       box(
@@ -18,12 +20,11 @@ dataCompletenessUI <- function(id) {
         status = 'success',
         width = 6,
         fluidRow(
-          column(2, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
-          column(2, selectizeInput(ns('year'), label = 'Year', choice = NULL)),
+          column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
           column(4, offset = 4, downloadButtonUI(ns('download_incompletes'), label = 'Download Incompletes'))
         ),
         fluidRow(
-          column(12, gt_output(ns('incomplete_district')))
+          column(12, DTOutput(ns('incomplete_district')))
         )
       )
     )
@@ -49,13 +50,18 @@ dataCompletenessServer <- function(id, data) {
 
         data() %>%
           select(district, year, month, vaccines_indicator()) %>%
-          mutate(
-            # Flag missing values
-            across(vaccines_indicator(), ~ if_else(is.na(.), 1,  0), .names = "mis_{.col}"),
+          add_missing_column(vaccines_indicator())
+      })
 
-            .by = district
-          ) %>%
-          summarise(across(starts_with('mis_'), ~ mean(.x, na.rm = TRUE)), .by = c(year, month, district))
+      incomplete_district <- reactive({
+        if (!isTruthy(input$indicator) || !isTruthy(input$year) || !isTruthy(completeness_summary())) return(NULL)
+
+        mis_column <- paste0('mis_', input$indicator)
+        selected_year <- as.numeric(input$year)
+
+        completeness_summary() %>%
+          filter(if (selected_year == 0) TRUE else year == selected_year, !!sym(mis_column) == 1) %>%
+          select(district, year, month)
       })
 
       observe({
@@ -69,56 +75,35 @@ dataCompletenessServer <- function(id, data) {
 
         years <- unique(data()$year)
 
-        updateSelectizeInput(session, 'year', choices = years)
+        updateSelectizeInput(session, 'year', choices = c('All Years' = 0, years))
       })
 
-      incomplete_district <- reactive({
-        if (!isTruthy(input$indicator) || !isTruthy(input$year) || !isTruthy(completeness_summary())) return(NULL)
+      output$incomplete_district <- renderDT({
+        req(completeness_summary())
+
+        incomplete_district() %>%
+          datatable(options = list(pageLength = 10))
+      })
+
+      output$district_missing_heatmap <- renderPlotly({
+        req(completeness_summary())
 
         selected_year <- as.numeric(input$year)
-        mis_column <- paste0('mis_', input$indicator)
 
-        completeness_summary() %>%
-          select(district, year, month, any_of(mis_column)) %>%
-          filter(year == selected_year, !!sym(mis_column) == 1) %>%
-          select(-any_of(mis_column))
-      })
+        dt <- completeness_summary() %>%
+          filter(if (selected_year == 0) TRUE else year == selected_year) %>%
+          summarise(across(starts_with('mis_'), ~ sum(.x, na.rm = TRUE)), .by = district) %>%
+          pivot_longer(col = starts_with('mis_'), names_to = 'indicator') %>%
+          mutate(indicator = str_remove(indicator, 'mis_'))
 
-
-      output$incomplete_district <- render_gt({
-        req(incomplete_district())
-
-        incomplete_district()
-      })
-
-      output$incomplete_district_summary <- render_gt({
-        completeness_summary() %>%
-          summarize(
-            across(
-              starts_with('mis_'),
-              list(
-                total =  ~ sum(.x, na.rm = TRUE),
-                pct = ~ round((sum(.x, na.rm = TRUE) / n()) * 100, 1)
-              ),
-              .names = '{.col}-{.fn}'
-            )
-          ) %>%
-          pivot_longer(
-            cols = everything(),
-            names_to = c("Indicator", "metric"),  # Split names into Indicator and Metric
-            names_sep = "-"
-          ) %>%
-          pivot_wider(
-            names_from = metric,  # Reshape Metric columns into separate columns
-            values_from = value
-          ) %>%
-          mutate(
-            Indicator = str_remove(Indicator, 'mis_')  # Remove "mis_" prefix for clarity
-          ) %>%
-          rename(
-            `Missing Months` = total,
-            `Percentage` = pct
-          )
+        ggplotly(
+          ggplot(dt, aes(x = district, y = indicator, fill = value)) +
+            geom_tile(color = 'white') +
+            scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
+            labs(title = NULL, x = 'Indicator', y = 'District', fill = 'Value') +
+            theme_minimal() +
+            theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
+        )
       })
 
       downloadButtonServer(

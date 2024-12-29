@@ -11,6 +11,7 @@ library(cli)
 library(dplyr)
 # library(echarts4r)
 library(gt)
+library(DT)
 library(openxlsx)
 library(khisr)
 library(plotly)
@@ -152,6 +153,10 @@ server <- function(input, output, session) {
   dt <- reactiveVal()
   k_factors <- reactiveVal()
 
+  observe({
+    shinyjs::addClass(selector = 'body', class = 'fixed')
+  })
+
   introductionServer('introduction')
   data <- uploadDataServer('upload_data')
 
@@ -173,7 +178,6 @@ server <- function(input, output, session) {
         )
       )
       header <- header$
-        addAttrs(style = "position: relative")$ # add some styles to the header
         find(".navbar.navbar-static-top")$      # find the header right side
         append(header_title)$                     # inject dynamic content
         allTags()
@@ -186,10 +190,6 @@ server <- function(input, output, session) {
         where = "afterBegin",
         ui = header
       )
-
-      shinyjs::addClass(selector = ".main-sidebar", class = "custom-main-sidebar")
-
-      updateTabItems(session, "tabs", "reporting_rate")
     })
   })
 

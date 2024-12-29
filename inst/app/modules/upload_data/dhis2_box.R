@@ -6,7 +6,7 @@ dhis2BoxUI <- function(id) {
       solidHeader = TRUE,
       width = 12,
       fluidRow(
-        column(2, offset = 10, helpButtonUI(ns('dhis2_download')))
+        column(2, offset = 10, helpButtonUI(ns('dhis2_download')), align = 'right')
       ),
       fluidRow(
         column(6, selectizeInput(ns('country'), 'Country', choices = NULL)),

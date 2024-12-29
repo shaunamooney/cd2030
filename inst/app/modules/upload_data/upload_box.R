@@ -8,7 +8,7 @@ uploadBoxUI <- function(id) {
     width = 12,
     fluidRow(
       column(3, h4(icon('upload'), 'Upload')),
-      column(2, offset = 7, helpButtonUI(ns('upload_data')))
+      column(2, offset = 7, helpButtonUI(ns('upload_data')), align = 'right')
     ),
     fluidRow(
       column(

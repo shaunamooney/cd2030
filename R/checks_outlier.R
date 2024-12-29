@@ -45,9 +45,10 @@ calculate_outliers_summary <- function(.data) {
   indicator_groups <- attr(.data, 'indicator_groups')
   vaccine_only <- indicator_groups[['vacc']]
   tracers <- attr(.data, 'tracers')
+  allindicators <- list_c(indicator_groups)
 
   data <- .data %>%
-    calculate_quality_metrics() %>%
+    add_outlier5std_column(allindicators) %>%
     summarise(
       across(
         ends_with('_outlier5std'), mean, na.rm = TRUE),
@@ -110,12 +111,13 @@ calculate_district_outlier_summary <- function(.data) {
   indicator_groups <- attr(.data, 'indicator_groups')
   vaccine_only <- indicator_groups[['vacc']]
   tracers <- attr(.data, 'tracers')
+  allindicators <- list_c(indicator_groups)
 
   data <- .data %>%
-    calculate_quality_metrics() %>%
+    add_outlier5std_column(allindicators) %>%
     summarise(
-      across(ends_with('_outlier5std'), ~ if(all(is.na(.))) NA else max(., na.rm = TRUE)),
-      .by - c(district, year)
+      across(ends_with('_outlier5std'), ~ robust_max(.)),
+      .by = c(district, year)
     ) %>%
     summarise(across(ends_with('_outlier5std'), mean, na.rm = TRUE), .by = year) %>%
     mutate(

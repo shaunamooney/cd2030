@@ -21,7 +21,7 @@ reportingRateUI <- function(id) {
       ),
       box(
         title = 'Districts with low reporting rate',
-        width = 12,
+        width = 6,
         status = 'success',
         fluidRow(
           column(3, selectizeInput(ns('indicator'),
@@ -30,9 +30,9 @@ reportingRateUI <- function(id) {
           column(3, selectizeInput(ns('year'),
                                    label = 'Year',
                                    choices =NULL)),
-          column(3, offset = 3, downloadButtonUI(ns('download_districts'), label = 'Download Districts'))
-        ),
-        fluidRow(column(12, gt_output(ns('low_reporting'))))
+          column(3, offset = 3, downloadButtonUI(ns('download_districts'), label = 'Download Districts')),
+          column(12, DTOutput(ns('low_reporting')))
+        )
       )
     )
   )
@@ -80,26 +80,16 @@ reportingRateServer <- function(id, data) {
         plot(district_rr())
       })
 
-      output$low_reporting <- render_gt({
+      output$low_reporting <- renderDT({
         req(district_low_rr())
 
-        district_low_rr() %>%
-          gt() %>%
-          fmt_number(
-            columns = ends_with("_rr"), # Select columns ending with "rr"
-            decimals = 1              # Format to 1 decimal place
-          ) %>%
-          tab_style(
-            style = list(
-              cell_fill(color = "lightblue"),  # Highlight with light blue background
-              cell_text(weight = "bold")      # Make text bold
-            ),
-            locations = cells_body(columns = input$indicator) # Highlight only the "vacc_rr" column
-          ) %>%
-          tab_header(
-            title = paste0('Districts with Reporting Rate < ', input$threshold, ' for ', input$indicator, ' in ', input$year)
-          )
+        dt <- district_low_rr()
 
+        cols <- grep('_rr', colnames(dt))
+
+        district_low_rr() %>%
+          datatable(options = list(pageLength = 10)) %>%
+          formatRound(columns = cols, digits = 0)
       })
 
       downloadButtonServer(

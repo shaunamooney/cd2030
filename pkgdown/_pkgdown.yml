@@ -121,6 +121,11 @@ reference:
 
   - title: "Other Functions"
     contents:
+    - add_outlier5std_column
+    - add_mad_med_columns
+    - add_missing_column
+    - robust_max
+    - render_with_error_handling
     - new_countdown
     - print.cd_data
     - with_cd_quiet

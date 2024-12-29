@@ -2,16 +2,6 @@
   margin: 0;
 }
 
-.main-sidebar.custom-main-sidebar{
-  margin-top: -50px;
-}
-
-@media (max-width: 767px) {
-  .sidebar-open .main-sidebar.custom-main-sidebar{
-    margin-top: -100px;
-  }
-}
-
 .content-header {
   padding: 0;
 }
@@ -44,10 +34,10 @@
 
 .content-body > .wrapper-content>.col-sm-6:first-child {
   padding-left: 0;
-  padding-right: 15px;
+  padding-right: 7.5px;
 }
 
 .content-body > .wrapper-content>.col-sm-6:last-child {
-  padding-left: 15px;
+  padding-left: 7.5px;
   padding-right: 0;
 }

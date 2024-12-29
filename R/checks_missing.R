@@ -36,9 +36,10 @@ calculate_completeness_summary <- function(.data) {
   indicator_groups <- attr(.data, 'indicator_groups')
   vaccine_only <- indicator_groups[['vacc']]
   tracers <- attr(.data, 'tracers')
+  allindicators <- list_c(indicator_groups)
 
   data <- .data %>%
-    calculate_quality_metrics() %>%
+    add_missing_column(allindicators) %>%
     summarise(across(starts_with('mis_'), mean, na.rm = TRUE), .by = year) %>%
     mutate(
       mean_mis_all = rowMeans(select(., any_of(starts_with('mis_'))), na.rm = TRUE),
@@ -90,9 +91,10 @@ calculate_district_completeness_summary <- function(.data) {
   indicator_groups <- attr(.data, 'indicator_groups')
   vaccine_only <- indicator_groups[['vacc']]
   tracers <- attr(.data, 'tracers')
+  allindicators <- list_c(indicator_groups)
 
   data <- .data %>%
-    calculate_quality_metrics() %>%
+    add_missing_column(allindicators) %>%
     summarise(across(starts_with('mis_'), mean, na.rm = TRUE), .by = c(year, district)) %>%
     summarise(across(starts_with('mis_'), ~ mean(.x != 0, na.rm = TRUE)), .by = year) %>%
     mutate(
