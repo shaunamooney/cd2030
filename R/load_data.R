@@ -106,13 +106,15 @@ load_data <- function(path) {
   check_file_path(path)
 
   # Determine file extension and load accordingly
-  file_extension <- file_ext(path)
+  file_extension <- tools::file_ext(path)
   final_data <- switch(file_extension,
                        'rds' = readRDS(file = path),
                        'dta' = read_dta(path),
                        cd_abort(
                          'x' = 'Unsupported file format: please provide an RDS or DTA file.')
                        )
+  final_data <- final_data %>%
+    mutate(across(where(is.labelled), as_factor))
 
   new_countdown(final_data)
 }
@@ -550,6 +552,9 @@ replace_special_chars <- function(text) {
 #'
 #' @noRd
 match_country <- function(country_name, call = caller_call()) {
+
+  country = alternate = country_dist = alternate_dist = total_dist = countrycode =
+    iso3 = iso2 = NULL
 
   check_required(country_name)
   if (!is_scalar_character(country_name)) {

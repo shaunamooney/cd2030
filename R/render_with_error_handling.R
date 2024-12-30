@@ -43,8 +43,8 @@ render_with_error_handling <- function(expr, error_message = "An error occurred 
     error = function(e) {
       print(e)
       clean_message <- cli::ansi_strip(conditionMessage(e))
-      plot.new() # Start a blank plot
-      text(
+      graphics::plot.new() # Start a blank plot
+      graphics::text(
         x = 0.5, y = 0.5,
         labels = paste(error_message, clean_message),
         cex = 1.2, col = "red"

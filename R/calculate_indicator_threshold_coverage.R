@@ -70,7 +70,6 @@ calculate_indicator_threshold_coverage <- function(.data) {
 #'
 #' @param .data A data frame or tibble containing health indicator data, with coverage columns
 #'   named in the format `cov_<indicator>_<source>`.
-#' @param filter_year Numeric. The specific year to filter the data for dropout calculations.
 #' @param indicator Character. The specific health indicator to evaluate. Options are:
 #'   - `"zerodose"`: Zero-dose vaccination rate.
 #'   - `"undervax"`: Under-vaccination rate.
@@ -106,14 +105,13 @@ calculate_indicator_threshold_coverage <- function(.data) {
 #'
 #' @export
 calculate_dropout <- function(.data,
-                              # filter_year,
                               indicator = c("zerodose", "undervax", "dropout_penta13", "dropout_measles12", "dropout_penta3mcv1", "dropout_penta1mcv1"),
                               source = c('dhis2', 'anc1', 'penta1')) {
 
   below10 = year = NULL
 
   check_cd_indicator_coverage(.data)
-  check_required(filter_year)
+  # check_required(filter_year)
   indicator <- arg_match(indicator)
   source <- arg_match(source)
 

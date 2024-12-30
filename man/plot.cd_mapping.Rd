@@ -13,7 +13,8 @@
   denominator = c("dhis2", "anc1", "penta1"),
   palette = c("Reds", "Blues", "Greens", "Purples", "YlGnBu"),
   plot_year = NULL,
-  title = NULL
+  title = NULL,
+  ...
 )
 }
 \arguments{
@@ -63,10 +64,13 @@
 \item \code{"YlGnBu"}
 }}
 
-\item{plot_year}{Optional. A numeric value or vector specifying the year(s) to include in the plot.
-If \code{NULL}, all years in the data are included.}
+\item{plot_year}{Optional. A numeric value or vector specifying the year(s) to
+include in the plot. If \code{NULL}, all years in the data are included.}
 
-\item{title}{Optional. A string specifying the plot title. Defaults to \code{"Distribution of [indicator] by Regions"}.}
+\item{title}{Optional. A string specifying the plot title. Defaults to
+\code{"Distribution of [indicator] by Regions"}.}
+
+\item{...}{Other params to pass to plot}
 }
 \value{
 A \code{ggplot} object representing the subnational mapping plot.
@@ -76,16 +80,15 @@ This function generates a subnational mapping plot for a specified indicator,
 using a gradient color scheme.
 }
 \examples{
-# Example data
-data <- subnational_data
-
-# Plot Penta1 coverage with DHIS2 denominator
-plot.cd_mapping(
-  x = data,
-  indicator = "penta1",
-  denominator = "dhis2",
-  palette = "Blues",
-  plot_year = 2022
-)
+\dontrun{
+  # Plot Penta1 coverage with DHIS2 denominator
+  plot.cd_mapping(
+    x = data,
+    indicator = "penta1",
+    denominator = "dhis2",
+    palette = "Blues",
+    plot_year = 2022
+  )
+}
 
 }

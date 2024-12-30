@@ -21,10 +21,27 @@ generate_checks_report(
 
 \item{output_file}{A character string specifying the name and path of the output file.}
 
-\item{output_format}{A character vector specifying the output format, either \code{"html_document"} or \code{"word_document"}.
-Default is \code{c("html_document", "word_document")}.}
+\item{survey_values}{A list or vector containing survey-specific values used
+for evaluation. Each value should align with the data's context (e.g.,
+coverage rates or expected outcomes).}
 
-\item{threshold}{A numeric value indicating the threshold for reporting rates in percentage (default is 90).}
+\item{k_factors}{A numeric vector of factors used for statistical checks or
+adjustments in the report.}
+
+\item{country}{A character string specifying the country name for the analysis.
+This value is used to tailor the report content or metadata.}
+
+\item{denominator}{A character string or numeric value defining the denominator
+used for rate calculations, such as population size or number of facilities.}
+
+\item{survey_start_year}{Numeric. The starting year of the survey data used in
+the analysis.}
+
+\item{output_format}{A character vector specifying the output format, either
+\code{"html_document"} or \code{"word_document"}.}
+
+\item{threshold}{A numeric value indicating the threshold for reporting rates
+in percentage (default is 90).}
 }
 \value{
 The function renders the report to the specified file in the chosen format.

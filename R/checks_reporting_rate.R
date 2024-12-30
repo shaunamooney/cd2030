@@ -96,8 +96,29 @@ calculate_district_reporting_rate <- function(.data, threshold = 90) {
   )
 }
 
+#' Identify Districts with Low Reporting Rates
+#'
+#' `district_low_reporting` identifies districts that have reporting rates below
+#' a specified threshold.
+#'
+#' @param .data A data frame of class `cd_data` that contains reporting rate
+#'   information by year.
+#' @param threshold Numeric. The reporting rate threshold below which districts
+#'   will be flagged. Defaults to 90.
+#'
+#' @return A data frame or tibble containing the districts and years where
+#'   reporting rates for any indicator group fall below the specified threshold.
+#'
+#' @examples
+#' \dontrun{
+#'   # Calculate district-level reporting rates with a threshold of 90%
+#'   district_summary <- district_low_reporting(data, threshold = 90)
+#' }
+#'
 #' @export
 district_low_reporting <- function(.data, threshold = 90) {
+
+  district = year = NULL
 
   check_cd_data(.data)
 

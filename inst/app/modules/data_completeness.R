@@ -73,7 +73,10 @@ dataCompletenessServer <- function(id, data) {
       observe({
         req(data())
 
-        years <- unique(data()$year)
+        years <- data() %>%
+          distinct(year) %>%
+          arrange(desc(year)) %>%
+          pull(year)
 
         updateSelectizeInput(session, 'year', choices = c('All Years' = 0, years))
       })

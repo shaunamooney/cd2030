@@ -113,7 +113,7 @@ analyze_inequality <- function(.data,
     mutate(
       # Calculate the mean absolute difference to the mean (MADM) and weighted MADM
       madm = mean(diff, na.rm = TRUE),
-      madmpop = weighted.mean(diff, popshare, na.rm = TRUE),
+      madmpop = stats::weighted.mean(diff, popshare, na.rm = TRUE),
       #
       # Calculate mean relative difference to the mean (MRDM) and weighted MRDM
       mrdm = (madm / mean(national_mean)) * 100,

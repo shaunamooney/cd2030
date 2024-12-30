@@ -28,7 +28,8 @@ A ggplot object representing the dot plot.
 specific indicator across years.
 }
 \examples{
-# Example Usage:
-equiplot_area(data, indicator = 'sba')
+\dontrun{
+  equiplot_area(data, indicator = 'sba')
+}
 
 }

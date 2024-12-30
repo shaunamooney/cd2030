@@ -28,7 +28,8 @@ A ggplot object representing the dot plot.
 (no education, primary, and secondary or higher) for a specific indicator across years.
 }
 \examples{
-# Example Usage:
-equiplot_education(data, indicator = 'sba')
+\dontrun{
+  equiplot_education(data, indicator = 'sba')
+}
 
 }

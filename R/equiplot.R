@@ -17,24 +17,22 @@
 #' @return A ggplot object representing the dot plot.
 #'
 #' @examples
-#' # Example Usage:
-#' data <- data.frame(
-#'   Country = c('A', 'B', 'C', 'D'),
-#'   Var1 = c(20, 30, 40, 50),
-#'   Var2 = c(30, 40, 50, 60),
-#'   Var3 = c(40, 50, 60, 70)
-#' )
+#' \dontrun{
+#'   equiplot(
+#'     .data = data,
+#'     variables = c('Var1', 'Var2', 'Var3'),
+#'     group_by = Country,
+#'     x_title = 'Percentage (%)',
+#'     legend_title = 'Variables',
+#'     reverse_y_axis = TRUE
+#'   )
+#' }
 #'
-#' equiplot(
-#'   .data = data,
-#'   variables = c('Var1', 'Var2', 'Var3'),
-#'   group_by = Country,
-#'   x_title = 'Percentage (%)',
-#'   legend_title = 'Variables',
-#'   reverse_y_axis = TRUE
-#' )
+#' @export
 equiplot <- function(.data, variables, group_by, x_title = NULL, legend_title = NULL,
                      reverse_y_axis = FALSE, connect_dots = TRUE, dot_size = NULL) {
+
+  Variable = Value = over_factor = NULL
 
   check_equity_data(.data)
 
@@ -72,7 +70,7 @@ equiplot <- function(.data, variables, group_by, x_title = NULL, legend_title = 
                    '6' = c('#814374', '#51A39D', '#B7695C', '#CDBB79', '#D4D4D4', '#06425C'),
                    '7' = c('#814374', '#51A39D', '#B7695C', '#CDBB79', '#D4D4D4', '#06425C', '#968989'),
                    '10' = c('#201E1E', '#0C444E', '#415B61', '#196975', '#39767F', '#73A0A7', '#FFE7AB', '#FFCD58', '#D5B670', '#C38B09'),
-                   rainbow(nlevels) # Default rainbow if nlevels is not defined
+                   grDevices::rainbow(nlevels) # Default rainbow if nlevels is not defined
   )
 
   # Dot size
@@ -125,8 +123,9 @@ equiplot <- function(.data, variables, group_by, x_title = NULL, legend_title = 
 #' @return A ggplot object representing the dot plot.
 #'
 #' @examples
-#' # Example Usage:
-#' equiplot_area(data, indicator = 'sba')
+#' \dontrun{
+#'   equiplot_area(data, indicator = 'sba')
+#' }
 #'
 #' @export
 equiplot_area <- function(.data,
@@ -135,6 +134,8 @@ equiplot_area <- function(.data,
                                         "rota1", "rota2", "instdeliveries", "measles2", "ipv1", "ipv2",
                                         "undervax", "dropout_penta13", "zerodose", "dropout_measles12", "dropout_penta3mcv1"),
                           x_title = NULL) {
+
+  year = NULL
 
   check_equity_data(.data)
 
@@ -168,8 +169,9 @@ equiplot_area <- function(.data,
 #' @return A ggplot object representing the dot plot.
 #'
 #' @examples
-#' # Example Usage:
-#' equiplot_education(data, indicator = 'sba')
+#' \dontrun{
+#'   equiplot_education(data, indicator = 'sba')
+#' }
 #'
 #' @export
 equiplot_education <- function(.data,
@@ -178,6 +180,8 @@ equiplot_education <- function(.data,
                                              "rota1", "rota2", "instdeliveries", "measles2", "ipv1", "ipv2",
                                              "undervax", "dropout_penta13", "zerodose", "dropout_measles12", "dropout_penta3mcv1"),
                                x_title = NULL) {
+
+  year = NULL
 
   check_equity_data(.data)
 
@@ -212,8 +216,10 @@ equiplot_education <- function(.data,
 #' @return A ggplot object representing the dot plot.
 #'
 #' @examples
+#' \dontrun{
+#'   equiplot_wealth(data, indicator = 'sba')
+#' }
 #' # Example Usage:
-#' equiplot_wealth(data, indicator = 'sba')
 #'
 #' @export
 equiplot_wealth <- function(.data,
@@ -222,6 +228,7 @@ equiplot_wealth <- function(.data,
                                           "rota1", "rota2", "instdeliveries", "measles2", "ipv1", "ipv2",
                                           "undervax", "dropout_penta13", "zerodose", "dropout_measles12", "dropout_penta3mcv1"),
                             x_title = NULL) {
+  year = NULL
 
   check_equity_data(.data)
 

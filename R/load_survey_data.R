@@ -14,12 +14,14 @@
 #' @export
 load_un_estimates <- function(path, country_iso, start_year, end_year) {
 
+  year = iso3 = country = countrycode = iso2 = NULL
+
   check_file_path(path)
   check_required(country_iso)
   check_required(start_year)
   check_required(end_year)
 
-  file_extension <- file_ext(path)
+  file_extension <- tools::file_ext(path)
   un_estimates <- switch(file_extension,
                        'dta' = read_dta(path),
                        cd_abort(
@@ -51,12 +53,14 @@ load_un_estimates <- function(path, country_iso, start_year, end_year) {
 #' @export
 load_survey_data <- function(path, country_iso, admin_level = c('national', 'adminlevel_1')) {
 
+  year = iso = adminlevel_1 = admin1_code = NULL
+
   check_file_path(path)
   check_required(country_iso)
 
   admin_level <- arg_match(admin_level)
 
-  file_extension <- file_ext(path)
+  file_extension <- tools::file_ext(path)
   survdata <- switch(file_extension,
                        'dta' = read_dta(path),
                        cd_abort(
@@ -117,9 +121,11 @@ load_survey_data <- function(path, country_iso, admin_level = c('national', 'adm
 #' @export
 load_equity_data <- function(path) {
 
+  year = NULL
+
   check_file_path(path)
 
-  file_extension <- file_ext(path)
+  file_extension <- tools::file_ext(path)
   survdata <- switch(file_extension,
                      'dta' = read_dta(path),
                      cd_abort(
@@ -157,11 +163,15 @@ load_equity_data <- function(path) {
 #' @return A tibble of class `wuenic_data` containing cleaned and processed WUENIC data.
 #' @export
 load_wuenic_data <- function(path, country_iso) {
+
+  cov_penta1_wuenic = cov_penta3_wuenic = cov_measles1_wuenic = cov_measles2_wuenic =
+    iso = NULL
+
   check_file_path(path)
   check_required(country_iso)
 
   # Read data based on file extension
-  file_extension <- file_ext(path)
+  file_extension <- tools::file_ext(path)
   wuenic_data <- switch(
     file_extension,
     'dta' = haven::read_dta(path),

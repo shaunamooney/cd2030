@@ -25,10 +25,8 @@
 #'   statistics.
 #' - **Outlier Definition**:
 #'   A value is flagged as an outlier if it falls outside the range:
-#'   \[
-#'   \text{Lower Bound} = \text{median} - 5 \times \text{MAD}, \quad
-#'   \text{Upper Bound} = \text{median} + 5 \times \text{MAD}
-#'   \]
+#'   Lower Bound = median - 5 * MAD
+#'   Lower Bound = median + 5 * MAD
 #' - **Grouping**:
 #'   Calculations are performed separately for each group specified by the
 #'   `group_by` parameter.
@@ -38,16 +36,11 @@
 #'   and `0` otherwise.
 #'
 #' @examples
-#' # Example dataset
-#' data <- tibble(
-#'   district = rep(c('District A', 'District B'), each = 5),
-#'   year = c(2018:2022, 2018:2022),
-#'   indicator1 = c(10, 12, 13, 50, 14, 9, 11, 10, 15, 12)
-#' )
-#'
-#' # Add outlier flags for 'indicator1'
-#' flagged_data <- add_outlier5std_column(data, indicators = 'indicator1',
+#' \dontrun{
+#'   # Add missing value flags for all indicators
+#'   add_outlier5std_column(data, indicators = 'indicator1',
 #'                                        group_by = 'district')
+#' }
 #'
 #' @seealso
 #' [add_mad_med_columns()] for computing and appending the median and MAD columns.
@@ -107,16 +100,11 @@ add_outlier5std_column <- function(.data, indicators, group_by = 'district') {
 #'   ensuring that meaningful fallback values are provided.
 #'
 #' @examples
-#' # Example dataset
-#' data <- tibble(
-#'   district = rep(c('District A', 'District B'), each = 5),
-#'   year = c(2018:2022, 2018:2022),
-#'   indicator1 = c(10, 12, 13, 50, 14, 9, 11, 10, 15, 12)
-#' )
-#'
-#' # Add median and MAD columns for 'indicator1'
-#' add_mad_med_columns(data, indicators = 'indicator1',
+#' \dontrun{
+#'   # Add median and MAD columns for 'indicator1'
+#'   add_mad_med_columns(data, indicators = 'indicator1',
 #'                     group_by = 'district')
+#' }
 #'
 #' @seealso
 #'
@@ -171,6 +159,8 @@ add_mad_med_columns <- function(.data, indicators, group_by = 'district') {
 #' quality control and analysis.
 #'
 #' @param .data A data frame containing health indicator data.
+#' @param indicators A character vector specifying the names of the indicator
+#'   columns to analyze for outliers.
 #'
 #' @details
 #' - **Missingness Assessment**:
@@ -189,19 +179,10 @@ add_mad_med_columns <- function(.data, indicators, group_by = 'district') {
 #' - `district` and `year` columns to maintain grouping information.
 #'
 #' @examples
-#' # Example dataset
-#' data <- tibble(
-#'   district = rep(c('District A', 'District B'), each = 5),
-#'   year = rep(2018:2022, times = 2),
-#'   indicator1 = c(10, NA, 13, 50, 14, 9, 11, NA, 15, 12),
-#'   indicator2 = c(NA, 60, 55, 80, NA, 40, NA, 50, 60, 70)
-#' )
-#'
-#' # Add missing value flags for all indicators
-#' quality_metrics <- add_missing_column(data)
-#'
-#' # View the resulting data frame
-#' print(quality_metrics)
+#' \dontrun{
+#'   # dd missing value flags for all indicators
+#'   add_missing_column(data)
+#' }
 #'
 #' @export
 add_missing_column <- function(.data, indicators) {

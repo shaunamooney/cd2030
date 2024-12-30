@@ -24,6 +24,9 @@
 #'
 #' @export
 get_dhis2_hfd <- function(country_iso3, start_date, end_date, timeout = 60) {
+
+  hfd_sheet = iso3 = NULL
+
   completeness_data <- get_completeness_data(country_iso3, start_date, end_date, timeout)
   service_data <- get_service_data(country_iso3, start_date, end_date, timeout)
   population_data <- get_population_data(country_iso3, start_date, end_date, timeout)
@@ -70,6 +73,10 @@ get_dhis2_hfd <- function(country_iso3, start_date, end_date, timeout = 60) {
 #'
 #' @noRd
 get_service_data <- function(country_iso3, start_date, end_date, timeout = 60) {
+
+  hfd_sheet = iso3 = element_id = dx = pe = ou = year = month = element_name =
+    district = hfd_id = hfd_title = NULL
+
   service_data <- data_elements %>%
     filter(str_detect(hfd_sheet, '^Service_data'), iso3 == country_iso3)
 
@@ -142,6 +149,10 @@ get_service_data <- function(country_iso3, start_date, end_date, timeout = 60) {
 #'
 #' @noRd
 get_completeness_data <- function(country_iso3, start_date, end_date, timeout = 60) {
+
+  hfd_sheet = iso3 = element_id = Var1 = Var2 = combined = dx = pe = ou = year =
+    month  = element_name = district = hfd_id = hfd_title = dataset = NULL
+
   completeness_data <- data_elements %>%
     filter(hfd_sheet == 'Reporting_completeness', iso3 == country_iso3)
 
@@ -230,6 +241,10 @@ get_completeness_data <- function(country_iso3, start_date, end_date, timeout = 
 #'
 #' @noRd
 get_population_data <- function(country_iso3, start_date, end_date, timeout = 60) {
+
+  hfd_sheet = iso3 = element_id = dx = pe = ou = element_name = district = year =
+    hfd_id = hfd_title = NULL
+
   population_data <- data_elements %>%
     filter(hfd_sheet == 'Population_data', iso3 == country_iso3)
 
@@ -305,6 +320,8 @@ get_population_data <- function(country_iso3, start_date, end_date, timeout = 60
 #'
 #' @noRd
 append_missing_columns <- function(.data, element_data) {
+
+  hfd_id = hfd_title = hfd_sheet = district = year = month = data = NULL
 
   dt_hfd_ids <- element_data %>%
     pull(hfd_id)

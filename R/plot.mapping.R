@@ -39,24 +39,25 @@
 #'   - `"Greens"`
 #'   - `"Purples"`
 #'   - `"YlGnBu"`
-#' @param plot_year Optional. A numeric value or vector specifying the year(s) to include in the plot.
-#'   If `NULL`, all years in the data are included.
-#' @param title Optional. A string specifying the plot title. Defaults to `"Distribution of [indicator] by Regions"`.
+#' @param plot_year Optional. A numeric value or vector specifying the year(s) to
+#'   include in the plot. If `NULL`, all years in the data are included.
+#' @param title Optional. A string specifying the plot title. Defaults to
+#'   `"Distribution of [indicator] by Regions"`.
+#' @param ... Other params to pass to plot
 #'
 #' @return A `ggplot` object representing the subnational mapping plot.
 #'
 #' @examples
-#' # Example data
-#' data <- subnational_data
-#'
-#' # Plot Penta1 coverage with DHIS2 denominator
-#' plot.cd_mapping(
-#'   x = data,
-#'   indicator = "penta1",
-#'   denominator = "dhis2",
-#'   palette = "Blues",
-#'   plot_year = 2022
-#' )
+#' \dontrun{
+#'   # Plot Penta1 coverage with DHIS2 denominator
+#'   plot.cd_mapping(
+#'     x = data,
+#'     indicator = "penta1",
+#'     denominator = "dhis2",
+#'     palette = "Blues",
+#'     plot_year = 2022
+#'   )
+#' }
 #'
 #' @export
 plot.cd_mapping <- function(x,
@@ -66,7 +67,10 @@ plot.cd_mapping <- function(x,
                             denominator = c('dhis2', 'anc1', 'penta1'),
                             palette = c('Reds', 'Blues', 'Greens', 'Purples', 'YlGnBu'),
                             plot_year = NULL,
-                            title = NULL) {
+                            title = NULL,
+                            ...) {
+
+  year = NULL
 
   check_required(indicator)
   check_required(denominator)

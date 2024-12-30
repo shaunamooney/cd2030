@@ -42,20 +42,15 @@ equity analysis by plotting values for variables like health intervention covera
 across subgroups, allowing insights into disparities.
 }
 \examples{
-# Example Usage:
-data <- data.frame(
-  Country = c('A', 'B', 'C', 'D'),
-  Var1 = c(20, 30, 40, 50),
-  Var2 = c(30, 40, 50, 60),
-  Var3 = c(40, 50, 60, 70)
-)
+\dontrun{
+  equiplot(
+    .data = data,
+    variables = c('Var1', 'Var2', 'Var3'),
+    group_by = Country,
+    x_title = 'Percentage (\%)',
+    legend_title = 'Variables',
+    reverse_y_axis = TRUE
+  )
+}
 
-equiplot(
-  .data = data,
-  variables = c('Var1', 'Var2', 'Var3'),
-  group_by = Country,
-  x_title = 'Percentage (\%)',
-  legend_title = 'Variables',
-  reverse_y_axis = TRUE
-)
 }

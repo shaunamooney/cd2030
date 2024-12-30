@@ -7,12 +7,12 @@
 get_country_shapefile(country_iso, level = c("admin_level_1", "district"))
 }
 \arguments{
-\item{country_iso}{A string specifying the ISO3 code of the country (e.g., "KEN" for Kenya).}
+\item{country_iso}{A string specifying the ISO3 code of the country (e.g., 'KEN' for Kenya).}
 
 \item{level}{A string specifying the level of analysis. Options are:
 \itemize{
-\item \code{"adminlevel_1"}: First administrative level.
-\item \code{"district"}: District level.
+\item \code{'adminlevel_1'}: First administrative level.
+\item \code{'district'}: District level.
 }}
 }
 \value{
@@ -23,6 +23,6 @@ A \code{sf} object containing the shapefile for the specified country and level.
 administrative level.
 }
 \examples{
-shapefile <- get_country_shapefile("KEN", level = "admin_level_1")
+shapefile <- get_country_shapefile('KEN', level = 'admin_level_1')
 
 }

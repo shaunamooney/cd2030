@@ -56,9 +56,9 @@ uploadBoxServer <- function(id) {
 
         tryCatch({
           dt <- if (file_type %in% c('xls', 'xlsx')) {
-            cd2030::load_excel_data(file_path)
+            load_excel_data(file_path)
           } else {
-            cd2030::load_data(file_path)
+            load_data(file_path)
           }
 
           file_status(list(

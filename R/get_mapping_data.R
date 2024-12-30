@@ -13,18 +13,25 @@
 #'   - `penta1`: Penta1 survey coverage rate
 #'   - `twin_rate`: Twin birth rate
 #'   - `preg_loss`: Pregnancy loss rate
-#' @param level A character string specifying the level of analysis. Options are:
-#'   - `"adminlevel_1"`: First administrative level.
-#'   - `"district"`: District level (default for Kenya).
+#' @param subnational_map An optional data frame containing additional mapping
+#'   information to join with the shapefile.
+#' @param admin_level A character string specifying the level of analysis. Options are:
+#'   - `'adminlevel_1'`: First administrative level.
+#'   - `'district'`: District level (default for Kenya).
 #'
 #' @return A data frame merged with the corresponding shapefile for subnational mapping.
 #'
 #' @examples
-#' rates <- list(sbr = 0.02, nmr = 0.03, pnmr = 0.02, anc1 = 0.8, penta1 = 0.75, twin_rate = 0.015, preg_loss = 0.03)
-#' get_mapping_data(data, un_estimates, rates, level = "adminlevel_1")
+#' \dontrun{
+#'   rates <- list(sbr = 0.02, nmr = 0.03, pnmr = 0.02, anc1 = 0.8, penta1 = 0.75,
+#'                 twin_rate = 0.015, preg_loss = 0.03)
+#'   get_mapping_data(data, un_estimates, rates, level = 'adminlevel_1')
+#' }
 #'
 #' @export
 get_mapping_data <- function(.data, un_estimates, rates, subnational_map = NULL, admin_level = c('adminlevel_1', 'district')) {
+
+  NAME_1 = adminlevel_1 = district = NULL
 
   check_cd_data(.data)
   check_un_estimates_data(un_estimates)
@@ -74,15 +81,15 @@ get_mapping_data <- function(.data, un_estimates, rates, subnational_map = NULL,
 #' `get_country_shapefile` retrieves the shapefile for a specified country and
 #' administrative level.
 #'
-#' @param country_iso A string specifying the ISO3 code of the country (e.g., "KEN" for Kenya).
+#' @param country_iso A string specifying the ISO3 code of the country (e.g., 'KEN' for Kenya).
 #' @param level A string specifying the level of analysis. Options are:
-#'   - `"adminlevel_1"`: First administrative level.
-#'   - `"district"`: District level.
+#'   - `'adminlevel_1'`: First administrative level.
+#'   - `'district'`: District level.
 #'
 #' @return A `sf` object containing the shapefile for the specified country and level.
 #'
 #' @examples
-#' shapefile <- get_country_shapefile("KEN", level = "admin_level_1")
+#' shapefile <- get_country_shapefile('KEN', level = 'admin_level_1')
 #'
 #' @export
 get_country_shapefile <- function(country_iso, level = c('admin_level_1', 'district')) {

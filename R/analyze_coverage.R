@@ -63,7 +63,7 @@ analyze_coverage <- function(.data,
                              subnational_map = NULL,
                              region = NULL) {
 
-  iso = year = value = NULL
+  iso = year = value = estimates = . = NULL
 
   # Validate inputs
   check_cd_indicator_coverage(.data)
@@ -151,6 +151,9 @@ validate_column_existence <- function(data, column) {
 }
 
 join_subnational_map <- function(data, admin_level, map) {
+
+  adminlevel_1 = admin_level_1 = NULL
+
   if (admin_level != 'national') {
     if (!is.null(map)) {
       data <- data %>%
@@ -164,6 +167,9 @@ join_subnational_map <- function(data, admin_level, map) {
 }
 
 check_district_column <- function(data, admin_level, dhis2_data) {
+
+  adminlevel_1 = district = NULL
+
   if (admin_level == 'district' && !'district' %in% colnames(data)) {
     data <- dhis2_data %>%
       distinct(adminlevel_1, district) %>%

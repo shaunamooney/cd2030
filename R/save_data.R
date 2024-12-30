@@ -29,7 +29,7 @@ save_data <- function(.data, file = 'master_dataset.dta') {
   check_cd_data(.data)
 
   # Get file extension and determine save format
-  file_extension <- file_ext(file)
+  file_extension <- tools::file_ext(file)
 
   # Save based on the specified extension
   switch(
@@ -121,6 +121,9 @@ save_dhis2_excel <- function(.data, filename) {
 #'
 #' @export
 save_dhis2_master_data <- function(.data) {
+
+  hfd_title = hfd_sheet = hfd_id = value = hfd_subtitle = NULL
+
   service_data <- .data$service %>%
     select(-hfd_title, -hfd_sheet) %>%
     pivot_wider(names_from = hfd_id, values_from = value, values_fn = sum, values_fill = NA)

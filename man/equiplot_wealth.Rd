@@ -28,7 +28,9 @@ A ggplot object representing the dot plot.
 for a specific indicator across years.
 }
 \examples{
+\dontrun{
+  equiplot_wealth(data, indicator = 'sba')
+}
 # Example Usage:
-equiplot_wealth(data, indicator = 'sba')
 
 }

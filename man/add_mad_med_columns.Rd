@@ -35,16 +35,11 @@ ensuring that meaningful fallback values are provided.
 }
 }
 \examples{
-# Example dataset
-data <- tibble(
-  district = rep(c('District A', 'District B'), each = 5),
-  year = c(2018:2022, 2018:2022),
-  indicator1 = c(10, 12, 13, 50, 14, 9, 11, 10, 15, 12)
-)
-
-# Add median and MAD columns for 'indicator1'
-add_mad_med_columns(data, indicators = 'indicator1',
+\dontrun{
+  # Add median and MAD columns for 'indicator1'
+  add_mad_med_columns(data, indicators = 'indicator1',
                     group_by = 'district')
+}
 
 }
 \seealso{

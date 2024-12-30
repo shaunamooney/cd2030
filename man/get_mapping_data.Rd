@@ -28,10 +28,13 @@ get_mapping_data(
 \item \code{preg_loss}: Pregnancy loss rate
 }}
 
-\item{level}{A character string specifying the level of analysis. Options are:
+\item{subnational_map}{An optional data frame containing additional mapping
+information to join with the shapefile.}
+
+\item{admin_level}{A character string specifying the level of analysis. Options are:
 \itemize{
-\item \code{"adminlevel_1"}: First administrative level.
-\item \code{"district"}: District level (default for Kenya).
+\item \code{'adminlevel_1'}: First administrative level.
+\item \code{'district'}: District level (default for Kenya).
 }}
 }
 \value{
@@ -42,7 +45,10 @@ A data frame merged with the corresponding shapefile for subnational mapping.
 indicator coverage at the specified subnational level.
 }
 \examples{
-rates <- list(sbr = 0.02, nmr = 0.03, pnmr = 0.02, anc1 = 0.8, penta1 = 0.75, twin_rate = 0.015, preg_loss = 0.03)
-get_mapping_data(data, un_estimates, rates, level = "adminlevel_1")
+\dontrun{
+  rates <- list(sbr = 0.02, nmr = 0.03, pnmr = 0.02, anc1 = 0.8, penta1 = 0.75,
+                twin_rate = 0.015, preg_loss = 0.03)
+  get_mapping_data(data, un_estimates, rates, level = 'adminlevel_1')
+}
 
 }

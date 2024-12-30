@@ -8,6 +8,9 @@ add_missing_column(.data, indicators)
 }
 \arguments{
 \item{.data}{A data frame containing health indicator data.}
+
+\item{indicators}{A character vector specifying the names of the indicator
+columns to analyze for outliers.}
 }
 \value{
 A data frame containing:
@@ -36,18 +39,9 @@ remains intact.
 }
 }
 \examples{
-# Example dataset
-data <- tibble(
-  district = rep(c('District A', 'District B'), each = 5),
-  year = rep(2018:2022, times = 2),
-  indicator1 = c(10, NA, 13, 50, 14, 9, 11, NA, 15, 12),
-  indicator2 = c(NA, 60, 55, 80, NA, 40, NA, 50, 60, 70)
-)
-
-# Add missing value flags for all indicators
-quality_metrics <- add_missing_column(data)
-
-# View the resulting data frame
-print(quality_metrics)
+\dontrun{
+  # dd missing value flags for all indicators
+  add_missing_column(data)
+}
 
 }

@@ -7,10 +7,24 @@
 #'
 #' @param .data A data frame or list object containing the dataset to be analyzed.
 #' @param output_file A character string specifying the name and path of the output file.
-#' @param output_format A character vector specifying the output format, either `"html_document"` or `"word_document"`.
-#'   Default is `c("html_document", "word_document")`.
-#' @param threshold A numeric value indicating the threshold for reporting rates in percentage (default is 90).
+#' @param output_format A character vector specifying the output format, either
+#'   `"html_document"` or `"word_document"`.
+#' @param threshold A numeric value indicating the threshold for reporting rates
+#'   in percentage (default is 90).
+#' @param survey_values A list or vector containing survey-specific values used
+#'   for evaluation. Each value should align with the data's context (e.g.,
+#'   coverage rates or expected outcomes).
+#' @param k_factors A numeric vector of factors used for statistical checks or
+#'   adjustments in the report.
+#' @param country A character string specifying the country name for the analysis.
+#'   This value is used to tailor the report content or metadata.
+#' @param denominator A character string or numeric value defining the denominator
+#'   used for rate calculations, such as population size or number of facilities.
+#' @param survey_start_year Numeric. The starting year of the survey data used in
+#'   the analysis.
+#'
 #' @return The function renders the report to the specified file in the chosen format.
+#'
 #' @examples
 #' \dontrun{
 #'   # Generate a report for the dataset 'data' in Word format with a threshold of 85%
@@ -63,7 +77,7 @@ generate_checks_report <- function(.data,
   # Open the generated file automatically
   if (file.exists(output_path)) {
     if (format == 'html_document') {
-      browseURL(output_path)
+      utils::browseURL(output_path)
     }
   } else {
     message("Report generation failed: File not found.")

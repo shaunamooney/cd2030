@@ -31,8 +31,6 @@ named in the format \verb{cov_<indicator>_<source>}.}
 \item \code{"anc1"}: Data from ANC-1 surveys.
 \item \code{"penta1"}: Data from Penta-1 surveys.
 }}
-
-\item{filter_year}{Numeric. The specific year to filter the data for dropout calculations.}
 }
 \value{
 A tibble with the selected administrative level and coverage value for regions

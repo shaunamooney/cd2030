@@ -116,52 +116,25 @@ equityServer <- function(id, data_values) {
       output$penta3 <- renderPlot({
         req(penta3_equiplot())
 
-        tryCatch(
-          penta3_equiplot(),
-          error = function(e) {
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
+        render_with_error_handling({
+          penta3_equiplot()
+        })
       })
 
       output$measles1 <- renderPlot({
         req(measles1_equiplot())
 
-        tryCatch(
-          measles1_equiplot(),
-          error = function(e) {
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
+        render_with_error_handling({
+          measles1_equiplot()
+        })
       })
 
       output$custom_check <- renderPlot({
         req(custom_equiplot())
 
-        tryCatch(
-          custom_equiplot(),
-          error = function(e) {
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
+        render_with_error_handling({
+          custom_equiplot()
+        })
       })
 
       downloadButtonServer(

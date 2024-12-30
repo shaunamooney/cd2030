@@ -84,7 +84,7 @@ outlierDetectionServer <- function(id, data) {
 
         years <- data() %>%
           distinct(year) %>%
-          arrange(year) %>%
+          arrange(desc(year)) %>%
           pull(year)
 
         updateSelectizeInput(session, 'year', choices = c('All years' = 0, years))

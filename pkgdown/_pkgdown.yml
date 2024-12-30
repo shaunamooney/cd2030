@@ -32,6 +32,7 @@ reference:
     contents:
     - calculate_average_reporting_rate
     - calculate_district_reporting_rate
+    - district_low_reporting
     - plot.cd_district_reporting_rate
     - tbl_sum.cd_district_reporting_rate
     - tbl_sum.cd_average_reporting_rate

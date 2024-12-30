@@ -266,19 +266,9 @@ measles1_coverage <- analyze_coverage(params$data,
                          twin = rates$twin_rate,
                          preg_loss = rates$preg_loss)
 
-tryCatch(
-            plot(measles1_coverage) + cd_report_theme(),
-          error = function(e) {
-
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
+render_with_error_handling({
+  plot(measles1_coverage) + cd_report_theme()
+})
 
 ```
 
@@ -297,18 +287,9 @@ penta3_coverage <- analyze_coverage(params$data,
                          twin = rates$twin_rate,
                          preg_loss = rates$preg_loss)
 
-tryCatch(plot(penta3_coverage) + cd_report_theme(),
-          error = function(e) {
-
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
+render_with_error_handling({
+  plot(penta3_coverage) + cd_report_theme()
+})
 ```
 
 ## Regional Estimates
@@ -363,40 +344,23 @@ penta3_inequality <- analyze_inequality(params$data,
                            twin = rates$twin_rate,
                            preg_loss = rates$preg_loss)
 
-tryCatch(plot(penta3_inequality) + cd_report_theme(), 
-         error = function(e) {
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
+render_with_error_handling({
+  plot(penta3_inequality) + cd_report_theme()
+})
 ```
 
 ```{r}
 max_year <- max(params$data$year, na.rm = TRUE)
 mapping_data <- get_mapping_data(params$data, un_estimates, rates, subnational_map)
 
-tryCatch(
-          plot(mapping_data, indicator = 'penta3',
+render_with_error_handling({
+  plot(mapping_data, indicator = 'penta3',
                denominator = params$denominator,
                palette = 'Greens',
                plot_year = max_year,
                title = paste("Distribution of Penta3 Coverage in ", params$country, "by Regions")) +
-            cd_report_theme(),
-          error = function(e) {
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
+            cd_report_theme()
+})
 ```
 
 ```{r}
@@ -413,40 +377,23 @@ measles1_inequality <- analyze_inequality(params$data,
                            twin = rates$twin_rate,
                            preg_loss = rates$preg_loss)
 
-tryCatch(plot(measles1_inequality) + cd_report_theme(), 
-         error = function(e) {
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
+render_with_error_handling({
+  plot(measles1_inequality) + cd_report_theme()
+})
 ```
 
 ```{r}
 max_year <- max(params$data$year, na.rm = TRUE)
 mapping_data <- get_mapping_data(params$data, un_estimates, rates, subnational_map)
 
-tryCatch(
-          plot(mapping_data, indicator = 'measles1',
+render_with_error_handling({
+  plot(mapping_data, indicator = 'measles1',
                denominator = params$denominator,
                palette = 'Blues',
                plot_year = max_year,
                title = paste("Distribution of Measles 1 Coverage in ", params$country, "by Regions")) +
-            cd_report_theme(),
-          error = function(e) {
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
+            cd_report_theme()
+})
 ```
 
 ### Equity Analysis

@@ -142,6 +142,9 @@ create_custom_style <- function(fontSize = 11, fontColour = "black", fgFill = "w
 #' @noRd
 create_sheets <- function(wb, .data, header_rows, freeze_col = 4,
                           instruction = NULL, instruction_row_height = 60) {
+
+  hfd_sheet = NULL
+
   .data %>%
     group_by(hfd_sheet) %>%
     group_split() %>%
@@ -237,6 +240,9 @@ create_sheets <- function(wb, .data, header_rows, freeze_col = 4,
 #'
 #' @noRd
 create_admin_sheet <- function(wb, .data, header_rows, instruction) {
+
+  iso3 = district = hfd_id = hfd_title = hfd_sheet = NULL
+
   headerStyle <- create_custom_style(fontColour = 'red', fgFill = 'khaki1', textDecoration = 'bold',
                                      border = 'TopBottomLeftRight', borderColour = 'black')
   subHeaderStyle <- create_custom_style(fontColour = 'white', fgFill = 'darkcyan',

@@ -36,10 +36,8 @@ The last year is excluded to prevent potential contamination of the baseline
 statistics.
 \item \strong{Outlier Definition}:
 A value is flagged as an outlier if it falls outside the range:
-[
-\text{Lower Bound} = \text{median} - 5 \times \text{MAD}, \quad
-\text{Upper Bound} = \text{median} + 5 \times \text{MAD}
-]
+Lower Bound = median - 5 * MAD
+Lower Bound = median + 5 * MAD
 \item \strong{Grouping}:
 Calculations are performed separately for each group specified by the
 \code{group_by} parameter.
@@ -50,16 +48,11 @@ and \code{0} otherwise.
 }
 }
 \examples{
-# Example dataset
-data <- tibble(
-  district = rep(c('District A', 'District B'), each = 5),
-  year = c(2018:2022, 2018:2022),
-  indicator1 = c(10, 12, 13, 50, 14, 9, 11, 10, 15, 12)
-)
-
-# Add outlier flags for 'indicator1'
-flagged_data <- add_outlier5std_column(data, indicators = 'indicator1',
+\dontrun{
+  # Add missing value flags for all indicators
+  add_outlier5std_column(data, indicators = 'indicator1',
                                        group_by = 'district')
+}
 
 }
 \seealso{

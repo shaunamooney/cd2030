@@ -61,7 +61,7 @@ plot_comparison.cd_data <- function(.data, x_var, y_var, title = NULL, x_label =
   # Calculate R-squared values by year
   r_squared_value <- data_filtered %>%
     summarize(
-      r_squared = round(summary(lm(as.formula(paste(y_var, "~", x_var)), data = cur_data()))$r.squared, 4)
+      r_squared = round(summary(stats::lm(stats::as.formula(paste(y_var, "~", x_var)), data = cur_data()))$r.squared, 4)
     ) %>%
     pull(r_squared)
 

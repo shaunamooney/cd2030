@@ -71,14 +71,14 @@ print.cd_data <- function(x, ...) {
   {
     # Years available
     cli::cli_h2("{.emph Years Available}")
-    cli::cli_bullets(setNames(as.list(years), rep("*", length(years))))
+    cli::cli_bullets(set_names(as.list(years), rep("*", length(years))))
   }
 
   if (!is.null(regions))
   {
     # Regions available
     cli::cli_h2("{.emph Regions Available}")
-    cli::cli_bullets(setNames(as.list(regions), rep("*", length(regions))))
+    cli::cli_bullets(set_names(as.list(regions), rep("*", length(regions))))
   }
 
   variable_bullets <- imap(variable_groups, ~ {

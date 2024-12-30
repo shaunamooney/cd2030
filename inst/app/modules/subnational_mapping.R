@@ -193,21 +193,12 @@ subnationalMappingServer <- function(id, data, national_values) {
                title = title)
         })
 
-        tryCatch(
+        render_with_error_handling({
           plot(dt(), indicator = input$indicator,
                denominator = input$denominator,
                palette = input$palette,
-               title = title),
-          error = function(e) {
-            clean_message <- cli::ansi_strip(conditionMessage(e))
-            plot.new() # Start a blank plot
-            text(
-              x = 0.5, y = 0.5,
-              labels = paste("Error:", clean_message),
-              cex = 1.2, col = "red"
-            )
-          }
-        )
+               title = title)
+        })
       })
 
       downloadButtonServer(

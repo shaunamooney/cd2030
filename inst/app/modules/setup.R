@@ -137,7 +137,7 @@ setupServer <- function(id, data, survey_data) {
         drives <- gsub("\\s+", "", drives)  # Trim whitespace
         drives <- drives[nchar(drives) > 0] # Remove empty strings
         drives <- drives[grepl(":", drives)]
-        setNames(drives, drives)
+        set_names(drives, drives)
       } else {
         c(home = "~", root = "/") # For macOS and Linux
       }

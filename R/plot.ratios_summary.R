@@ -37,7 +37,7 @@ plot.cd_ratios_summary <-  function(x, ...) {
   # Generate color palette with unique colors for each combination of name and year
   unique_names <- unique(plot_data$year)
   colors <- c('darkgreen', 'darkgoldenrod3', 'firebrick4', 'springgreen3', 'darkolivegreen3', 'steelblue2')
-  color_mapping <- setNames(colors, unique_names)
+  color_mapping <- set_names(colors, unique_names)
 
   plot_data %>%
     ggplot(aes(name, value, fill = year)) +
