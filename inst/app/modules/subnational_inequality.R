@@ -27,7 +27,7 @@ subnationalInequalityUI <- function(id) {
         tabPanel(
           title = 'Measles 1',
           fluidRow(
-            column(12, plotOutput(ns('measles1'))),
+            column(12, plotCustomOutput(ns('measles1'))),
             downloadCoverageUI(ns('measles1_download'))
           )
         ),
@@ -35,7 +35,7 @@ subnationalInequalityUI <- function(id) {
         tabPanel(
           title = 'Penta 3',
           fluidRow(
-            column(12, plotOutput(ns('penta3'))),
+            column(12, plotCustomOutput(ns('penta3'))),
             downloadCoverageUI(ns('penta3_download'))
           )
         ),
@@ -50,7 +50,7 @@ subnationalInequalityUI <- function(id) {
                                                  "dropout_penta3mcv1")))
           ),
           fluidRow(
-            column(12, plotOutput(ns('custom_check'))),
+            column(12, plotCustomOutput(ns('custom_check'))),
             downloadCoverageUI(ns('custom_download'))
           )
         )
@@ -59,36 +59,38 @@ subnationalInequalityUI <- function(id) {
   )
 }
 
-subnationalInequalityServer <- function(id, data, national_values) {
-  stopifnot(is.reactive(data))
-  stopifnot(is.reactive(national_values))
+subnationalInequalityServer <- function(id, cache) {
+  stopifnot(is.reactive(cache))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
 
-      national_rates <- reactive({
-        national_values()$rates
+      data <- reactive({
+        req(cache())
+        cache()$get_adjusted_data()
       })
+
+      un_estimates <- reactive({
+        req(cache())
+        cache()$get_un_estimates()
+      })
+
 
       national_data <- reactive({
         national_values()$data
       })
 
       measles1_coverage <- reactive({
-        if (!isTruthy(input$level) || !isTruthy(input$denominator) ||  !isTruthy(national_rates()) ||
-            !isTruthy(national_data()) || !isTruthy(national_data()$un)) {
-          return(NULL)
-        }
+        req(input$level, input$denominator, un_estimates())
 
-        surv_data <- national_data()
-        rates <- national_rates()
+        rates <- cache()$get_national_estimates()
 
         analyze_inequality(data(),
                            admin_level = input$level,
                            indicator = 'measles1',
                            denominator =  input$denominator,
-                           un_estimates = surv_data$un,
+                           un_estimates =  un_estimates(),
                            sbr = rates$sbr,
                            nmr = rates$nmr,
                            pnmr = rates$pnmr,
@@ -99,19 +101,15 @@ subnationalInequalityServer <- function(id, data, national_values) {
       })
 
       penta3_coverage <- reactive({
-        if (!isTruthy(input$level) || !isTruthy(input$denominator) ||  !isTruthy(national_rates()) ||
-            !isTruthy(national_data()) || !isTruthy(national_data()$un)) {
-          return(NULL)
-        }
+        req(input$level, input$denominator, un_estimates())
 
-        surv_data <- national_data()
-        rates <- national_rates()
+        rates <- cache()$get_national_estimates()
 
         analyze_inequality(data(),
                            admin_level = input$level,
                            indicator = 'penta3',
                            denominator =  input$denominator,
-                           un_estimates = surv_data$un,
+                           un_estimates = un_estimates(),
                            sbr = rates$sbr,
                            nmr = rates$nmr,
                            pnmr = rates$pnmr,
@@ -122,19 +120,15 @@ subnationalInequalityServer <- function(id, data, national_values) {
       })
 
       custom_coverage <- reactive({
-        if (!isTruthy(input$level) || !isTruthy(input$denominator) ||  !isTruthy(national_rates()) ||
-            !isTruthy(input$indicator != '0') || !isTruthy(national_data()) || !isTruthy(national_data()$un)) {
-          return(NULL)
-        }
+        req(input$level, input$denominator, un_estimates(), input$indicator != '0')
 
-        surv_data <- national_data()
-        rates <- national_rates()
+        rates <- cache()$get_national_estimates()
 
         analyze_inequality(data(),
                            admin_level = input$level,
                            indicator = input$indicator,
                            denominator =  input$denominator,
-                           un_estimates = surv_data$un,
+                           un_estimates = un_estimates(),
                            sbr = rates$sbr,
                            nmr = rates$nmr,
                            pnmr = rates$pnmr,
@@ -144,28 +138,19 @@ subnationalInequalityServer <- function(id, data, national_values) {
                            preg_loss = rates$preg_loss)
       })
 
-      output$measles1 <- renderPlot({
+      output$measles1 <- renderCustomPlot({
         req(measles1_coverage())
-
-        render_with_error_handling({
-          plot(measles1_coverage())
-        })
+        plot(measles1_coverage())
       })
 
-      output$penta3 <- renderPlot({
+      output$penta3 <- renderCustomPlot({
         req(penta3_coverage())
-
-        render_with_error_handling({
-          plot(penta3_coverage())
-        })
+        plot(penta3_coverage())
       })
 
-      output$custom_check <- renderPlot({
+      output$custom_check <- renderCustomPlot({
         req(custom_coverage())
-
-        render_with_error_handling({
-          plot(custom_coverage())
-        })
+        plot(custom_coverage())
       })
 
       downloadCoverageServer(

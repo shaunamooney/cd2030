@@ -1,54 +1,50 @@
-#' Render Plot with Error Handling
+#' Clean and Validate Error Messages
 #'
-#' `render_with_error_handling` is a helper function designed to render plots in a Shiny application.
-#' It wraps the plot-rendering code within a `tryCatch` block to gracefully handle errors and display
-#' a user-friendly message in case of failure.
+#' `clean_error_message` processes and cleans error messages to remove unnecessary
+#' details such as ANSI escape codes, CLI-specific bullets, stack traces, and
+#' technical context. It ensures the input is a valid error object before processing
+#' and returns a blank string (`""`) if the input is not an error.
 #'
-#' @param expr Expression. The plotting code to evaluate. This is the main block of code that generates the plot.
-#' @param error_message Character. A custom message to display when an error occurs. Default is
-#'   "An error occurred while rendering the plot."
+#' @param error_message The input to be processed. This should be an object of
+#'   class `"error"`. Non-error inputs will result in a blank string being returned.
 #'
-#' @details
-#' This function ensures that any errors during the rendering of plots are caught and do not crash
-#' the Shiny application. Instead of displaying an error stack trace, the function displays a blank
-#' plot with the error message and a clean explanation of the issue.
-#'
-#' The function is intended to be used within Shiny `renderPlot` calls to standardize error handling
-#' across multiple plots in the application.
-#'
-#' @return The evaluated plot or a blank plot with an error message if the evaluation fails.
+#' @return A cleaned, user-friendly error message as a string. Returns an empty
+#'   string if the input is not an error object.
 #'
 #' @examples
-#' \dontrun{
-#' # Example usage in a Shiny app
-#' output$measles1 <- renderPlot({
-#'   render_with_error_handling({
-#'     plot(measles1_coverage()) # Replace with your plotting code
-#'   }, error_message = "Failed to render Measles 1 coverage plot.")
+#' # Processing a Valid Error Message
+#' tryCatch({
+#'   stop("✖ Something went wrong! ℹ In index: 3. Caused by error in `.f()`:")
+#' }, error = function(e) {
+#'   cleaned <- clean_error_message(e)
+#'   print(cleaned)
 #' })
 #'
-#' output$penta3 <- renderPlot({
-#'   render_with_error_handling({
-#'     plot(penta3_coverage()) # Replace with your plotting code
-#'   })
-#' })
-#' }
+#' # Handling Non-Error Input
+#' cleaned <- clean_error_message("This is not an error object")
+#' print(cleaned)
 #'
 #' @export
-render_with_error_handling <- function(expr, error_message = "An error occurred while rendering the plot.") {
-  tryCatch(
-    {
-      expr
-    },
-    error = function(e) {
-      print(e)
-      clean_message <- cli::ansi_strip(conditionMessage(e))
-      graphics::plot.new() # Start a blank plot
-      graphics::text(
-        x = 0.5, y = 0.5,
-        labels = paste(error_message, clean_message),
-        cex = 1.2, col = "red"
-      )
-    }
-  )
+clean_error_message <- function(error_message) {
+  # Check if input is an error object
+  if (!inherits(error_message, "error")) {
+    return("") # Return blank if not a valid error
+  }
+
+  # Extract and clean the error message
+  clean_message <- cli::ansi_strip(conditionMessage(error_message))
+
+  # Remove specific CLI bullets (✖, ✔, ℹ, ⚠, !)
+  clean_message <- gsub("[✖✔ℹ⚠!]", "", clean_message)
+
+  # Remove "In index: ..." patterns
+  clean_message <- gsub("In index: \\d+\\.?", "", clean_message)
+
+  # Remove "Caused by error in ..." patterns
+  clean_message <- gsub("Caused by error in `.*?\\(\\)`:?", "", clean_message)
+
+  # Trim leading and trailing whitespace
+  clean_message <- trimws(clean_message)
+
+  return(clean_message)
 }

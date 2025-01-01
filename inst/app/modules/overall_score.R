@@ -16,19 +16,19 @@ overallScoreUI <- function(id) {
   )
 }
 
-overallScoreServer <- function(id, data) {
-  stopifnot(is.reactive(data))
+overallScoreServer <- function(id, cache) {
+  stopifnot(is.reactive(cache))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
 
       output$overall_score <- render_gt({
-        req(data())
+        req(cache())
 
         rows <- c("1a", "1b", "1c", "2a", "2b", "3f", "3g", "3h", "3i", "3j", '4')
 
-        data() %>%
+        cache()$get_data() %>%
           calculate_overall_score() %>%
           gt() %>%
           tab_header(

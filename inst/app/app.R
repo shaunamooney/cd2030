@@ -5,6 +5,7 @@ options(shiny.maxRequestSize = 2000*1024^2)
 
 library(shiny)
 library(shinydashboard)
+library(shinycssloaders)
 library(shinyFiles)
 library(cd2030)
 library(cli)
@@ -24,6 +25,7 @@ library(sf)
 library(shinyjs)
 library(stringr)
 
+source('logic/survey_helper.R')
 source('modules/help_button.R')
 source('modules/introduction.R')
 source('modules/setup.R')
@@ -45,15 +47,18 @@ source('modules/subnational_mapping.R')
 source('modules/equity.R')
 source('modules/download/download_button.R')
 source('modules/download/download_coverage.R')
+source('modules/download/download_helper.R')
 source('modules/download/download_report.R')
 source('modules/adjustment_changes.R')
 source('modules/documentation_button.R')
 source('modules/content_header.R')
 source('modules/content_body.R')
+source('modules/message_box.R')
+source('modules/render-plot.R')
 
 ui <- dashboardPage(
   skin = 'green',
-  header = dashboardHeader(title = "cd2030"),
+  header = dashboardHeader(title = 'cd2030'),
   sidebar = dashboardSidebar(
     sidebarMenu(
       id = 'tabs',
@@ -122,7 +127,8 @@ ui <- dashboardPage(
   body = dashboardBody(
     useShinyjs(),
     tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
+      tags$link(rel = 'stylesheet', type = 'text/css', href = 'styles.css'),
+      tags$link(rel = 'stylesheet', type = 'text/css', href = 'rmd-styles.css')
     ),
     tabItems(
       tabItem(tabName = 'introduction', introductionUI('introduction')),
@@ -150,74 +156,69 @@ ui <- dashboardPage(
 
 server <- function(input, output, session) {
 
-  dt <- reactiveVal()
-  k_factors <- reactiveVal()
-
-  observe({
-    shinyjs::addClass(selector = 'body', class = 'fixed')
-  })
+  cache <- reactiveVal()
 
   introductionServer('introduction')
   data <- uploadDataServer('upload_data')
-
   observeEvent(data(), {
     req(data())
 
+    cache_instance <- init_CacheConnection(countdown_data = data())$reactive()
+    cache(cache_instance())
+
     shinyjs::delay(500, {
-      country <- attr(data(), 'country')
-      header_title <- div(
-        class = "navbar-header",
-        h4(HTML(paste0(country, ' &mdash; Countdown Analysis')), class = 'navbar-brand')
-      )
-
-      # Dynamically update the header
-      header <- htmltools::tagQuery(
-        dashboardHeader(
-          title = "cd2030",
-          tags$li(class = "dropdown", downloadReportUI('download_report'))
-        )
-      )
-      header <- header$
-        find(".navbar.navbar-static-top")$      # find the header right side
-        append(header_title)$                     # inject dynamic content
-        allTags()
-
-      removeUI(selector = "header.main-header", immediate = TRUE)
-
-      # Replace the header in the UI
-      insertUI(
-        selector = "body",
-        where = "afterBegin",
-        ui = header
-      )
+      country <- cache()$get_country()
+      updateHeader(country)
+      shinyjs::addClass(selector = 'body', class = 'fixed')
     })
   })
 
-  reportingRateServer('reporting_rate', data)
-  dataCompletenessServer('data_completeness', data)
-  consistencyCheckServer('consistency_check', data)
-  outlierDetectionServer('outlier_detection', data)
-  survey_data <- calculateRatiosServer('calculate_ratios', data)
-  overallScoreServer('overall_score', data)
-  removed_dt <- removeYearsServer('remove_years', data)
-  adjusted_dt <- dataAdjustmentServer('data_adjustment', removed_dt)
+  reportingRateServer('reporting_rate', cache)
+  dataCompletenessServer('data_completeness', cache)
+  consistencyCheckServer('consistency_check', cache)
+  outlierDetectionServer('outlier_detection', cache)
+  calculateRatiosServer('calculate_ratios', cache)
+  overallScoreServer('overall_score', cache)
+  removeYearsServer('remove_years', cache)
+  dataAdjustmentServer('data_adjustment', cache)
+  adjustmentChangesServer('data_adjustment_changes', cache)
+  setupServer('setup', cache)
+  denominatorAssessmentServer('denominator_assessment', cache)
+  denominatorSelectionServer('denominator_selection', cache)
+  nationalCoverageServer('national_coverage', cache)
+  subnationalCoverageServer('subnational_coverage', cache)
+  subnationalInequalityServer('subnational_inequality', cache)
+  subnationalMappingServer('subnational_mapping', cache)
+  equityServer('equity_assessment', cache)
+  downloadReportServer('download_report', cache)
 
-  observeEvent(adjusted_dt(), {
-    req(adjusted_dt())
-    dt(adjusted_dt()$modified_data)
-    k_factors(adjusted_dt()$k_factors)
-  })
+  updateHeader <- function(country) {
+    header_title <- div(
+      class = 'navbar-header',
+      h4(HTML(paste0(country, ' &mdash; Countdown Analysis')), class = 'navbar-brand')
+    )
 
-  adjustmentChangesServer('data_adjustment_changes', dt, k_factors)
-  national_values <- setupServer('setup', dt, survey_data)
-  denominatorAssessmentServer('denominator_assessment', dt, national_values)
-  indicator_coverage <- denominatorSelectionServer('denominator_selection', dt, national_values)
-  report_year <- nationalCoverageServer('national_coverage', indicator_coverage, national_values)
-  subnationalCoverageServer('subnational_coverage', dt, national_values)
-  subnationalInequalityServer('subnational_inequality', dt, national_values)
-  subnationalMappingServer('subnational_mapping', dt, national_values)
-  equityServer('equity_assessment', national_values)
-  downloadReportServer('download_report', dt, national_values, k_factors, report_year)
+    # Dynamically update the header
+    header <- htmltools::tagQuery(
+      dashboardHeader(
+        title = 'cd2030',
+        tags$li(class = 'dropdown', downloadReportUI('download_report'))
+      )
+    )
+    header <- header$
+      find('.navbar.navbar-static-top')$      # find the header right side
+      append(header_title)$                     # inject dynamic content
+      allTags()
+
+    removeUI(selector = 'header.main-header', immediate = TRUE)
+
+    # Replace the header in the UI
+    insertUI(
+      selector = 'body',
+      where = 'afterBegin',
+      ui = header
+    )
+  }
 }
 
 shinyApp(ui = ui, server = server)

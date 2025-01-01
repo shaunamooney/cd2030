@@ -11,8 +11,8 @@ dataCompletenessUI <- function(id) {
         width = 12,
         fluidRow(
           column(3, selectizeInput(ns('year'), label = 'Year', choice = NULL)),
-          column(12, plotlyOutput(ns('district_missing_heatmap'), height = '100%')),
-          column(4, align = 'right', downloadButtonUI(ns('download_data'), label = 'Download Data'))
+          column(12, withSpinner(plotlyOutput(ns('district_missing_heatmap')))),
+          column(4, align = 'right', downloadButtonUI(ns('download_data')))
         )
       ),
       box(
@@ -21,7 +21,7 @@ dataCompletenessUI <- function(id) {
         width = 6,
         fluidRow(
           column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
-          column(4, offset = 4, downloadButtonUI(ns('download_incompletes'), label = 'Download Incompletes'))
+          column(4, offset = 4, downloadButtonUI(ns('download_incompletes')))
         ),
         fluidRow(
           column(12, DTOutput(ns('incomplete_district')))
@@ -31,18 +31,21 @@ dataCompletenessUI <- function(id) {
   )
 }
 
-dataCompletenessServer <- function(id, data) {
-  stopifnot(is.reactive(data))
+dataCompletenessServer <- function(id, cache) {
+  stopifnot(is.reactive(cache))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
 
-      vaccines_indicator <- reactive({
-        req(data())
+      data <- reactive({
+        req(cache())
+        cache()$get_data()
+      })
 
-        indicator_groups <- attr(data(), 'indicator_groups')
-        indicator_groups$vacc
+      vaccines_indicator <- reactive({
+        req(cache())
+        cache()$get_vaccine_indicators()
       })
 
       completeness_summary <- reactive({
@@ -54,7 +57,7 @@ dataCompletenessServer <- function(id, data) {
       })
 
       incomplete_district <- reactive({
-        if (!isTruthy(input$indicator) || !isTruthy(input$year) || !isTruthy(completeness_summary())) return(NULL)
+        req(completeness_summary(), input$indicator, input$year)
 
         mis_column <- paste0('mis_', input$indicator)
         selected_year <- as.numeric(input$year)
@@ -109,12 +112,11 @@ dataCompletenessServer <- function(id, data) {
         )
       })
 
-      downloadButtonServer(
+      downloadExcel(
         id = 'download_data',
         filename = 'checks_reporting_rate',
-        extension = 'xlsx',
-        content = function(file) {
-          wb <- createWorkbook()
+        data = data,
+        excel_write_function = function(wb) {
           completeness_rate <- data() %>% calculate_completeness_summary()
           district_completeness_rate <- data() %>% calculate_district_completeness_summary()
 
@@ -128,36 +130,29 @@ dataCompletenessServer <- function(id, data) {
           addWorksheet(wb, sheet_name_2)
           writeData(wb, sheet = sheet_name_2, x = "Table 4a: Percentage of Districts with complete data, by year", startRow = 1, startCol = 1)
           writeData(wb, sheet = sheet_name_2, x = district_completeness_rate, startCol = 1, startRow = 3)
-
-          # Save the workbook
-          saveWorkbook(wb, file, overwrite = TRUE)
         },
-        data = data
+        label = 'Download Districts'
       )
 
-      downloadButtonServer(
+      downloadExcel(
         id = 'download_incompletes',
         filename = paste0('checks_incomplete_districts_', input$indicator, '_', input$year),
-        extension = 'xlsx',
-        content = function(file) {
-          wb <- createWorkbook()
+        data = incomplete_district,
+        excel_write_function = function(wb) {
           district_incompletes_sum <- incomplete_district()
 
           sheet_name_1 <- "Districts with Extreme Outliers"
           addWorksheet(wb, sheet_name_1)
           writeData(wb, sheet = sheet_name_1, x = paste0('Districts with incomplete data for ', input$indicator, ' in ', input$year), startCol = 1, startRow = 1)
           writeData(wb, sheet = sheet_name_1, x = district_incompletes_sum, startCol = 1, startRow = 3)
-
-          # Save the workbook
-          saveWorkbook(wb, file, overwrite = TRUE)
         },
-        data = incomplete_district
+        label = 'Download Districts'
       )
 
       contentHeaderServer(
         'data_completeness',
         md_title = 'Data Completeness',
-        md_file = '2_reporting_rate.md'
+        md_file = 'quality_checks_data_completeness.md'
       )
     }
   )

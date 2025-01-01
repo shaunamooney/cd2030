@@ -30,8 +30,8 @@ dhis2BoxUI <- function(id) {
         column(12, uiOutput(ns("enhanced_feedback")))
       ),
       fluidRow(
-        column(4, downloadButtonUI(ns('master_file'), 'Download Master File')),
-        column(4, downloadButtonUI(ns('excel_file'), 'Download Excel File'))
+        column(4, downloadButtonUI(ns('master_file'))),
+        column(4, downloadButtonUI(ns('excel_file')))
       )
   )
 }
@@ -58,10 +58,7 @@ dhis2BoxServer <- function(id) {
         updateSelectizeInput(session, 'country', choices = countries)
       })
 
-      data <- reactive({
-        if (!isTruthy(input$login)) {
-          return(NULL)
-        }
+      data <- eventReactive(input$login, {
 
         if (input$country == '0' || length(input$country) == 0) {
           file_status(list(
@@ -146,7 +143,9 @@ dhis2BoxServer <- function(id) {
       output$enhanced_feedback <- renderUI({
         status <- file_status()
         tags$div(
-          style = paste("color:", status$color, "; font-weight: bold;"),
+          style = paste("color:", status$color, "; font-weight: bold;",
+                        'border: 1px solid ', status$color, ';',
+                        'padding: 10px; margin-top: 10px; border-radius: 5px;'),
           status$message
         )
       })
@@ -162,7 +161,8 @@ dhis2BoxServer <- function(id) {
         content = function(file) {
           save_data(data(), file)
         },
-        data = data
+        data = data,
+        label = 'Download Master File'
       )
 
       downloadButtonServer(
@@ -172,14 +172,14 @@ dhis2BoxServer <- function(id) {
         content = function(file) {
           save_dhis2_excel(dhis2_data(), file)
         },
-        data = data
+        data = data,
+        label = 'Download Excel File'
       )
 
       helpButtonServer(
         id = 'dhis2_download',
         title = 'DHIS2 Download',
-        size = 'l',
-        md_file = '1_dhis2_login.md'
+        md_file = 'load_data_dhis2_download.md'
       )
 
       return(data)

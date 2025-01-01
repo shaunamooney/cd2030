@@ -24,16 +24,16 @@ equityUI <- function(id) {
         tabPanel(
           title = 'Penta 3',
           fluidRow(
-            column(12, plotOutput(ns('penta3'))),
-            column(3, downloadButtonUI(ns('penta3_download'), label = 'Download Plot'))
+            column(12, plotCustomOutput(ns('penta3'))),
+            column(3, downloadButtonUI(ns('penta3_download')))
           )
         ),
 
         tabPanel(
           title = 'Measles 1',
           fluidRow(
-            column(12, plotOutput(ns('measles1'))),
-            column(3, downloadButtonUI(ns('measles1_download'), label = 'Download Plot'))
+            column(12, plotCustomOutput(ns('measles1'))),
+            column(3, downloadButtonUI(ns('measles1_download')))
           )
         ),
 
@@ -43,8 +43,8 @@ equityUI <- function(id) {
             column(3, selectizeInput(ns('indicator'), label = 'Indicator', choices = NULL))
           ),
           fluidRow(
-            column(12, plotOutput(ns('custom_check'))),
-            column(3, downloadButtonUI(ns('custom_download'), label = 'Download Plot'))
+            column(12, plotCustomOutput(ns('custom_check'))),
+            column(3, downloadButtonUI(ns('custom_download')))
           )
         )
 
@@ -53,15 +53,26 @@ equityUI <- function(id) {
   )
 }
 
-equityServer <- function(id, data_values) {
-  stopifnot(is.reactive(data_values))
+equityServer <- function(id, cache) {
+  stopifnot(is.reactive(cache))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
 
-      national_data <- reactive({
-        data_values()$data
+      wiq <- reactive({
+        req(cache())
+        cache()$get_wiq_survey()
+      })
+
+      meduc <- reactive({
+        req(cache())
+        cache()$get_education_survey()
+      })
+
+      area <- reactive({
+        req(cache())
+        cache()$get_area_survey()
       })
 
       observe({
@@ -78,96 +89,72 @@ equityServer <- function(id, data_values) {
       })
 
       penta3_equiplot <- reactive({
-        if (!isTruthy(national_data()$wiq) || !isTruthy(national_data()$area) ||
-            !isTruthy(national_data()$meduc) || !isTruthy(input$type)) {
-          return(NULL)
-        }
+        req(wiq(), area(), meduc(), input$type)
 
         switch(input$type,
-               'area' = equiplot_area(national_data()$area, 'penta3'),
-               'meduc' = equiplot_education(national_data()$meduc, 'penta3'),
-               'wiq' = equiplot_wealth(national_data()$wiq, 'penta3'))
+               'area' = equiplot_area(area(), 'penta3'),
+               'meduc' = equiplot_education(meduc(), 'penta3'),
+               'wiq' = equiplot_wealth(wiq(), 'penta3'))
       })
 
       measles1_equiplot <- reactive({
-        if (!isTruthy(national_data()$wiq) || !isTruthy(national_data()$area) ||
-            !isTruthy(national_data()$meduc) || !isTruthy(input$type)) {
-          return(NULL)
-        }
+        req(wiq(), area(), meduc(), input$type)
 
         switch(input$type,
-               'area' = equiplot_area(national_data()$area, 'measles1'),
-               'meduc' = equiplot_education(national_data()$meduc, 'measles1'),
-               'wiq' = equiplot_wealth(national_data()$wiq, 'measles1'))
+               'area' = equiplot_area(area(), 'measles1'),
+               'meduc' = equiplot_education(meduc(), 'measles1'),
+               'wiq' = equiplot_wealth(wiq(), 'measles1'))
       })
 
       custom_equiplot <- reactive({
-        if (!isTruthy(national_data()$wiq) || !isTruthy(national_data()$area) ||
-            !isTruthy(national_data()$meduc) || !isTruthy(input$type) || !isTruthy(input$indicator != '0')) {
-          return(NULL)
-        }
+        req(wiq(), area(), meduc(), input$type, input$indicator != '0')
 
         switch(input$type,
-               'area' = equiplot_area(national_data()$area, input$indicator),
-               'meduc' = equiplot_education(national_data()$meduc, input$indicator),
-               'wiq' = equiplot_wealth(national_data()$wiq, input$indicator))
+               'area' = equiplot_area(area(), input$indicator),
+               'meduc' = equiplot_education(meduc(), input$indicator),
+               'wiq' = equiplot_wealth(wiq(), input$indicator))
       })
 
-      output$penta3 <- renderPlot({
+      output$penta3 <- renderCustomPlot({
         req(penta3_equiplot())
-
-        render_with_error_handling({
-          penta3_equiplot()
-        })
+        penta3_equiplot()
       })
 
-      output$measles1 <- renderPlot({
+      output$measles1 <- renderCustomPlot({
         req(measles1_equiplot())
-
-        render_with_error_handling({
-          measles1_equiplot()
-        })
+        measles1_equiplot()
       })
 
-      output$custom_check <- renderPlot({
+      output$custom_check <- renderCustomPlot({
         req(custom_equiplot())
-
-        render_with_error_handling({
-          custom_equiplot()
-        })
+        custom_equiplot()
       })
 
-      downloadButtonServer(
+      downloadPlot(
         id = 'penta3_download',
         filename = paste0('penta3_', input$type, '_equity'),
-        extension = 'png',
-        content = function(file) {
+        data = penta3_equiplot,
+        plot_function = function() {
           plot(penta3_equiplot())
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = penta3_equiplot
+        }
       )
 
-      downloadButtonServer(
+      downloadPlot(
         id = 'measles1_download',
         filename = paste0('measles1_', input$type, '_equity'),
-        extension = 'png',
-        content = function(file) {
+        data = measles1_equiplot,
+        plot_function = function() {
           plot(measles1_equiplot())
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = measles1_equiplot
+        }
       )
 
-      downloadButtonServer(
+      downloadPlot(
         id = 'custom_download',
         filename = paste0(input$indicator, '_', input$type, '_equity'),
-        extension = 'png',
-        content = function(file) {
+        data = custom_equiplot,
+        plot_function = function() {
           plot(custom_equiplot())
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = custom_equiplot
+        }
       )
 
       contentHeaderServer(

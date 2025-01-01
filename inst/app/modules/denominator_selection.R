@@ -10,61 +10,52 @@ denominatorSelectionUI <- function(id) {
         tabPanel(
           title = 'Penta 3',
           fluidRow(
-            column(12, plotOutput(ns('penta3'))),
-            column(3, downloadButtonUI(ns('penta3_plot'), label = 'Download Plot'))
+            column(12, plotCustomOutput(ns('penta3'))),
+            column(3, downloadButtonUI(ns('penta3_plot')))
           )
         ),
 
         tabPanel(
           title = 'Measles 1',
           fluidRow(
-            column(12, plotOutput(ns('measles1'))),
-            column(3, downloadButtonUI(ns('measles1_plot'), label = 'Download Plot'))
+            column(12, plotCustomOutput(ns('measles1'))),
+            column(3, downloadButtonUI(ns('measles1_plot')))
           )
         ),
 
         tabPanel(
           title = 'BCG',
           fluidRow(
-            column(12, plotOutput(ns('bcg'))),
-            column(3, downloadButtonUI(ns('bcg_plot'), label = 'Download Plot'))
+            column(12, plotCustomOutput(ns('bcg'))),
+            column(3, downloadButtonUI(ns('bcg_plot')))
           )
-        ),
-
-        # tabPanel(
-        #   title = 'Custom Checks',
-        #   fluidRow(
-        #     column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
-        #     column(12, plotOutput(ns('custom_plot'))),
-        #     column(3, downloadButtonUI(ns('custom_download'), label = 'Download Plot'))
-        #   )
-        # )
+        )
       )
     )
   )
 }
 
-denominatorSelectionServer <- function(id, data, national_values) {
-  stopifnot(is.reactive(data))
-  stopifnot(is.reactive(national_values))
+denominatorSelectionServer <- function(id, cache) {
+  stopifnot(is.reactive(cache))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
 
-      national_rates <- reactive({
-        national_values()$rates
+      data <- reactive({
+        req(cache())
+        cache()$get_adjusted_data()
       })
 
       un_estimates <- reactive({
-        national_values()$data$un
+        req(cache())
+        cache()$get_un_estimates()
       })
 
       indicator_coverage <- reactive({
-        if (!isTruthy(national_rates()) || !isTruthy(un_estimates())) return(NULL)
+        req(data(), un_estimates())
 
-        rates <- national_rates()
-
+        rates <- cache()$get_national_estimates()
         data() %>%
           calculate_indicator_coverage(un_estimates = un_estimates(),
                                        sbr = rates$sbr,
@@ -85,57 +76,51 @@ denominatorSelectionServer <- function(id, data, national_values) {
         updateSelectizeInput(session, 'indicator', choices = inds)
       })
 
-      output$penta3 <- renderPlot({
+      output$penta3 <- renderCustomPlot({
         req(indicator_coverage())
         plot_absolute_differences(indicator_coverage(), 'penta3')
       })
 
-      output$measles1 <- renderPlot({
+      output$measles1 <- renderCustomPlot({
         req(indicator_coverage())
         plot_absolute_differences(indicator_coverage(), 'measles1')
       })
 
-      output$bcg <- renderPlot({
+      output$bcg <- renderCustomPlot({
         req(indicator_coverage())
         plot_absolute_differences(indicator_coverage(), 'bcg')
       })
 
-      output$custom_plot <- renderPlot({
+      output$custom_plot <- renderCustomPlot({
         req(indicator_coverage())
         plot_absolute_differences(indicator_coverage(), input$indicator)
       })
 
-      downloadButtonServer(
+      downloadPlot(
         id = 'penta3_plot',
         filename = 'penta3_plot',
-        extension = 'png',
-        content = function(file) {
+        data = indicator_coverage,
+        plot_function = function() {
           plot_absolute_differences(indicator_coverage(), 'penta3')
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = indicator_coverage
+        }
       )
 
-      downloadButtonServer(
+      downloadPlot(
         id = 'measles1_plot',
         filename = 'measles1_plot',
-        extension = 'png',
-        content = function(file) {
+        data = indicator_coverage,
+        plot_function = function() {
           plot_absolute_differences(indicator_coverage(), 'measles1')
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = indicator_coverage
+        }
       )
 
-      downloadButtonServer(
+      downloadPlot(
         id = 'bcg_plot',
         filename = 'bcg_plot',
-        extension = 'png',
-        content = function(file) {
+        data = indicator_coverage,
+        plot_function = function() {
           plot_absolute_differences(indicator_coverage(), 'bcg')
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = indicator_coverage
+        }
       )
 
       contentHeaderServer(
@@ -143,8 +128,6 @@ denominatorSelectionServer <- function(id, data, national_values) {
         md_title = 'Denominator Selection',
         md_file = '2_reporting_rate.md'
       )
-
-      return(indicator_coverage)
     }
   )
 }

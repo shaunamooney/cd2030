@@ -21,11 +21,11 @@ uploadBoxUI <- function(id) {
           accept = c('.xls', '.xlsx', '.dta', 'rds')
         ),
 
-        uiOutput(ns("enhanced_feedback"))
+        messageBoxUI(ns('feedback'))
       )
     ),
     fluidRow(
-      column(4, downloadButtonUI(ns('download_data'), label = "Download Master Dataset"))
+      column(4, downloadButtonUI(ns('download_data')))
     )
   )
 }
@@ -35,12 +35,9 @@ uploadBoxServer <- function(id) {
     id = id,
     module = function(input, output, session) {
 
-      file_status <- reactiveVal(list(message = "Awaiting file upload...", color = "gray"))
+      messageBox <- messageBoxServer('feedback')
 
-      data <- reactive({
-        if (!isTruthy(input$hfd_file)) {
-          return(NULL)
-        }
+      data <- eventReactive(input$hfd_file, {
 
         file_path <- input$hfd_file$datapath
         file_name <- input$hfd_file$name
@@ -48,10 +45,8 @@ uploadBoxServer <- function(id) {
 
         valid_types <- c('xls', 'xlsx', 'dta', 'rds')
         if (!file_type %in% valid_types) {
-          file_status(list(
-            message = "Upload failed: Unsupported file format.",
-            color = "red"
-          ))
+          messageBox$update_message('Upload failed: Unsupported file format.', 'error')
+          return(NULL)
         }
 
         tryCatch({
@@ -61,27 +56,15 @@ uploadBoxServer <- function(id) {
             load_data(file_path)
           }
 
-          file_status(list(
-            message = paste("Upload successful: File", file_name, "is ready."),
-            color = "darkgreen"
-          ))
+          messageBox$update_message(paste("Upload successful: File", file_name, "is ready."), 'success')
 
           return(dt)
         }, error = function(e) {
-          file_status(list(
-            message = "Upload failed: Check the file format and try again.",
-            color = "red"
-          ))
+          print(e)
+          clean_message <- clean_error_message(e)
+          messageBox$update_message(paste("Upload failed: ", clean_message), 'error')
           return(NULL)
         })
-      })
-
-      output$enhanced_feedback <- renderUI({
-        status <- file_status()
-        tags$div(
-          style = paste("color:", status$color, "; font-weight: bold;"),
-          status$message
-        )
       })
 
       downloadButtonServer(
@@ -91,14 +74,14 @@ uploadBoxServer <- function(id) {
         content = function(file) {
           haven::write_dta(data(), file)
         },
-        data = data
+        data = data,
+        label = "Download Master Dataset"
       )
 
       helpButtonServer(
         id = 'upload_data',
         title = 'Upload Data',
-        size = 'l',
-        md_file = '1_upload_data.md'
+        md_file = 'load_data_upload_files.md'
       )
 
       return(data)

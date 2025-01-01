@@ -11,8 +11,8 @@ outlierDetectionUI <- function(id) {
         width = 12,
         fluidRow(
           column(3, selectizeInput(ns('year'), label = 'Year', choice = NULL)),
-          column(12, plotlyOutput(ns('district_outlier_heatmap'), height = '100%')),
-          column(4, align = 'right', downloadButtonUI(ns('download_data'), label = 'Download Data'))
+          column(12, withSpinner(plotlyOutput(ns('district_outlier_heatmap')))),
+          column(4, downloadButtonUI(ns('download_data')))
         )
       ),
       box(
@@ -22,7 +22,7 @@ outlierDetectionUI <- function(id) {
         width = 6,
         fluidRow(
           column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
-          column(4, offset = 4, downloadButtonUI(ns('download_outliers'), label = 'Download Outliers')),
+          column(4, offset = 4, downloadButtonUI(ns('download_outliers'))),
           column(12, DTOutput(ns('district_outlier_summary')))
         )
       ),
@@ -33,25 +33,28 @@ outlierDetectionUI <- function(id) {
         width = 6,
         fluidRow(
           column(6, selectizeInput(ns('district'), label = 'District', choice = NULL)),
-          column(12, plotlyOutput(ns('district_trend')))
+          column(12, withSpinner(plotlyOutput(ns('district_trend'))))
         )
       )
     )
   )
 }
 
-outlierDetectionServer <- function(id, data) {
-  stopifnot(is.reactive(data))
+outlierDetectionServer <- function(id, cache) {
+  stopifnot(is.reactive(cache))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
 
-      vaccines_indicator <- reactive({
-        req(data())
+      data <- reactive({
+        req(cache())
+        cache()$get_data()
+      })
 
-        indicator_groups <- attr(data(), 'indicator_groups')
-        indicator_groups$vacc
+      vaccines_indicator <- reactive({
+        req(cache())
+        cache()$get_vaccine_indicators()
       })
 
       outlier_summary <- reactive({
@@ -63,7 +66,7 @@ outlierDetectionServer <- function(id, data) {
       })
 
       outlier_districts <- reactive({
-        if (!isTruthy(outlier_summary()) || !isTruthy(input$indicator) || !isTruthy(input$year)) return(NULL)
+        req(outlier_summary(), input$indicator, input$year)
 
         outlier_column <- paste0(input$indicator, '_outlier5std')
         selected_year <- as.numeric(input$year)
@@ -75,7 +78,6 @@ outlierDetectionServer <- function(id, data) {
 
       observe({
         req(data())
-
         updateSelectizeInput(session, 'indicator', choices = vaccines_indicator())
       })
 
@@ -105,8 +107,13 @@ outlierDetectionServer <- function(id, data) {
       output$district_outlier_summary <- renderDT({
         req(outlier_districts())
 
-        outlier_districts() %>%
-          datatable(options = list(pageLength = 10)) # %>%
+        dt <- outlier_districts()
+
+        cols <- grep('_rr', colnames(dt))
+
+        dt %>%
+          datatable(options = list(pageLength = 10)) %>%
+          formatRound(columns = cols, digits = 0) # %>%
           # formatStyle(
           #   columns = input$indicator,
           #   backgroundColor = styleInterval(input$threshold, c('red', 'white'))
@@ -144,8 +151,8 @@ outlierDetectionServer <- function(id, data) {
         dt <- outlier_summary() %>%
           select(district, year, month, any_of(c(indicator, med, mad))) %>%
           mutate(
-            upper_bound = !!sym(med) + !!sym(mad),
-            lower_bound = !!sym(med) - !!sym(mad),
+            upper_bound = !!sym(med) + !!sym(mad) * 5,
+            lower_bound = !!sym(med) - !!sym(mad) * 5,
             date = ym(paste0(year, '-', as.integer(month)))
           ) %>%
           filter(district == input$district)
@@ -165,12 +172,11 @@ outlierDetectionServer <- function(id, data) {
         )
       })
 
-      downloadButtonServer(
+      downloadExcel(
         id = 'download_data',
         filename = 'checks_outlier_detection',
-        extension = 'xlsx',
-        content = function(file) {
-          wb <- createWorkbook()
+        data = data,
+        excel_write_function = function(wb) {
           completeness_rate <- data() %>% calculate_outliers_summary()
           district_completeness_rate <- data() %>% calculate_district_outlier_summary()
 
@@ -184,36 +190,28 @@ outlierDetectionServer <- function(id, data) {
           addWorksheet(wb, sheet_name_2)
           writeData(wb, sheet = sheet_name_2, x = 'Table 2b: Percentage of districts with no extreme outliers, by year', startRow = 1, startCol = 1)
           writeData(wb, sheet = sheet_name_2, x = district_completeness_rate, startCol = 1, startRow = 3)
-
-          # Save the workbook
-          saveWorkbook(wb, file, overwrite = TRUE)
-        },
-        data = data
+        }
       )
 
-      downloadButtonServer(
+      downloadExcel(
         id = 'download_outliers',
         filename = paste0('checks_outlier_districts_', input$indicator, '_', input$year),
-        extension = 'xlsx',
-        content = function(file) {
-          wb <- createWorkbook()
+        data = outlier_districts,
+        excel_write_function = function(wb) {
           district_outliers_sum <- outlier_districts()
 
           sheet_name_1 <- 'Districts with Extreme Outliers'
           addWorksheet(wb, sheet_name_1)
           writeData(wb, sheet = sheet_name_1, x = paste0('Districts with extreme outliers for ', input$indicator, ' in ', input$year), startCol = 1, startRow = 1)
           writeData(wb, sheet = sheet_name_1, x = district_outliers_sum, startCol = 1, startRow = 3)
-
-          # Save the workbook
-          saveWorkbook(wb, file, overwrite = TRUE)
         },
-        data = outlier_districts
+        label = 'Download Outliers'
       )
 
       contentHeaderServer(
         'outlier_detection',
         md_title = 'Outlier Detection',
-        md_file = '2_reporting_rate.md'
+        md_file = 'quality_checks_outlier_detection.md'
       )
     }
   )

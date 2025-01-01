@@ -29,32 +29,32 @@ subnationalMappingUI <- function(id) {
         tabPanel(
           'Penta 3 Coverage',
           fluidRow(
-            column(12, plotOutput(ns('penta3_coverage'))),
-            column(3, downloadButtonUI(ns('penta3_download'), label = 'Download Plot')),
+            column(12, plotCustomOutput(ns('penta3_coverage'))),
+            column(3, downloadButtonUI(ns('penta3_download'))),
           )
         ),
 
         tabPanel(
           'Measles 1 Coverage',
           fluidRow(
-            column(12, plotOutput(ns('mcv1_coverage'))),
-            column(3, downloadButtonUI(ns('mcv1_download'), label = 'Download Plot')),
+            column(12, plotCustomOutput(ns('mcv1_coverage'))),
+            column(3, downloadButtonUI(ns('mcv1_download'))),
           )
         ),
 
         tabPanel(
           'Penta1 - Penta3 dropout',
           fluidRow(
-            column(12, plotOutput(ns('penta13_dropout'))),
-            column(3, downloadButtonUI(ns('penta13_dropout_download'), label = 'Download Plot')),
+            column(12, plotCustomOutput(ns('penta13_dropout'))),
+            column(3, downloadButtonUI(ns('penta13_dropout_download'))),
           )
         ),
 
         tabPanel(
           'Penta3 - MCV3 dropout',
           fluidRow(
-            column(12, plotOutput(ns('penta3mcv1_dropout'))),
-            column(3, downloadButtonUI(ns('penta3mcv1_droput_download'), label = 'Download Plot')),
+            column(12, plotCustomOutput(ns('penta3mcv1_dropout'))),
+            column(3, downloadButtonUI(ns('penta3mcv1_droput_download'))),
           )
         ),
 
@@ -67,8 +67,8 @@ subnationalMappingUI <- function(id) {
                                                  "ipv1", "ipv2", "undervax", "zerodose", "dropout_measles12")))
           ),
           fluidRow(
-            column(12, plotOutput(ns('custom'))),
-            column(3, downloadButtonUI(ns('custom_download'), label = 'Download Plot')),
+            column(12, plotCustomOutput(ns('custom'))),
+            column(3, downloadButtonUI(ns('custom_download'))),
           )
         )
       )
@@ -76,38 +76,38 @@ subnationalMappingUI <- function(id) {
   )
 }
 
-subnationalMappingServer <- function(id, data, national_values) {
-  stopifnot(is.reactive(data))
-  stopifnot(is.reactive(national_values))
+subnationalMappingServer <- function(id, cache) {
+  stopifnot(is.reactive(cache))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
 
-      country <- reactive({
-        req(data())
-        attr(data(), 'country')
+      data <- reactive({
+        req(cache())
+        cache()$get_adjusted_data()
       })
 
-      national_rates <- reactive({
-        national_values()$rates
+      country <- reactive({
+        req(cache())
+        cache()$get_country()
       })
 
       un_estimates <- reactive({
-        national_values()$data$un
+        req(cache())
+        cache()$get_un_estimates()
       })
 
       subnational_map <- reactive({
-        national_values()$data$map_map
+        req(cache())
+        cache()$get_map_mapping()
       })
 
       dt <- reactive({
-        if (!isTruthy(data()) || !isTruthy(un_estimates()) || !isTruthy(national_rates()) ||
-            !isTruthy(input$denominator) || !isTruthy(input$palette)) {
-          return(NULL)
-        }
+        req(data(), un_estimates(), input$denominator, input$palette)
 
-        get_mapping_data(data(), un_estimates(), national_rates(), subnational_map())
+        data() %>%
+          get_mapping_data(un_estimates(), cache()$get_national_estimates(), subnational_map())
       })
 
       observe({
@@ -128,147 +128,115 @@ subnationalMappingServer <- function(id, data, national_values) {
         updateSelectizeInput(session, 'palette', choices = palette)
       })
 
-      output$penta13_dropout <- renderPlot({
+      output$penta13_dropout <- renderCustomPlot({
         req(dt())
 
         title <- paste("Distribution of Penta1 to Penta3 dropout in ", country(), "by Regions")
-
-        render_with_error_handling({
-          plot(dt(), indicator = 'dropout_penta13',
-               denominator = input$denominator,
-               palette = input$palette,
-               title = title)
-        })
+        plot(dt(), indicator = 'dropout_penta13',
+             denominator = input$denominator,
+             palette = input$palette,
+             title = title)
       })
 
-      output$penta3mcv1_dropout <- renderPlot({
+      output$penta3mcv1_dropout <- renderCustomPlot({
         req(dt())
 
         title <- paste("Distribution of Penta1 to Measles3 dropout in ", country(), "by Regions")
-
-        render_with_error_handling({
-          plot(dt(), indicator = 'dropout_penta3mcv1',
-               denominator = input$denominator,
-               palette = input$palette,
-               title = title)
-        })
+        plot(dt(), indicator = 'dropout_penta3mcv1',
+             denominator = input$denominator,
+             palette = input$palette,
+             title = title)
       })
 
-      output$penta3_coverage <- renderPlot({
+      output$penta3_coverage <- renderCustomPlot({
         req(dt())
 
         title <- paste("Distribution of Penta3 Coverage in ", country(), "by Regions")
-
-        render_with_error_handling({
-          plot(dt(), indicator = 'penta3',
-               denominator = input$denominator,
-               palette = input$palette,
-               title = title)
-        })
+        plot(dt(), indicator = 'penta3',
+             denominator = input$denominator,
+             palette = input$palette,
+             title = title)
       })
 
 
-      output$mcv1_coverage <- renderPlot({
+      output$mcv1_coverage <- renderCustomPlot({
         req(dt())
 
         title <- paste("Distribution of Measles 1 Coverage in ", country(), "by Regions")
-
-        render_with_error_handling({
-          plot(dt(), indicator = 'measles1',
-               denominator = input$denominator,
-               palette = input$palette,
-               title = title)
-        })
+        plot(dt(), indicator = 'measles1',
+             denominator = input$denominator,
+             palette = input$palette,
+             title = title)
       })
 
-      output$custom <- renderPlot({
+      output$custom <- renderCustomPlot({
         req(dt(), input$indicator != '0')
 
         title <- paste('Distribution of ', input$indicator,' Coverage in ', country(), 'by Regions')
-
-        render_with_error_handling({
-          plot(dt(), indicator = input$indicator,
-               denominator = input$denominator,
-               palette = input$palette,
-               title = title)
-        })
-
-        render_with_error_handling({
-          plot(dt(), indicator = input$indicator,
-               denominator = input$denominator,
-               palette = input$palette,
-               title = title)
-        })
+        plot(dt(), indicator = input$indicator,
+             denominator = input$denominator,
+             palette = input$palette,
+             title = title)
       })
 
-      downloadButtonServer(
+      downloadPlot(
         id = 'penta3_download',
         filename = paste0('penta3_', input$level, '_map_', input$denominator),
-        extension = 'png',
-        content = function(file) {
+        data = dt,
+        plot_function = function() {
           plot(dt(), indicator = 'penta3',
                denominator = input$denominator,
                palette = input$palette,
                title = paste("Distribution of Penta3 Coverage in ", country(), "by Regions"))
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = dt
+        }
       )
 
-      downloadButtonServer(
+      downloadPlot(
         id = 'mcv1_download',
         filename = paste0('mcv1_', input$level, '_map_', input$denominator),
-        extension = 'png',
-        content = function(file) {
+        data = dt,
+        plot_function = function() {
           plot(dt(), indicator = 'measles1',
                denominator = input$denominator,
                palette = input$palette,
                title = paste("Distribution of Measles 1 Coverage in ", country(), "by Regions"))
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = dt
+        }
       )
 
-      downloadButtonServer(
+      downloadPlot(
         id = 'penta13_dropout_download',
         filename = paste0('penta13_dropout_', input$level, '_map_', input$denominator),
-        extension = 'png',
-        content = function(file) {
+        data = dt,
+        plot_function = function() {
           plot(dt(), indicator = 'dropout_penta13',
                denominator = input$denominator,
                palette = input$palette,
                title = paste("Distribution of Penta1 to Penta3 dropout Coverage in ", country(), "by Regions"))
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = dt
+        }
       )
 
-      downloadButtonServer(
+      downloadPlot(
         id = 'penta3mcv1_droput_download',
         filename = paste0('penta3mcv1_droput_', input$level, '_map_', input$denominator),
-        extension = 'png',
-        content = function(file) {
+        data = dt,
+        plot_function = function() {
           plot(dt(), indicator = 'dropout_penta3mcv1',
                denominator = input$denominator,
                palette = input$palette,
                title = paste("Distribution of Penta1 to Measles3 dropout in ", country(), "by Regions"))
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = dt
+        }
       )
 
-      downloadButtonServer(
+      downloadPlot(
         id = 'custom_download',
         filename = paste0(input$indicator, '_', input$level, '_map_', input$denominator),
-        extension = 'png',
-        content = function(file) {
+        data = dt,
+        plot_function = function() {
           plot(dt(), indicator = input$indicator,
                denominator = input$denominator,
                palette = input$palette,
                title = paste('Distribution of ', input$indicator,' Coverage in ', country(), 'by Regions'))
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = dt
+        }
       )
 
       contentHeaderServer(

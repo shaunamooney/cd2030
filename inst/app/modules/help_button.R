@@ -10,17 +10,16 @@ helpButtonUI <- function(id, text = 'Get Help') {
   )
 }
 
-helpButtonServer <- function(id, title, size, md_file) {
+helpButtonServer <- function(id, title, size = 'l', md_file) {
   moduleServer(
     id = id,
     module = function(input, output, session) {
 
       observeEvent(input$help, {
         showModal(modalDialog(
-          title = title,
+          title = tags$div(class = "text-info", title),
           size = size,
-          # APP_wd could be package app folder or just app folder depend on loading method
-          fluidPage(includeMarkdown(paste0('help/', md_file))),
+          div(class = "modal-rmd-content", includeMarkdown(file.path('help', md_file))),
           easyClose = TRUE,
           fade = FALSE
         ))

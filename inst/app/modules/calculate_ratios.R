@@ -25,45 +25,77 @@ calculateRatiosUI <- function(id) {
         status = 'success',
         width = 12,
         fluidRow(
-          column(12, plotOutput(ns('ratios_plot'))),
-          column(4, downloadButtonUI(ns('ratio_plot_download'), label = 'Download Plot'))
+          column(12, plotCustomOutput(ns('ratios_plot'))),
+          column(4, downloadButtonUI(ns('ratio_plot_download')))
         )
       )
     )
   )
 }
 
-calculateRatiosServer <- function(id, data) {
-  stopifnot(is.reactive(data))
+calculateRatiosServer <- function(id, cache) {
+  stopifnot(is.reactive(cache))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
 
-      survey_coverage <- reactive({
-        c(anc1 = input$anc1_coverage,
-          penta1 = input$penta1_coverage,
-          penta3 = input$penta3_coverage,
-          opv1 = input$opv1_coverage,
-          opv3 = input$opv3_coverage,
-          pcv1 = input$pcv1_coverage,
-          rota1 = input$rota1_coverage)
+      data <- reactive({
+        req(cache())
+        cache()$get_data()
       })
 
-      output$ratios_plot <- renderPlot({
-        req(data())
-        plot(calculate_ratios_summary(data(), survey_coverage = survey_coverage()))
+      survey_estimates <- reactive({
+        req(cache())
+        cache()$get_survey_estimates()
       })
 
-      downloadButtonServer(
+      observe({
+        req(cache())
+
+        estimates <- survey_estimates()
+
+        if (!identical(estimates["anc1"], input$anc1_coverage)) {
+          updateNumericInput(session, 'anc1_coverage', value = unname(estimates["anc1"]))
+        }
+        if (!identical(estimates["penta1"], input$penta1_coverage)) {
+          updateNumericInput(session, 'penta1_coverage', value = unname(estimates["penta1"]))
+        }
+        if (!identical(estimates["penta3"], input$penta3_coverage)) {
+          updateNumericInput(session, 'penta3_coverage', value = unname(estimates["penta3"]))
+        }
+      })
+
+      observeEvent(c(input$anc1_coverage, input$penta1_coverage, input$penta3_coverage), {
+        req(cache())
+
+        estimates <- survey_estimates()
+
+        if (!identical(estimates["anc1"], input$anc1_coverage) ||
+            !identical(estimates["penta1"], input$penta1_coverage) ||
+            !identical(estimates["penta3"], input$penta3_coverage)) {
+          estimates <- c(
+            anc1 = as.numeric(input$anc1_coverage),
+            penta1 = as.numeric(input$penta1_coverage),
+            penta3 = as.numeric(input$penta3_coverage)
+          )
+          cache()$set_survey_estimates(estimates)
+        }
+      })
+
+      output$ratios_plot <- renderCustomPlot({
+        req(data(), input$anc1_coverage)
+        plot(calculate_ratios_summary(data(), survey_coverage = survey_estimates()))
+      })
+
+      downloadPlot(
         id = 'ratio_plot_download',
         filename = 'ratio_plot',
-        extension = 'png',
-        content = function(file) {
-          plot(calculate_ratios_summary(data(), survey_coverage = survey_coverage()))
-          ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
-        },
-        data = data
+        data = data,
+        plot_function = function() {
+          print(survey_estimates())
+          plot(calculate_ratios_summary(data(), survey_coverage = survey_estimates()))
+        }
       )
 
       contentHeaderServer(
@@ -71,11 +103,6 @@ calculateRatiosServer <- function(id, data) {
         md_title = 'Ratios',
         md_file = '2_calculate_ratios.md'
       )
-
-      return(reactive({
-        list(anc1 = input$anc1_coverage,
-          penta1 = input$penta1_coverage)
-      }))
     }
   )
 }

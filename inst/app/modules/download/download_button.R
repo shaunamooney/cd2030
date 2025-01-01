@@ -1,37 +1,32 @@
-downloadButtonUI <- function(id, label = "Download") {
+downloadButtonUI <- function(id, label = 'Download') {
   ns <- NS(id)
-  tagList(
-    downloadButton(outputId = ns("download_button"), label = label, style = 'color:#2196F3;width:100%;margin-top:10px;')
-  )
+  uiOutput(ns("download_ui"))
 }
 
-downloadButtonServer <- function(id, filename, extension, content, data) {
+downloadButtonServer <- function(id, filename, extension, content, data, label = 'Download') {
   stopifnot(is.reactive(data))
 
-  moduleServer(id, function(input, output, session) {
+  moduleServer(
+    id = id,
+    module = function(input, output, session) {
 
-    data_available <- reactive({ isTruthy(data()) })
+      output$download_ui <- renderUI({
+        req(data())
 
-    observe({
-      if (!data_available()) {
-        hide('download_button')
-      } else {
-        show('download_button')
-      }
-    })
+        ns <- session$ns
+        downloadButton(ns('download_button'),
+                       label = label,
+                       style = 'color:#2196F3;width:100%;margin-top:10px;')
+      })
 
-    output$download_button <- downloadHandler(
-      filename = function() {
-        paste0(filename, '_', format(Sys.time(), '%Y%m%d%H%M'), '.', extension)
-      },
-      content = function(file) {
-        if (!data_available()) {
-          message("No data available for download.")
-          stop("No data available for download.")
+      output$download_button <- downloadHandler(
+        filename = function() {
+          paste0(filename, '_', format(Sys.time(), '%Y%m%d%H%M'), '.', extension)
+        },
+        content = function(file) {
+          content(file)
         }
-
-        content(file)
-      }
-    )
-  })
+      )
+    }
+  )
 }

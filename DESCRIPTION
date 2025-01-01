@@ -26,6 +26,7 @@ Imports:
     lubridate,
     openxlsx,
     purrr,
+    R6,
     readxl,
     rlang,
     rmarkdown,

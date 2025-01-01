@@ -42,8 +42,7 @@ load_excel_data <- function(path,
   # Validate if sheet names are provided
   if (length(sheet_names) == 0) {
     cd_abort(
-      c("x" = "The {.arg sheet_names} argument is required and cannot be empty. Provide at least one sheet name."),
-      call = call
+      c("x" = "The {.arg sheet_names} argument is required and cannot be empty. Provide at least one sheet name.")
     )
   }
 
@@ -52,9 +51,8 @@ load_excel_data <- function(path,
   missing_sheets <- setdiff(sheet_names, available_sheets)
   if (length(missing_sheets) > 0) {
     cd_abort(
-      c('x' = 'Missing sheets in file {.val {path}}:',
-        '!' = paste(missing_sheets, collapse = ', ')),
-      call = call
+      c('x' = 'The following sheets are missing: ',
+        '!' = paste(missing_sheets, collapse = ', '))
     )
   }
 
@@ -256,22 +254,33 @@ read_and_clean_sheet <- function(path, sheet_name, sheet_ids, start_year, call =
   # Columns that are required to have data
   required_columns <- c('district', 'year', 'month', 'first_admin_level', 'total_number_health_facilities')
 
-  data <- read_excel(path, sheet = sheet_name) %>%  # Read sheet
-    rename_with(~ tolower(gsub(' ', '', .))) %>%    # Convert column names to lower case and remove spaces
-    slice(-c(1,2)) %>%                              # Remove the first two rows (header rows)
-    select(-starts_with('..')) %>%                  # Remove columns with names starting with ".." (usually blank or junk columns)
-    rename(district = any_of('district_name')) %>%  # Rename 'district_name' to 'district' if exists
-    mutate(across(-any_of(c('country', 'first_admin_level', 'district', 'month')), ~ suppressWarnings(as.numeric(.)))) %>% # Convert other columns to numeric
-    filter(!if_any(any_of(required_columns), is.na)) %>% # Remove rows with key columns missing
-    filter(if_any(matches('year'), ~ year >= start_year))
+  data <- tryCatch(
+    read_excel(path, sheet = sheet_name, .name_repair = 'unique') %>%  # Read sheet
+      rename_with(~ tolower(gsub(' ', '', .))) %>%    # Convert column names to lower case and remove spaces
+      slice(-c(1,2)) %>%                              # Remove the first two rows (header rows)
+      select(-starts_with('..')) %>%                  # Remove columns with names starting with ".." (usually blank or junk columns)
+      rename_with(~ gsub('\\.\\.\\.\\d+$', '', .)) %>%
+      rename(district = any_of('district_name')) %>%  # Rename 'district_name' to 'district' if exists
+      mutate(across(-any_of(c('country', 'first_admin_level', 'district', 'month')), ~ suppressWarnings(as.numeric(.)))) %>% # Convert other columns to numeric
+      filter(!if_any(any_of(required_columns), is.na)) %>% # Remove rows with key columns missing
+      filter(if_any(matches('year'), ~ year >= start_year)),
+    error = function(e) {
+      clean_message <- clean_error_message(e)
+      cd_abort(c('x' = paste0(clean_message), ' in ', sheet_name), call = call)
+    }
+  )
 
   # Determine columns for duplicate checking
   ids <- sheet_ids[[sheet_name]] %||% sheet_ids[['service_data']]
 
-  if (anyDuplicated(data[ids]) > 0) {
+  if (nrow(data) == 0 || ncol(data) == 0) {
+    cd_abort(c('x' = 'Sheet {.arg {sheet_name}} is empty.'), call = call)
+  }
+
+  if (!all(ids %in% colnames(data))) {
+    missing <- setdiff(ids, colnames(data))
     cd_abort(
-      c('x' = 'Duplicates found in {.field {paste("Sheet:", sheet_name)}',
-        '!' = paste("Key columns:", paste(ids, collapse = ", "))),
+      c('x' = 'Key Columns {.val {paste(missing, collapse = ", ")}} missing in {.field {sheet_name}}.'),
       call = call
     )
   }

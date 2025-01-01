@@ -8,15 +8,17 @@ downloadReportUI <- function(id) {
   )
 }
 
-downloadReportServer <- function(id, data, national_values, k_factors, report_year) {
-  stopifnot(is.reactive(data))
-  stopifnot(is.reactive(national_values))
-  stopifnot(is.reactive(k_factors))
-  stopifnot(is.reactive(report_year))
+downloadReportServer <- function(id, cache) {
+  stopifnot(is.reactive(cache))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
+
+      data <- reactive({
+        req(cache())
+        cache()$get_adjusted_data()
+      })
 
       country <- reactive({
         req(data())
@@ -60,7 +62,7 @@ downloadReportServer <- function(id, data, national_values, k_factors, report_ye
               footer = tagList(
                 fluidRow(
                   column(6, align = 'left', modalButton('Cancel')),
-                  column(6, align = 'right', downloadButtonUI(ns('download_data'), 'Download Report'))
+                  column(6, align = 'right', downloadButtonUI(ns('download_data')))
                 )
               )
             )
@@ -74,14 +76,15 @@ downloadReportServer <- function(id, data, national_values, k_factors, report_ye
         extension = extension(),
         content = function(file) {
           generate_checks_report(data(), file,
-                                 survey_values = national_values(),
-                                 k_factors = k_factors(),
-                                 country = country(),
+                                 survey_values = cache()$get_national_values(),
+                                 k_factors = cache()$get_k_factors(),
+                                 country = cache()$get_country(),
                                  output_format = input$format,
                                  denominator = input$denominator,
-                                 survey_start_year = report_year())
+                                 survey_start_year = cache()$get_start_survey_year())
         },
-        data = data
+        data = cache,
+        label = 'Download Report'
       )
 
     }
