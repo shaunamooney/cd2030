@@ -34,7 +34,17 @@ reportingRateUI <- function(id) {
                                    label = 'Year',
                                    choices =NULL)),
           column(3, offset = 3, downloadButtonUI(ns('download_districts'))),
-          column(12, DTOutput(ns('low_reporting')))
+          column(12, reactableOutput(ns('low_reporting')))
+        )
+      ),
+      box(
+        title = 'Districts Trends',
+        status = 'success',
+        collapsible = TRUE,
+        width = 6,
+        fluidRow(
+          column(6, selectizeInput(ns('district'), label = 'District', choice = NULL)),
+          column(12, withSpinner(plotCustomOutput(ns('district_trend'))))
         )
       )
     )
@@ -48,21 +58,23 @@ reportingRateServer <- function(id, cache) {
     id = id,
     module = function(input, output, session) {
 
+      state <- reactiveValues(loaded = FALSE)
+
       data <- reactive({
         req(cache())
         cache()$get_data()
       })
 
       threshold <- reactive({
-        req(cache())
+        req(data())
         cache()$get_threshold()
       })
 
       district_rr <- reactive({
-        req(data())
+        req(data(), threshold())
 
         data() %>%
-          calculate_district_reporting_rate(input$threshold)
+          calculate_district_reporting_rate(threshold())
       })
 
       average_rr <- reactive({
@@ -73,11 +85,16 @@ reportingRateServer <- function(id, cache) {
       })
 
       district_low_rr <- reactive({
-        req(data(), input$indicator, input$threshold, input$year)
+        req(data(), input$indicator, threshold(), input$year)
 
         data() %>%
-          district_low_reporting(input$threshold) %>%
-          filter(if_any(input$indicator, ~ .x < input$threshold), year == input$year)
+          district_low_reporting(threshold()) %>%
+          filter(if_any(input$indicator, ~ .x < threshold()), year == input$year)
+      })
+
+      observeEvent(data(), {
+        req(data())
+        state$loaded <- FALSE
       })
 
       observeEvent(input$threshold, {
@@ -86,14 +103,18 @@ reportingRateServer <- function(id, cache) {
       })
 
       observe({
-        req(cache())
-        updateNumericInput(session, 'threshold', value = cache()$get_threshold())
+        req(data(), !state$loaded)
+        updateNumericInput(session, 'threshold', value = threshold())
+        state$loaded <- TRUE
       })
 
       observe({
         req(data())
 
-        years <- data() %>% distinct(year) %>% arrange(desc(year)) %>% pull(year)
+        years <- data() %>%
+          distinct(year) %>%
+          arrange(desc(year)) %>%
+          pull(year)
 
         updateSelectizeInput(session, 'year', choices = years)
       })
@@ -103,7 +124,7 @@ reportingRateServer <- function(id, cache) {
         plot(district_rr())
       })
 
-      output$low_reporting <- renderDT({
+      output$low_reporting <- renderReactable({
         req(district_low_rr())
 
         dt <- district_low_rr()
@@ -111,8 +132,30 @@ reportingRateServer <- function(id, cache) {
         cols <- grep('_rr', colnames(dt))
 
         district_low_rr() %>%
-          datatable(options = list(pageLength = 10)) %>%
-          formatRound(columns = cols, digits = 0)
+          reactable(
+            filterable = FALSE,
+            minRows = 10,
+            groupBy = c('district'),
+            columns = list(
+              year = colDef(
+                aggregate = 'unique'
+              )
+            ),
+            defaultColDef = colDef(
+              cell = function(value) {
+                if (!is.numeric(value)) {
+                  return(value)
+                }
+                format(round(value), nsmall = 0)
+              }
+            )
+          )
+      })
+
+      output$district_trend <- renderCustomPlot({
+        req(outlier_summary(), input$district != '', input$indicator)
+
+        indicator <- input$indicator
       })
 
       downloadPlot(
@@ -161,6 +204,8 @@ reportingRateServer <- function(id, cache) {
 
       contentHeaderServer(
         'reporting_rate',
+        cache = cache,
+        objects = pageObjectsConfig(input),
         md_title = 'Reporting Rate',
         md_file = 'quality_checks_reporting_rate.md'
       )

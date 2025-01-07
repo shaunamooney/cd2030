@@ -7,7 +7,7 @@
 #'
 #' @return An object of class [CacheConnection]
 #' @export
-init_CacheConnection <- function(rds_path = NULL, countdown_data) {
+init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL) {
   CacheConnection$new(
     rds_path = rds_path,
     countdown_data = countdown_data
@@ -27,31 +27,36 @@ CacheConnection <- R6::R6Class(
     #'
     #' @param rds_path Path to the RDS file (NULL for in-memory only).
     #' @param countdown_data Countdown data (class `cd_data`).
-    initialize = function(rds_path = NULL, countdown_data) {
+    initialize = function(rds_path = NULL, countdown_data = NULL) {
 
-      check_cd_data(countdown_data)
-      private$rds_path <- rds_path
+      if (is.null(rds_path) && is.null(countdown_data)) {
+        cd_abort(c('x' = 'Both {.arg rds_path} and {.arg countdown_data} cannot be null.'))
+      }
+
+      if (!is.null(rds_path) && !is.null(countdown_data)) {
+        cd_abort(c('x' = 'Only one can have a value: {.arg rds_path} and {.arg countdown_data}.'))
+      }
+
+      if (!is.null(countdown_data)) {
+        check_cd_data(countdown_data)
+      }
 
       # Initialize in-memory data using the template
       private$in_memory_data <- private$.data_template
       private$in_memory_data$countdown_data <- countdown_data
+      private$in_memory_data$rds_path <- rds_path
 
       if (!is.null(rds_path)) {
-        if (file.exists(rds_path)) {
-          self$load_from_disk()
-        } else {
-          self$save_to_disk()
-        }
+        self$load_from_disk()
       }
     },
 
     #' Load data from RDS file
     #' @return None
     load_from_disk = function() {
-      if(!file.exists(private$rds_path)){
-        cd_abort(c('x' = 'rds file does not exist'))
-      }
-      loaded_data <- readRDS(private$rds_path)
+      check_file_path(private$in_memory_data$rds_path)
+
+      loaded_data <- readRDS(private$in_memory_data$rds_path)
       required_fields <- names(private$.data_template)
       missing_fields <- setdiff(required_fields, names(loaded_data))
       if (length(missing_fields) > 0) {
@@ -64,29 +69,54 @@ CacheConnection <- R6::R6Class(
     #' Save data to disk (only if changed and RDS path is not NULL)
     #' @return None
     save_to_disk = function() {
-      if (private$has_changed && !is.null(private$rds_path)) { # Key change here
-        saveRDS(private$in_memory_data, private$rds_path)
+      if (private$has_changed && !is.null(private$in_memory_data$rds_path)) { # Key change here
+        saveRDS(private$in_memory_data, private$in_memory_data$rds_path)
         private$has_changed <- FALSE
       }
     },
 
-    #' Append a page note (with change tracking)
-    #'
-    #' @param page_id ID of the page
-    #' @param note Note content
-    #' @param title Title of the note
-    #' @param items List of items
-    #' @param variables List of variables
-    #'
-    #' @return None
-    append_page_note = function(page_id, note, title, items = list(), variables = list()) {
-      new_note <- tibble::tibble(
-        page_id = page_id, note = note, title = title,
-        items = list(items), variables = list(variables)
+    append_page_note = function(page_id, object_id, note, title, parameters = list(), include_in_report = FALSE, include_plot_table = FALSE, single_entry = FALSE) {
+      # Validate inputs
+      stopifnot(is.character(page_id), is.character(object_id), is.character(note), is.character(title))
+      stopifnot(is.list(parameters), is.logical(include_in_report))
+
+      # Create a new note
+      new_note <- tibble(
+        page_id = page_id,
+        object_id = object_id,
+        note = note,
+        title = title,
+        parameters = list(parameters),   # Wrap in list for storage
+        include_in_report = include_in_report,  # Single logical value
+        include_plot_table = include_plot_table
       )
-      private$in_memory_data$page_notes <- dplyr::bind_rows(private$in_memory_data$page_notes, new_note)
+
+      if (single_entry) {
+        filtered_notes <- private$in_memory_data$page_notes %>%
+          filter(!(page_id == "reporting_rate" & object_id == "Low Reporting DIstricts"))
+      } else {
+        filtered_notes <- private$in_memory_data$page_notes %>%
+          filter(
+            !(page_id == "reporting_rate" & object_id == "Low Reporting DIstricts" &
+                map_lgl(parameters, ~ identical(.x, !!parameters)))
+          )
+      }
+
+      # Append the new note to the page_notes tibble
+      private$in_memory_data$page_notes <- bind_rows(filtered_notes, new_note)
+
+      # Mark data as changed and save to disk
       private$has_changed <- TRUE
-      self$save_to_disk() # Save immediately after adding a note
+      self$save_to_disk()
+    },
+
+    get_notes = function(page_id, object_id = NULL, parameters = NULL) {
+      # Retrieve notes using the shared filtering logic
+      private$filter_notes(
+        page_id = page_id,
+        object_id = object_id,
+        parameters = parameters
+      )
     },
 
     #' Reactive method for the CacheConnection object
@@ -103,6 +133,18 @@ CacheConnection <- R6::R6Class(
         private$depend_all()
         self
       })
+    },
+
+    get_cache_path = function() {
+      private$depend('rds_path')
+      private$in_memory_data$rds_path
+    },
+
+    set_cache_path = function(value) {
+      if (is.null(value) || length(value) == 0) {
+        cd_abort(c('x' = 'Invalid file path'))
+      }
+      private$update_field('rds_path', value)
     },
 
     #' Gets for count down data
@@ -211,24 +253,10 @@ CacheConnection <- R6::R6Class(
       c(
         private$in_memory_data$national_estimates,
         list(
-          anc1 = unname(survey['anc1']),
-          penta1 = unname(survey['penta1'])
+          anc1 = unname(survey['anc1'])/100,
+          penta1 = unname(survey['penta1'])/100
         )
       )
-    },
-
-    #' Get file locations
-    #' @return List of file locations
-    get_file_locations = function() {
-      private$depend('file_locations')
-      private$in_memory_data$file_locations
-    },
-
-    #' Get mapping information
-    #' @return List of mapping information
-    get_mapping = function() {
-      private$depend('mapping')
-      private$in_memory_data$mapping
     },
 
     #' Get mapping information
@@ -373,8 +401,11 @@ CacheConnection <- R6::R6Class(
     #' @param value List of survey estimates
     #' @return None
     set_survey_estimates = function(value) {
-      if (!is.numeric(value) || !all(c('anc1', 'penta1', 'penta3') %in% names(value))) {
+      if (!is.numeric(value) || !all(c('anc1', 'penta1') %in% names(value))) {
         cd_abort(c('x' = 'Survey must be a numeric vector containing {.val anc1}, {.val penta1} and {.val penta3}'))
+      }
+      if (!'penta3' %in% value) {
+        value['penta3'] <- private$in_memory_data$survey_estimates['penta3']
       }
       private$update_field('survey_estimates', value)
     },
@@ -387,16 +418,6 @@ CacheConnection <- R6::R6Class(
         cd_abort(c('x' = 'Analysis values must be a list.'))
       }
       private$update_field('national_estimates', value)
-    },
-
-    #' Set file locations
-    #' @param value List of file locations
-    #' @return None
-    set_file_locations = function(value) {
-      if (!is.list(value)) {
-        cd_abort(c('x' = 'File locations must be a list.'))
-      }
-      private$update_field('file_locations', value)
     },
 
     #' Set UN estimates information
@@ -477,18 +498,16 @@ CacheConnection <- R6::R6Class(
   ),
   private = list(
     .data_template = list(
+      rds_path = NULL,
       countdown_data = NULL,
       performance_threshold = 90,
       excluded_years = numeric(),
-      k_factors = c(anc = NA_real_, idelv = NA_real_, vacc = NA_real_),
+      k_factors = c(anc = 0.25, idelv = 0.25, vacc = 0.25),
       adjusted_flag = FALSE,
       survey_estimates = c(anc1 = 98, penta1 = 97, penta3 = 89),
       national_estimates  = list(
         nmr = NA_real_, pnmr = NA_real_, twin_rate = NA_real_,preg_loss = NA_real_,
         sbr = NA_real_, penta1_mort_rate = NA_real_
-      ),
-      file_locations = list(
-        un_estimate = NULL, wuenic_estimate = NULL, survey_folder = NULL
       ),
       start_survey_year = NULL,
       un_estimates = NULL,
@@ -501,11 +520,15 @@ CacheConnection <- R6::R6Class(
       survey_mapping = NULL,
       map_mapping = NULL,
       page_notes = tibble::tibble(
-        page_id = character(), note = character(), title = character(),
-        items = list(), variables = list()
+        page_id = character(),
+        object_id = character(),
+        note = character(),
+        title = character(),
+        parameters = list(),
+        include_in_report = logical(),
+        include_plot_table = logical()
       )
     ),
-    rds_path = NULL,
     in_memory_data = NULL,
     adjusted_data = NULL,
     has_changed = FALSE,
@@ -517,6 +540,23 @@ CacheConnection <- R6::R6Class(
         private$has_changed <- TRUE
         private$trigger(field_name)
       }
+    },
+    filter_notes = function(page_id, object_id = NULL, parameters = NULL) {
+      df <- private$in_memory_data$page_notes
+
+      df <- df %>% filter(page_id == !!page_id)
+
+      if (!is.null(object_id)) {
+        df <- df %>% filter(object_id == !!object_id)
+      }
+
+      if (!is.null(parameters)) {
+        df <- df %>% filter(
+          map_lgl(parameters, ~ dentical(.x, !!parameters))
+        )
+      }
+
+      df
     },
     depend = function(field_name) {
       if (!is.null(private$reactiveDep[[field_name]])) {

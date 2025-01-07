@@ -1,7 +1,6 @@
 check_file_path <- function(path, call = caller_env()) {
 
   check_required(.data, call = call)
-
   # Validate if the file exists
   if (!file.exists(path)) {
     cd_abort(
@@ -124,30 +123,24 @@ check_ratio_pairs <- function(.list, arg = call_args(.list), call = caller_env()
 cd_plot_theme <- function() {
   theme(
     panel.background = element_blank(),
-    panel.border = element_rect(color = "black", fill = NA, size = 0.8),
+    panel.border = element_rect(color = "black", fill = NA, size = 0.5),
 
     legend.background = element_rect(color = "black",size = 0.5),
     legend.position = "bottom",
+    legend.direction = "horizontal",
     legend.title = element_blank(),
-    # legend.text = element_text(size = 8),
     legend.text = element_text(size = 13),
     legend.key.size = unit(8, "mm"),
-
-    # plot.title = element_text(size = 10, hjust = 0.5),
-    # plot.subtitle = element_text(size = 10, hjust = 0.5),
-    # plot.caption = element_text(hjust = 0),
+    legend.box.spacing = unit(0.5, "cm"),
 
     plot.title = element_text(size = 16, hjust = 0.5),
     plot.subtitle = element_text(size = 12, hjust = 0.5),
     plot.caption = element_text(size = 12, hjust = 0),
 
-    # axis.text = element_text(size = 8),
     axis.text = element_text(size = 14),
-    # axis.title = element_text(size = 10),
     axis.title = element_text(size = 18),
 
     strip.background = element_blank(),
-    # strip.text = element_text(size = 10),
     strip.text = element_text(size = 12)
   )
 }
@@ -215,7 +208,7 @@ cd_report_theme <- function(base_size = 10, base_family = "",
       axis.title.y = element_text(angle = 90L, margin = margin(r = half_line)),
 
       legend.key = element_rect(fill = "white", colour = NA),
-      legend.key.size = unit(1.2, "lines"),
+      legend.key.size = unit(0.8, "lines"),
       legend.background = element_rect(fill = alpha("white", 0)), # Transparent background
       legend.position = "bottom", # or "bottom"
       legend.text = element_text(size = small_size),

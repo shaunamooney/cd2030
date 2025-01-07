@@ -16,7 +16,8 @@ downloadButtonServer <- function(id, filename, extension, content, data, label =
         ns <- session$ns
         downloadButton(ns('download_button'),
                        label = label,
-                       style = 'color:#2196F3;width:100%;margin-top:10px;')
+                       class = 'btn btn-default btn-flat',
+                       style = 'width:100%;margin-top:10px;')
       })
 
       output$download_button <- downloadHandler(

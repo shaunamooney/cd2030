@@ -36,6 +36,10 @@ messageBoxServer <- function(id, default_message = 'Awaiting file upload...') {
       })
 
       update_message <- function(message, status) {
+        if (!status %in% names(status_colors)) {
+          stop("Invalid status. Choose from 'info', 'success', 'error', or 'warning'.")
+        }
+
         status_data(list(message = message, status = status))
       }
 

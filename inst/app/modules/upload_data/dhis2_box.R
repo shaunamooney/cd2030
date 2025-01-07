@@ -58,7 +58,7 @@ dhis2BoxServer <- function(id) {
         updateSelectizeInput(session, 'country', choices = countries)
       })
 
-      data <- eventReactive(input$login, {
+      cache <- eventReactive(input$login, {
 
         if (input$country == '0' || length(input$country) == 0) {
           file_status(list(
@@ -106,7 +106,7 @@ dhis2BoxServer <- function(id) {
           start_date <- input$date[1]
           end_date <- input$date[2]
 
-          dt <- cd2030::get_dhis2_hfd(input$country, start_date, end_date, timeout = 300)
+          dt <- get_dhis2_hfd(input$country, start_date, end_date, timeout = 300)
 
           khis_cred_clear()
 
@@ -119,12 +119,17 @@ dhis2BoxServer <- function(id) {
 
           dt <- cd2030::save_dhis2_master_data(dt)
 
+          cache_instance <- init_CacheConnection(
+            rds_path = dt,
+            countdown_data = NULL
+          )$reactive()
+
           file_status(list(
             message = "Data successfully downloaded!",
             color = "green"
           ))
 
-          return(dt)
+          return(cache_instance())
         },
         error = function(e) {
           file_status(list(
@@ -150,18 +155,14 @@ dhis2BoxServer <- function(id) {
         )
       })
 
-      data_check <- reactive({
-        !is.null(data()) # TRUE if data is available, FALSE otherwise
-      })
-
       downloadButtonServer(
         id = 'master_file',
         filename = 'master_dataset',
         extension = 'dta',
         content = function(file) {
-          save_data(data(), file)
+          save_data(cache()$get_data(), file)
         },
-        data = data,
+        data = cache,
         label = 'Download Master File'
       )
 
@@ -172,7 +173,7 @@ dhis2BoxServer <- function(id) {
         content = function(file) {
           save_dhis2_excel(dhis2_data(), file)
         },
-        data = data,
+        data = dhis2_data,
         label = 'Download Excel File'
       )
 
@@ -182,7 +183,7 @@ dhis2BoxServer <- function(id) {
         md_file = 'load_data_dhis2_download.md'
       )
 
-      return(data)
+      return(cache)
     }
   )
 }

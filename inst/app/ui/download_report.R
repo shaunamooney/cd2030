@@ -1,10 +1,13 @@
 downloadReportUI <- function(id) {
   ns <- NS(id)
 
-  actionLink(
-    inputId = ns('download'),
-    label = 'Download Report',
-    icon = icon('download')
+  tags$li(
+    actionLink(
+      inputId = ns('download'),
+      label = 'Download Report',
+      icon = icon('download')
+    ),
+    class = 'dropdown'
   )
 }
 
@@ -34,9 +37,10 @@ downloadReportServer <- function(id, cache) {
                'html_document' = 'html')
       })
 
-      observeEvent(input$report, {
+      observeEvent(input$download, {
+        req(cache())
 
-        if (!isTruthy(data()) || !isTruthy(national_values()$data$un)) {
+        if (is.null(cache()$get_un_estimates())) {
           # Show an error dialog if data is not available
           showModal(
             modalDialog(
@@ -75,13 +79,11 @@ downloadReportServer <- function(id, cache) {
         filename = paste0(country(), '_countdown_report'),
         extension = extension(),
         content = function(file) {
-          generate_checks_report(data(), file,
-                                 survey_values = cache()$get_national_values(),
-                                 k_factors = cache()$get_k_factors(),
-                                 country = cache()$get_country(),
-                                 output_format = input$format,
-                                 denominator = input$denominator,
-                                 survey_start_year = cache()$get_start_survey_year())
+          print(file)
+          generate_final_report(cache = cache(),
+                                output_file = file,
+                                output_format = input$format,
+                                denominator = input$denominator)
         },
         data = cache,
         label = 'Download Report'

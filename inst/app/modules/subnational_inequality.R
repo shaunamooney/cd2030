@@ -44,10 +44,8 @@ subnationalInequalityUI <- function(id) {
           'Custom Check',
           fluidRow(
             column(3, selectizeInput(ns('indicator'), label = 'Indicator',
-                                     choices = c('Select' = '0', "bcg", "anc1", "opv1", "opv2", "opv3", "pcv1", "pcv2", "pcv3",
-                                                 "penta1", "penta2", "rota1", "rota2", "instdeliveries", "measles2",
-                                                 "ipv1", "ipv2", "undervax", "dropout_penta13", "zerodose", "dropout_measles12",
-                                                 "dropout_penta3mcv1")))
+                                     choices = c('Select' = '', "anc1", "bcg",  "opv1", "opv2", "opv3", "pcv1", "pcv2", "pcv3",
+                                                 "penta1", "penta2", "rota1", "rota2", "measles2", "ipv1", "ipv2")))
           ),
           fluidRow(
             column(12, plotCustomOutput(ns('custom_check'))),
@@ -75,7 +73,6 @@ subnationalInequalityServer <- function(id, cache) {
         req(cache())
         cache()$get_un_estimates()
       })
-
 
       national_data <- reactive({
         national_values()$data
@@ -120,7 +117,7 @@ subnationalInequalityServer <- function(id, cache) {
       })
 
       custom_coverage <- reactive({
-        req(input$level, input$denominator, un_estimates(), input$indicator != '0')
+        req(input$level, input$denominator, un_estimates(), input$indicator)
 
         rates <- cache()$get_national_estimates()
 
@@ -176,6 +173,8 @@ subnationalInequalityServer <- function(id, cache) {
 
       contentHeaderServer(
         'subnational_inequality',
+        cache = cache,
+        objects = pageObjectsConfig(input),
         md_title = 'Subnational Inequality',
         md_file = '2_reporting_rate.md'
       )

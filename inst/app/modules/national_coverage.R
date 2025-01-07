@@ -40,10 +40,26 @@ nationalCoverageUI <- function(id) {
         ),
 
         tabPanel(
+          title = 'Penta 3 to Measles 1 Dropout',
+          fluidRow(
+            column(12, plotCustomOutput(ns('dropout_penta3mcv1'))),
+            downloadCoverageUI(ns('dropout_penta3mcv1_download'))
+          )
+        ),
+
+        tabPanel(
+          title = 'Penta 1 to Penta 3 Droput',
+          fluidRow(
+            column(12, plotCustomOutput(ns('dropout_penta13'))),
+            downloadCoverageUI(ns('dropout_penta13_download'))
+          )
+        ),
+
+        tabPanel(
           'Custom Check',
           fluidRow(
             column(3, selectizeInput(ns('indicator'), label = 'Indicator',
-                                     choices = c('Select' = '0', "bcg", "anc1", "opv1", "opv2", "opv3", "penta2", "pcv1", "pcv2", "pcv3",
+                                     choices = c('Select' = '', "bcg", "anc1", "opv1", "opv2", "opv3", "penta2", "pcv1", "pcv2", "pcv3",
                                                  "penta1", "penta2",  "rota1", "rota2", "instdeliveries", "measles2",
                                                  "ipv1", "ipv2", "undervax", "dropout_penta13", "zerodose", "dropout_measles12",
                                                  "dropout_penta3mcv1")))
@@ -115,7 +131,7 @@ nationalCoverageServer <- function(id, cache) {
       })
 
       measles1_coverage <- reactive({
-        req(input$denominator, wuenic_data(), filtered_survey_data())
+        req(data(), input$denominator, wuenic_data(), filtered_survey_data())
 
         data() %>%
           analyze_coverage(
@@ -127,7 +143,7 @@ nationalCoverageServer <- function(id, cache) {
       })
 
       penta3_coverage <- reactive({
-        req(input$denominator,wuenic_data(), filtered_survey_data())
+        req(data(), input$denominator, wuenic_data(), filtered_survey_data())
 
         data() %>%
           analyze_coverage(
@@ -138,8 +154,32 @@ nationalCoverageServer <- function(id, cache) {
           )
       })
 
+      dropout_penta13_coverage <- reactive({
+        req(data(), input$denominator, wuenic_data(), filtered_survey_data())
+
+        data() %>%
+          analyze_coverage(
+            indicator = 'dropout_penta13',
+            denominator = input$denominator,
+            survey_data = filtered_survey_data(),
+            wuenic_data = wuenic_data()
+          )
+      })
+
+      dropout_penta3mcv1_coverage <- reactive({
+        req(data(), input$denominator, wuenic_data(), filtered_survey_data())
+
+        data() %>%
+          analyze_coverage(
+            indicator = 'dropout_penta3mcv1',
+            denominator = input$denominator,
+            survey_data = filtered_survey_data(),
+            wuenic_data = wuenic_data()
+          )
+      })
+
       custom_coverage <- reactive({
-        req(input$indicator != '0', input$denominator, wuenic_data(), filtered_survey_data())
+        req(input$indicator, input$denominator, wuenic_data(), filtered_survey_data())
 
         data() %>%
           analyze_coverage(
@@ -158,6 +198,16 @@ nationalCoverageServer <- function(id, cache) {
       output$penta3 <- renderCustomPlot({
         req(penta3_coverage())
         plot(penta3_coverage())
+      })
+
+      output$dropout_penta13 <- renderCustomPlot({
+        req(dropout_penta13_coverage())
+        plot(dropout_penta13_coverage())
+      })
+
+      output$dropout_penta3mcv1 <- renderCustomPlot({
+        req(dropout_penta3mcv1_coverage())
+        plot(dropout_penta3mcv1_coverage())
       })
 
       output$custom_check <- renderCustomPlot({
@@ -180,6 +230,20 @@ nationalCoverageServer <- function(id, cache) {
       )
 
       downloadCoverageServer(
+        id = 'dropout_penta13_download',
+        data_fn = dropout_penta13_coverage,
+        filename = paste0('dropout_penta13_survey_', input$denominator),
+        sheet_name = 'Penta 1 to Penta 3 Dropout'
+      )
+
+      downloadCoverageServer(
+        id = 'dropout_penta3mcv1_download',
+        data_fn = dropout_penta3mcv1_coverage,
+        filename = paste0('dropout_penta3mcv1_survey_', input$denominator),
+        sheet_name = 'Penta 3 to Measles 1 Dropout'
+      )
+
+      downloadCoverageServer(
         id = 'custom_download',
         data_fn = measles1_coverage,
         filename = paste0(input$indicator, '_survey_', input$denominator),
@@ -188,6 +252,8 @@ nationalCoverageServer <- function(id, cache) {
 
       contentHeaderServer(
         'national_coverage',
+        cache = cache,
+        objects = pageObjectsConfig(input),
         md_title = 'National Coverage',
         md_file = '2_reporting_rate.md'
       )

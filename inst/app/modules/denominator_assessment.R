@@ -81,6 +81,8 @@ denominatorAssessmentServer <- function(id, cache) {
 
       contentHeaderServer(
         'denominator_assessment',
+        cache = cache,
+        objects = pageObjectsConfig(input),
         md_title = 'Denominator Assessment',
         md_file = '2_reporting_rate.md'
       )

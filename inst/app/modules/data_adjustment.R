@@ -1,6 +1,7 @@
 dataAjustmentUI <- function(id) {
   ns <- NS(id)
 
+  k_factor_options <- c(0, 0.25, 0.5, 0.75)
   tagList(
     contentHeader(ns('data_adjustment'), 'Data Adjustments'),
     contentBody(
@@ -15,17 +16,14 @@ dataAjustmentUI <- function(id) {
             width = 12,
             fluidRow(
               column(4, selectizeInput(ns('k_anc'),
-                                       selected = '0.25',
                                        label = 'ANC K-Factor',
-                                       choices = c(0, 0.25, 0.5, 0.75))),
+                                       choices = k_factor_options)),
               column(4, selectizeInput(ns('k_delivery'),
                                        label = 'Delivery K-Factor',
-                                       selected = '0.25',
-                                       choices = c(0, 0.25, 0.5, 0.75))),
+                                       choices = k_factor_options)),
               column(4, selectizeInput(ns('k_vaccines'),
                                        label = 'Vaccines K-Factor',
-                                       selected = '0.25',
-                                       choices = c(0, 0.25, 0.5, 0.75)))
+                                       choices = k_factor_options))
             )
           )
         ),
@@ -69,6 +67,7 @@ dataAdjustmentServer <- function(id, cache) {
     id = id,
     module = function(input, output, session) {
 
+      state <- reactiveValues(loaded = FALSE)
       messageBox <- messageBoxServer('feedback', default_message = 'Dataset not adjusted')
 
       data <- reactive({
@@ -76,52 +75,67 @@ dataAdjustmentServer <- function(id, cache) {
         cache()$get_data_with_excluded_years()
       })
 
-      adjusted_flag <- reactive({
-        req(cache())
-        cache()$get_adjusted_flag()
-      })
-
       modified_data <- reactive({
         req(cache())
         cache()$get_adjusted_data()
       })
 
-      observe({
+      adjusted_flag <- reactive({
         req(cache())
-
-        indicator_groups <- cache()$get_indicator_groups()
-        all_indicators <- list_c(indicator_groups)
-
-        names(all_indicators) <- all_indicators
-        all_indicators <- c('Select' = '0', all_indicators)
-
-        updateSelectInput(session, 'indicator', choices = all_indicators)
+        cache()$get_adjusted_flag()
       })
 
-      observe({
-        req(cache(), adjusted_flag())
-        if (adjusted_flag()) {
-          new_data <- data() %>%
-            adjust_service_data(adjustment = 'custom',
-                                k_factors = cache()$get_k_factors())
-          cache()$set_adjusted_data(new_data)
-
-          messageBox$update_message('Data Adjusted', 'success')
-        }
+      k_factors <- reactive({
+        req(cache())
+        cache()$get_k_factors()
       })
 
-      observe({
+      observeEvent(data(), {
+        req(data())
+        state$loaded <- FALSE
+      })
+
+      observeEvent(c(input$k_anc, input$k_delivery, input$k_vaccines), {
         req(cache(), input$k_anc, input$k_delivery, input$k_vaccines)
-        cache()$set_k_factors(c(
-          anc = as.integer(input$k_anc),
-          idelv = as.integer(input$k_delivery),
-          vacc = as.integer(input$k_vaccines)
-        ))
+
+        k <- k_factors()
+        k['anc'] <- as.numeric(input$k_anc)
+        k['idelv'] <- as.numeric(input$k_delivery)
+        k['vacc'] <- as.numeric(input$k_vaccines)
+
+        cache()$set_k_factors(k)
+      })
+
+      observe({
+        req(cache(), !state$loaded)
+
+        k <- k_factors()
+        updateSelectInput(session, 'k_anc', selected = as.character(unname(k['anc'])))
+        updateSelectInput(session, 'k_delivery', selected = as.character(unname(k['idelv'])))
+        updateSelectInput(session, 'k_vaccines', selected = as.character(unname(k['vacc'])))
+
+        state$loaded <- TRUE
       })
 
       observeEvent(input$adjust_data, {
         req(cache())
+        messageBox$update_message('Adjusting ...', 'info')
+        cache()$toggle_adjusted_flag(FALSE)
         cache()$toggle_adjusted_flag(TRUE)
+      })
+
+      observeEvent(adjusted_flag(), {
+        req(data())
+        if (adjusted_flag()) {
+          new_data <- data() %>%
+            adjust_service_data(adjustment = 'custom',
+                                k_factors = k_factors())
+          cache()$set_adjusted_data(new_data)
+
+          messageBox$update_message('Data Adjusted', 'success')
+        } else {
+          messageBox$update_message('Dataset not adjusted', 'info')
+        }
       })
 
       downloadButtonServer(
@@ -137,6 +151,7 @@ dataAdjustmentServer <- function(id, cache) {
 
       contentHeaderServer(
         'data_adjustment',
+        cache = cache,
         md_title = 'Data Adjustments',
         md_file = '2_reporting_rate.md'
       )

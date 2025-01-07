@@ -1,0 +1,725 @@
+---
+title: "Countdown Analysis Report for `r params$country`"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  word_document:
+    toc: false
+    reference_docx: report-template.docx
+  pdf_document:
+    toc: true
+params:
+  cache: NULL
+  denominator: dhis2
+  country: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width=7, 
+  fig.height=5, 
+  dpi=1200
+)
+
+library(cd2030)
+library(dplyr)
+library(purrr)
+library(gt)
+library(reactable)
+library(gridExtra)
+
+cache <- params$cache
+denominator <- params$denominator
+
+data <- cache$get_data()
+adjusted_data <- cache$get_adjusted_data()
+country <- cache$get_country()
+threshold <- cache$get_threshold()
+k_factors <- cache$get_k_factors()
+rates <- cache$get_national_estimates()
+un_estimates <- cache$get_un_estimates()
+wuenic_estimates <- cache$get_wuenic_estimates()
+survey_start_year <- cache$get_start_survey_year()
+survdata <- cache$get_national_survey() %>% 
+  filter(if(is.null(survey_start_year)) TRUE else year >= survey_start_year)
+gregion <- cache$get_regional_survey() %>% 
+  filter(if(is.null(survey_start_year)) TRUE else year >= survey_start_year)
+subnational_map <- cache$get_survey_mapping()
+map_mapping <- cache$get_map_mapping()
+meduc <- cache$get_education_survey()
+wiq <- cache$get_wiq_survey()
+area <- cache$get_area_survey()
+
+# Function to print notes for a given page
+print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
+  # Retrieve the notes from the cache
+  page_notes <- cache$get_notes(page_id, object_id, parameters) %>% 
+    filter(include_in_report == TRUE, !is.null(note))
+  
+  # Check if there are any notes
+  if (nrow(page_notes) > 0) {
+    page_notes %>% 
+      reframe(note = list(list(title = title, note = list(note))), .by = title) %>% 
+      pull(note) %>% 
+      walk(~ {
+        cat(paste0('**', .x$title, '**\n\n'))
+        walk(.x$note, function(x) cat(paste0(x, '\n\n')))
+      })
+  } else {
+    cat(paste0("**--- Enter notes related to ", page_id, '. ---**\n\n'))
+  }
+}
+```
+
+## 1. Health Facility Data Quality Assessment
+
+### Background
+
+Routinely reported health facility data are an important data source for health
+indicators. The data are reported by health facilities on events such as immunizations
+given, or live births attended. As with any data, quality is an issue. Data are checked
+to consider completeness of reporting by health facilities, identify extreme outliers
+and internal consistency. 
+
+### Data Quality Sumary Table
+
+```{r}
+
+years <- unique(data$year)
+
+data %>%
+          calculate_overall_score(threshold) %>%
+          mutate(
+            type = case_when(
+              no %in% c("1a", "1b", "1c") ~ '1. Completeness of monthly facility reporting (Immunization)',
+              no %in% c("2a", "2b") ~ '2. Extreme outliers (Common Vaccine antigens)',
+              no %in% c("3a", "3b",'3f', '3g') ~ '3. Consistency of annual reporting'
+            )
+          ) %>%
+          as_grouped_data(groups = 'type') %>%
+          as_flextable() %>%
+          bold(j = 1, i = ~ !is.na(type), bold = TRUE, part = "body") %>%
+          bold(part = "header", bold = TRUE) %>%
+          colformat_double(i = ~ is.na(type) & !no %in% c("3a", "3b"), j = as.character(years), digits = 0, big.mark = ",") %>%
+          colformat_double(i = ~ is.na(type) & no %in% c("3a", "3b"), j = as.character(years), digits = 2) %>%
+          bg(
+            i = ~ is.na(type) & !no %in% c("3a", "3b"),
+            j = as.character(years),
+            bg = function(x) {
+              # Use map to apply function to each cell
+              result <- map_chr(as.list(x), ~ {
+                if (is.na(.x) || is.null(.x)) {
+                  return("transparent")
+                } else if (.x >= threshold) {
+                  return("seagreen")
+                } else if (.x >= 41 && .x < threshold) {
+                  return("yellow")
+                } else if (.x <= 40) {
+                  return("red")
+                } else {
+                  return("transparent")
+                }
+              })
+              return(result)
+            },
+            part = "body"
+          ) %>%
+          bg(
+            i = ~ !is.na(type), part = "body",
+            bg = 'lightgoldenrodyellow'
+          ) %>%
+   fontsize(size = 9) %>% 
+          theme_vanilla() %>%
+  set_table_properties(layout = "autofit") %>% 
+  set_caption(caption = 'Table 1: Summary reported immunization health facility data DHIS2')
+```
+
+### District Reporting Rates
+
+```{r district-reporting-rates}
+plot(calculate_district_reporting_rate(data, threshold)) +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('reporting_rate')
+print_notes('outlier_detection')
+print_notes('data_completeness')
+```
+
+---
+
+:::
+
+### ANC1/Penta1 and Penta/Penta3 Ratios
+
+Routinely reported health facility data are essential for monitoring immunization
+coverage. Data quality assessments often reveal discrepancies in the  Penta1/Penta3 
+ratio, which should ideally be close to 1.
+
+
+```{r}
+plot(calculate_ratios_summary(data, ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3")))) +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('ratios')
+```
+
+---
+
+:::
+
+
+\newpage
+
+
+## 2. Health Facility Data Adjustments
+
+### Background
+
+Completeness of reporting affects analysis, especially if it is low or varies between 
+years. Extreme outliers can have a large impact, especially on subnational numbers.
+Several steps are necessary to obtain a clean data set for “endline” analysis, 
+including adjusting for incomplete reporting and correcting for extreme outliers. 
+These graphs show the impact on the numbers.
+
+```{r}
+adjustments <- data %>%
+  generate_adjustment_values(adjustment = 'custom', k_factors = !!k_factors)
+```
+
+### Health facility data adjustment: Numerators - reported live births
+
+```{r}
+plot(adjustments,
+     indicator = 'ideliv',
+     title = 'Figure 1c: Comparison of number of live births before and after adjustments for completness and outliers') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('adjustment_changes', 'Live Births')
+```
+
+---
+
+:::
+
+### Health facility data adjustment: Numerators - reported Penta 1 doses
+
+```{r}
+plot(adjustments,
+     indicator = 'penta1',
+     title = 'Figure 1d: Comparison of number of penta1 vaccination before and after adjustments for completness and outliers') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('adjustment_changes', 'Penta1')
+```
+
+---
+
+:::
+
+### Health facility data adjustment: Numerators - reported BCG doses
+
+```{r}
+plot(adjustments,
+     indicator = 'bcg',
+     title = 'Figure 1e: Comparison of number of BCG vaccination before and after adjustments for completness and outliers') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('adjustment_changes', 'BCG')
+```
+
+---
+
+:::
+
+### Health facility data adjustment: Numerators - reported Measles 1 doses
+
+```{r}
+plot(adjustments,
+     indicator = 'measles1',
+     title = 'Figure 1f: Comparison of number of measles vaccination before and after adjustments for completness and outliers') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('adjustment_changes', 'Measles 1')
+```
+
+---
+
+:::
+
+
+\newpage
+
+
+## 3. Health facility data denominator assessment: DHIS2, UN Population and livebirths projections
+
+### Background
+
+Service coverage is defined as the population who received the service divided by 
+the population who need the services: the denominator. The quality of the population 
+projections in DHIS2 is assessed through consistency over time and comparison with 
+the UN projections.
+
+
+### Total Population Projections: DHIS2 and UN Populations
+
+```{r}
+plot(prepare_population_metrics(adjusted_data, un_estimates = un_estimates), metric = 'population') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('denominator_assessment', 'Total Population')
+```
+
+---
+
+:::
+
+### Live Births Projections: DHIS2 and UN Live births
+
+```{r}
+plot(prepare_population_metrics(adjusted_data, un_estimates = un_estimates), metric = 'births') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('denominator_assessment', 'Births')
+```
+
+---
+
+:::
+
+
+\newpage
+
+
+## 4. Selection of the best denominator 
+
+### Background
+
+Monitoring the coverage of interventions is a critical and direct output of health 
+systems. It is most useful if the national plan has meaningful targets. Both health 
+facility and survey data need to be used.
+
+### Denominators selection based on Penta3 Coverage
+
+```{r}
+indicator_coverage <- adjusted_data %>%
+  calculate_indicator_coverage(un_estimates = un_estimates,
+                               sbr = rates$sbr,
+                               nmr = rates$nmr,
+                               pnmr = rates$pnmr,
+                               twin = rates$twin_rate,
+                               preg_loss = rates$preg_loss,
+                               anc1survey = rates$anc1,
+                               dpt1survey = rates$penta1)
+
+plot_absolute_differences(indicator_coverage, 'penta3') +
+  cd_report_theme()
+
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('denominator_selection', 'Penta 3')
+```
+
+---
+
+:::
+
+
+### Denominator selection based on Measles 1 Coverage
+
+```{r}
+plot_absolute_differences(indicator_coverage, 'measles1') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('denominator_selection', 'Measles 1')
+```
+
+---
+
+:::
+
+### Denominator selection based on BCG Coverage
+
+
+```{r}
+plot_absolute_differences(indicator_coverage, 'bcg') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('denominator_selection', 'BCG')
+```
+
+---
+
+:::
+
+
+
+\newpage
+
+
+## 5. National Estimates: National Vaccination Coverage trends
+
+### Background
+
+Monitoring the coverage of interventions is a critical and direct output of health 
+systems. It is most useful if the national plan has meaningful targets. Both health 
+facility and survey data need to be used.
+
+### Measles 1 Coverage
+
+```{r}
+measles1_coverage <- analyze_coverage(indicator_coverage,
+                                      indicator = 'measles1',
+                                      denominator = denominator,
+                                      wuenic_data = wuenic_estimates,
+                                      survey_data = survdata)
+
+
+plot(measles1_coverage) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('national_coverage', 'Measles 1')
+```
+
+---
+
+:::
+
+### Penta 3 Coverage
+
+```{r}
+penta3_coverage <- analyze_coverage(indicator_coverage,
+                                    indicator = 'penta3',
+                                    denominator = denominator,
+                                    wuenic_data = wuenic_estimates,
+                                    survey_data = survdata)
+
+plot(penta3_coverage) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('national_coverage', 'Penta 3')
+```
+
+---
+
+:::
+
+
+\newpage
+
+
+## 6. Regional Estimates
+
+### Vaccination Access level (Pentavalent 1 – Pentavalent 3 dropout rates)
+
+BACKGROUND: Monitoring the coverage of interventions is a critical and direct
+output of health systems. It is most useful if the national plan has
+meaningful targets. Both health facility and survey data need to be used.
+
+```{r}
+
+subnational_indicator_coverge <- adjusted_data %>%
+          calculate_indicator_coverage(
+            admin_level = 'adminlevel_1',
+            sbr = rates$sbr,
+            nmr = rates$nmr,
+            pnmr = rates$pnmr,
+            twin = rates$twin_rate,
+            preg_loss = rates$preg_loss,
+            anc1survey = rates$anc1,
+            dpt1survey = rates$penta1)
+
+measles_subnational_coverage <- analyze_coverage(subnational_indicator_coverge,
+                         admin_level = 'adminlevel_1',
+                         region = 'Nairobi',
+                         indicator = 'measles1',
+                         subnational_map = subnational_map,
+                         denominator = denominator,
+                         survey_data = gregion,
+                         wuenic_data = wuenic_estimates)
+```
+
+---
+
+## 5. Equity Analysis: Regional Vaccination Coverage inequality using routine health facility data
+
+### Background
+
+Monitoring intervention coverage is a crucial output of health systems, especially 
+when national plans set clear and actionable targets. To effectively assess vaccination 
+coverage inequality at the subnational level, particularly for Measles 1 and Penta 3, 
+it is essential to utilize both health facility data and survey data. 
+
+```{r}
+penta3_inequality <- analyze_inequality(adjusted_data,
+                           admin_level = 'adminlevel_1',
+                           indicator = 'penta3',
+                           denominator =  denominator,
+                           un_estimates = un_estimates,
+                           sbr = rates$sbr,
+                           nmr = rates$nmr,
+                           pnmr = rates$pnmr,
+                           anc1survey = rates$anc1,
+                           dpt1survey = rates$penta1,
+                           twin = rates$twin_rate,
+                           preg_loss = rates$preg_loss)
+
+plot(penta3_inequality) + cd_report_theme()
+```
+
+```{r}
+max_year <- max(adjusted_data$year, na.rm = TRUE)
+mapping_data <- get_mapping_data(adjusted_data, un_estimates, rates, subnational_map)
+
+plot(mapping_data, indicator = 'penta3',
+               denominator = denominator,
+               palette = 'Greens',
+               plot_year = max_year,
+               title = paste("Distribution of Penta3 Coverage in ", country, "by Regions")) +
+            cd_report_theme()
+
+```
+
+```{r}
+measles1_inequality <- analyze_inequality(adjusted_data,
+                           admin_level = 'adminlevel_1',
+                           indicator = 'measles1',
+                           denominator =  denominator,
+                           un_estimates = un_estimates,
+                           sbr = rates$sbr,
+                           nmr = rates$nmr,
+                           pnmr = rates$pnmr,
+                           anc1survey = rates$anc1,
+                           dpt1survey = rates$penta1,
+                           twin = rates$twin_rate,
+                           preg_loss = rates$preg_loss)
+
+plot(measles1_inequality) + cd_report_theme()
+```
+
+```{r}
+max_year <- max(adjusted_data$year, na.rm = TRUE)
+mapping_data <- get_mapping_data(adjusted_data, un_estimates, rates, subnational_map)
+
+plot(mapping_data, indicator = 'measles1',
+               denominator = denominator,
+               palette = 'Blues',
+               plot_year = max_year,
+               title = paste("Distribution of Measles 1 Coverage in ", country, "by Regions")) +
+            cd_report_theme()
+```
+
+---
+
+## Equity Analysis
+
+### Background 
+
+Household surveys provide critical information on inequalities. The focus is on 
+two major dimensions of inequality: household wealth quintile and education of 
+the mother. Equiplots are used to assess whether the country has made progress 
+since 2010 in reducing the poor rich gap or the gap between women with no education 
+or low education and women with higher education.
+
+### Equity Trends
+
+#### Pentavalent 3 coverage by household wealth status
+
+```{r, fig.cap='Fig 4g: Pentavalent 3 coverage by wealth, recent surveys'}
+equiplot_wealth(wiq, 'penta3') +
+  cd_report_theme()
+```
+
+::: {custom-style="Notes Box"}
+#### Interpretation Notes
+
+```{r, results='asis'}
+print_notes('equity_assessment', 'Penta 3', list(type = 'wiq'))
+```
+:::
+
+
+#### Pentavalent 3 coverage by education of mother
+
+```{r, fig.cap='Fig 4h: Penta3 coverage by level of education of the mother, recent surveys'}
+equiplot_education(meduc, 'penta3') +
+  cd_report_theme()
+```
+
+::: {custom-style="Notes Box"}
+#### Interpretation Notes
+
+```{r, results='asis'}
+print_notes('equity_assessment', 'Penta 3', list(type = 'meduc'))
+```
+:::
+
+#### Pentavalent 3 coverage by place of residence
+
+```{r, fig.cap='Fig 4g: Penta3 coverage by place of residence, recent surveys'}
+equiplot_area(area, 'penta3') +
+  cd_report_theme()
+```
+
+::: {custom-style="Notes Box"}
+#### Interpretation Notes
+
+```{r, results='asis'}
+print_notes('equity_assessment', 'Penta 3', list(type = 'area'))
+```
+:::
+
+#### Measles 1 coverage by household wealth status
+
+```{r, fig.cap='Fig 4g: Measles 1 coverage by wealth, recent surveys'}
+equiplot_wealth(wiq, 'measles1') +
+  cd_report_theme()
+```
+
+::: {custom-style="Notes Box"}
+#### Interpretation Notes
+
+```{r, results='asis'}
+print_notes('equity_assessment', 'Measles 1', list(type = 'wiq'))
+```
+:::
+
+#### Measles 1 coverage by education of mothers
+
+```{r, fig.cap='Fig 4h: Measles 1coverage by level of education of the mother, recent surveys'}
+equiplot_education(meduc, 'measles1') +
+  cd_report_theme()
+```
+
+::: {custom-style="Notes Box"}
+#### Interpretation Notes
+
+```{r, results='asis'}
+print_notes('equity_assessment', 'Measles 1', list(type = 'meduc'))
+```
+:::
+
+#### Measles 1 coverage by place of residence
+
+```{r, fig.cap='Fig 4g: Measles 1 coverage by place of residence, recent surveys'}
+equiplot_area(area, 'measles1') +
+  cd_report_theme()
+```
+
+::: {custom-style="Notes Box"}
+#### Interpretation Notes
+
+```{r, results='asis'}
+print_notes('equity_assessment', 'Measles 1', list(type = 'area'))
+```
+:::
+
+---

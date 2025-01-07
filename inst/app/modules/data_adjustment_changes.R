@@ -2,7 +2,7 @@ adjustmentChangesUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('adjustment_changes'), 'Data Adjustment Changes'),
+    contentHeader(ns('adjustment_changes'), 'Data Adjustment Changes', include_buttons = FALSE),
     contentBody(
       tabBox(
         title = 'Visualize effects of changes',
@@ -65,13 +65,23 @@ adjustmentChangesServer <- function(id, cache) {
 
       data <- reactive({
         req(cache())
-        cache()$get_data()
+        cache()$get_data_with_excluded_years()
+      })
+
+      k_factors <- reactive({
+        req(cache())
+
+        if (cache()$get_adjusted_flag()) {
+          cache()$get_k_factors()
+        } else {
+          c(anc = 0, idelv = 0, vacc = 0)
+        }
       })
 
       adjustments <- reactive({
         req(data())
         data() %>%
-          generate_adjustment_values(adjustment = 'custom', k_factors = cache()$get_k_factors())
+          generate_adjustment_values(adjustment = 'custom', k_factors = k_factors())
       })
 
       output$live_births <- renderCustomPlot({
@@ -165,6 +175,8 @@ adjustmentChangesServer <- function(id, cache) {
 
       contentHeaderServer(
         'adjustment_changes',
+        cache = cache,
+        objects = pageObjectsConfig(input),
         md_title = 'Data Adjustments Changes',
         md_file = '2_reporting_rate.md'
       )

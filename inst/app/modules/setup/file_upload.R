@@ -34,7 +34,9 @@ fileUploadUI <- function(id) {
         ),
 
         messageBoxUI(ns('wuenic_feedback'))
-      ),
+      )
+    ),
+    fluidRow(
       column(
         6,
         tags$label("Survey Folder", style = 'font-weight: bold; margin-top: 10px; margin-bottom: 5px; display: block;'),
@@ -49,10 +51,12 @@ fileUploadUI <- function(id) {
       ),
       column(
         6,
-        tags$label("Subnational Data Mapping", style = 'font-weight: bold; margin-top: 10px; margin-bottom: 5px; display: block;'),
+        tags$label("Subnational Manual Data Mapping", style = 'font-weight: bold; margin-top: 10px; margin-bottom: 5px; display: block;'),
         fluidRow(
-          column(6, actionButton(ns('survey_data'), 'Map Survey Data')),
-          column(6, actionButton(ns('map_data'), 'Map Mapping Data'))
+          column(6, mappingModalUI(ns('survey_data'), 'Map Survey Data')),
+          column(6, mappingModalUI(ns('map_data'), 'Map Mapping Data')),
+          column(12, messageBoxUI(ns('survey_feedback'))),
+          column(12, messageBoxUI(ns('map_feedback')))
         )
       )
     )
@@ -68,7 +72,21 @@ fileUploadServer <- function(id, cache) {
 
       un_message_box <- messageBoxServer('un_feedback')
       wuenic_message_box <- messageBoxServer('wuenic_feedback')
+      survey_message_box <- messageBoxServer('survey_feedback')
+      map_message_box <- messageBoxServer('map_feedback')
       log_messages <- reactiveVal('Survey folder not set')
+
+      state <- reactiveValues(loaded = FALSE)
+
+      data <- reactive({
+        req(cache())
+        cache()$get_data()
+      })
+
+      country_iso <- reactive({
+        req(cache())
+        cache()$get_country_iso()
+      })
 
       shinyDirChoose(input, 'directory', roots = getRoots(), allowDirCreate = FALSE,
                      filetypes = c('', 'dta'))
@@ -94,37 +112,90 @@ fileUploadServer <- function(id, cache) {
       })
 
       observeEvent(input$un_data, {
-        req(cache())
-        data <- cache()$get_data()
+        req(data(), input$un_data)
         file_name <- input$un_data$name
-        # un_path(input$un_data$datapath)
 
         tryCatch({
-          start_year <- min(data$year)
-          end_year <- max(data$year)
-          dt <- load_un_estimates(input$un_data$datapath, cache()$get_country_iso(), start_year, end_year)
+          start_year <- min(data()$year)
+          end_year <- max(data()$year)
+          dt <- load_un_estimates(input$un_data$datapath, country_iso(), start_year, end_year)
           cache()$set_un_estimates(dt)
           un_message_box$update_message(paste("Upload successful: File", file_name, "is ready."), 'success')
         },
         error = function(e) {
+          print(clean_error_message(e))
           un_message_box$update_message("Upload failed: Check the file format and try again.", 'error')
         })
+      })
+
+      observeEvent(data(), {
+        req(data())
+        state$loaded <- FALSE
+      })
+
+      observe({
+        req(data(), !state$loaded)
+        if (is.null(input$un_data$name) && !is.null(cache()$get_un_estimates())) {
+          un_message_box$update_message(paste("Upload successful: File loaded from cache"), 'success')
+        } else {
+          un_message_box$update_message(paste("Awaiting file upload..."), 'info')
+        }
       })
 
       observeEvent(input$wuenic_data, {
         req(cache())
 
         file_name <- input$wuenic_data$name
-        # wuenic_path(input$wuenic_data$datapath)
 
         tryCatch({
-          dt <- load_wuenic_data(input$wuenic_data$datapath, cache()$get_country_iso())
+          dt <- load_wuenic_data(input$wuenic_data$datapath, country_iso())
           cache()$set_wuenic_estimates(dt)
           wuenic_message_box$update_message(paste("Upload successful: File", file_name, "is ready."), 'success')
         },
         error = function(e) {
           wuenic_message_box$update_message("Upload failed: Check the file format and try again.", 'error')
         })
+      })
+
+      observe({
+        req(data(), !state$loaded)
+        if (is.null(input$wuenic_data$name) && !is.null(cache()$get_wuenic_estimates())) {
+          wuenic_message_box$update_message(paste("Upload successful: File loaded from cache"), 'success')
+        } else {
+          wuenic_message_box$update_message(paste("Awaiting file upload..."), 'info')
+        }
+      })
+
+      observe({
+        req(data(), !state$loaded)
+
+        state$loaded <- TRUE
+
+        log_messages(NULL)
+        if (!is.null(cache()$get_national_survey())) {
+          new_log <- paste0('Loaded national survey data from cache.')
+          log_messages(paste(log_messages(), new_log, sep = "\n"))
+        }
+        if (!is.null(cache()$get_regional_survey())) {
+          new_log <- paste0('Loaded regional survey data from cache.')
+          log_messages(paste(log_messages(), new_log, sep = "\n"))
+        }
+        if (!is.null(cache()$get_wiq_survey())) {
+          new_log <- paste0('Loaded wealth index quintile survey data from cache.')
+          log_messages(paste(log_messages(), new_log, sep = "\n"))
+        }
+        if (!is.null(cache()$get_area_survey())) {
+          new_log <- paste0('Loaded area survey data from cache.')
+          log_messages(paste(log_messages(), new_log, sep = "\n"))
+        }
+        if (!is.null(cache()$get_education_survey())) {
+          new_log <- paste0('Loaded maternal education survey data from cache.')
+          log_messages(paste(log_messages(), new_log, sep = "\n"))
+        }
+
+        if (is.null(log_messages())) {
+          log_messages('Survey folder not set')
+        }
       })
 
       observeEvent(selected_dir(), {
@@ -135,18 +206,21 @@ fileUploadServer <- function(id, cache) {
           tryCatch({
             file_path <- file.path(selected_dir(), .x)
 
-            if (!file.exists(file_path)) {
-              new_log <- paste0('Error: File "', .x, '" was not found in the folder.')
-              log_messages(paste(log_messages(), new_log, sep = "\n"))
-              return()
-            }
+            tryCatch(
+              check_file_path(file_path),
+              error = function(e) {
+                new_log <- clean_error_message(e)
+                log_messages(paste(log_messages(), new_log, sep = "\n"))
+                return()
+              }
+            )
 
             if (grepl('^all_', .x)) {
-              nat_survey <- load_survey_data(file_path, cache()$get_country_iso())
+              nat_survey <- load_survey_data(file_path, country_iso())
               cache()$set_national_survey(nat_survey)
               new_log <- paste0('Loaded national survey data: "', .x, '".')
             } else if (grepl('^gregion_', .x)) {
-              gregion <- load_survey_data(file_path, cache()$get_country_iso(), admin_level = 'adminlevel_1')
+              gregion <- load_survey_data(file_path, country_iso(), admin_level = 'adminlevel_1')
               cache()$set_regional_survey(gregion)
               new_log <- paste0('Loaded regional survey data: "', .x, '".')
             } else if (grepl('^area_', .x)) {
@@ -175,75 +249,63 @@ fileUploadServer <- function(id, cache) {
         })
       })
 
-      gregion_levels <- reactive({
-        req(cache())
-
-        print(glimpse(cache()$get_data()))
-
-        cache()$get_data() %>%
-          distinct(adminlevel_1) %>%
-          arrange(adminlevel_1) %>%
-          pull(adminlevel_1)
+      survey_data <- reactive({
+        req(data())
+        cache()$get_regional_survey()
       })
 
-      observeEvent(input$survey_data, {
-        req(gregion_levels(), cache()$get_regional_survey())
-
-        gregion <- gregion_levels()
-
-        dt <- cache()$get_regional_survey() %>%
-          distinct(adminlevel_1) %>%
-          arrange(adminlevel_1) %>%
-          pull(adminlevel_1)
-        print(dt)
-
-        createMappingModal('survey_data', 'Manual Mapping of Survey Data', gregion, dt, type = 'save_survey_mapping')
+      survey_map <- reactive({
+        req(data())
+        cache()$get_survey_mapping()
       })
 
-      observeEvent(input$save_survey_mapping, {
-        req(cache())
-
-        mapped_to <- map(gregion_levels(), ~ input[[.x]])
-        mapping_result <- tibble(
-          admin_level_1 = gregion_levels(),
-          adminlevel_1 = unlist(mapped_to, use.names = FALSE)
-        )
-        cache()$set_survey_mapping(mapping_result)
-        removeModal()  # Close the modal dialog
-      })
-
-      observeEvent(input$map_data, {
-        req(cache())
-
-        gregion <- if (cache()$get_country_iso() == 'KEN') {
-          cache()$get_data() %>%
-            distinct(district) %>%
-            arrange(district) %>%
-            pull(district)
+      observe({
+        req(data())
+        if (is.null(survey_map())) {
+          survey_message_box$update_message('Survey mapping data is not uploaded', 'info')
         } else {
-          gregion_levels()
+          survey_message_box$update_message('Survey mapping data is uploaded', 'success')
         }
-
-        req(gregion)
-
-        dt <- get_country_shapefile(cache()$get_country_iso(), 'admin_level_1') %>%
-          distinct(NAME_1) %>%
-          arrange(NAME_1) %>%
-          pull(NAME_1)
-
-        createMappingModal('map_data', 'Manual Mapping of Map Data', gregion, dt, type = 'save_map_mapping')
       })
 
-      observeEvent(input$save_map_mapping, {
-        req(cache())
-        mapped_to <- map(gregion_levels(), ~ input[[.x]])
-        mapping_result <- tibble(
-          adminlevel_1 = gregion_levels(),
-          NAME_1 = unlist(mapped_to, use.names = FALSE)
-        )
-        cache()$set_map_mapping(mapping_result)
-        removeModal()  # Close the modal dialog
+      mappingModalServer(
+        id = 'survey_data',
+        cache = cache,
+        survey_data = survey_data,
+        survey_map = survey_map,
+        title = 'Manual Mapping of Survey Data',
+        show_col = 'adminlevel_1',
+        type = 'survey_mapping'
+      )
+
+      map_data <- reactive({
+        req(country_iso())
+        get_country_shapefile(country_iso(), 'admin_level_1')
       })
+
+      map_map <- reactive({
+        req(data())
+        cache()$get_map_mapping()
+      })
+
+      observe({
+        req(data())
+        if (is.null(map_map())) {
+          map_message_box$update_message('Map mapping data is not uploaded', 'info')
+        } else {
+          map_message_box$update_message('Map mapping data is uploaded', 'success')
+        }
+      })
+
+      mappingModalServer(
+        id = 'map_data',
+        cache = cache,
+        survey_data = map_data,
+        survey_map = map_map,
+        title = 'Manual Mapping of Map Data',
+        show_col = 'NAME_1',
+        type = 'map_mapping'
+      )
 
       output$selected_dir <- renderText({
         log_messages()

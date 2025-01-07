@@ -5,7 +5,7 @@ setupUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('analysis_setup'), 'Analysis Setup'),
+    contentHeader(ns('analysis_setup'), 'Analysis Setup', include_buttons = FALSE),
     contentBody(
       nationalRatesUI(ns('national_rates')),
       fileUploadUI(ns('file_uploads'))
@@ -25,6 +25,7 @@ setupServer <- function(id, cache) {
 
       contentHeaderServer(
         'analysis_setup',
+        cache = cache,
         md_title = 'Analysis Setup',
         md_file = '5_upload_data.md'
       )

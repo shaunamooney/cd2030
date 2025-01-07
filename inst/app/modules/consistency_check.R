@@ -60,7 +60,7 @@ consistencyCheckServer <- function(id, cache) {
         indicator_groups <-cache()$get_indicator_groups()
         all_indicators <- purrr::list_c(indicator_groups)
         names(all_indicators) <- all_indicators
-        all_indicators <- c('Select' = '0', all_indicators)
+        all_indicators <- c('Select' = '', all_indicators)
 
         updateSelectizeInput(session, 'x_axis', choices = all_indicators)
         updateSelectizeInput(session, 'y_axis', choices = all_indicators)
@@ -83,7 +83,7 @@ consistencyCheckServer <- function(id, cache) {
 
       output$custom_graph <- renderCustomPlot({
         req(data())
-        req(input$x_axis != '0', input$y_axis != '0')
+        req(input$x_axis, input$y_axis)
         plot_comparison(data(), input$x_axis, input$y_axis)
       })
 
@@ -125,6 +125,8 @@ consistencyCheckServer <- function(id, cache) {
 
       contentHeaderServer(
         'consistency_checks',
+        cache = cache,
+        objects = pageObjectsConfig(input),
         md_title = 'Internal Consistency Checks',
         md_file = 'quality_checks_internal_consistency.md'
       )

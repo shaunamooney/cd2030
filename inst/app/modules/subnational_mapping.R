@@ -2,7 +2,7 @@ subnationalMappingUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('mapping'), 'Mapping'),
+    contentHeader(ns('subnational_mapping'), 'Mapping'),
     contentBody(
       box(
         title = 'Analysis Options',
@@ -11,12 +11,13 @@ subnationalMappingUI <- function(id) {
         solidHeader = TRUE,
         fluidRow(
           column(3, selectizeInput(ns('level'), label = 'Subnational Level',
-                                   choices = c('Admin Level 1' = 'adminlevel_1',
-                                               'District' = 'district'))),
+                                   choices = c('Admin Level 1' = 'adminlevel_1'))),
+                                               #'District' = 'district'))), # District is not support now
           column(3, selectizeInput(ns('denominator'), label = 'Denominator',
                                    choices = c('DHIS2' = 'dhis2',
                                                'ANC 1' = 'anc1',
                                                'Penta 1' = 'penta1'))),
+          column(3, selectizeInput(ns('years'), label = 'Select Years', choice = NULL, multiple = TRUE)),
           column(3, selectizeInput(ns('palette'), label = 'Palette', choices = NULL))
         )
       ),
@@ -98,16 +99,31 @@ subnationalMappingServer <- function(id, cache) {
         cache()$get_un_estimates()
       })
 
-      subnational_map <- reactive({
-        req(cache())
-        cache()$get_map_mapping()
-      })
-
       dt <- reactive({
         req(data(), un_estimates(), input$denominator, input$palette)
 
         data() %>%
-          get_mapping_data(un_estimates(), cache()$get_national_estimates(), subnational_map())
+          get_mapping_data(un_estimates(), cache()$get_national_estimates(), cache()$get_map_mapping())
+      })
+
+      years <- reactive({
+        if (is.null(input$years) || length(input$years) == 0) {
+          NULL
+        } else {
+          as.numeric(input$years)
+        }
+      })
+
+      observe({
+        req(data())
+
+        years <- data() %>%
+          distinct(year) %>%
+          arrange(year) %>%
+          pull(year)
+
+        years <- c('All years' = '', years)
+        updateSelectizeInput(session, 'years', choices = years)
       })
 
       observe({
@@ -135,7 +151,8 @@ subnationalMappingServer <- function(id, cache) {
         plot(dt(), indicator = 'dropout_penta13',
              denominator = input$denominator,
              palette = input$palette,
-             title = title)
+             title = title)#,
+             # plot_year = years())
       })
 
       output$penta3mcv1_dropout <- renderCustomPlot({
@@ -145,7 +162,8 @@ subnationalMappingServer <- function(id, cache) {
         plot(dt(), indicator = 'dropout_penta3mcv1',
              denominator = input$denominator,
              palette = input$palette,
-             title = title)
+             title = title,
+             plot_year = years())
       })
 
       output$penta3_coverage <- renderCustomPlot({
@@ -155,7 +173,8 @@ subnationalMappingServer <- function(id, cache) {
         plot(dt(), indicator = 'penta3',
              denominator = input$denominator,
              palette = input$palette,
-             title = title)
+             title = title,
+             plot_year = years())
       })
 
 
@@ -166,7 +185,8 @@ subnationalMappingServer <- function(id, cache) {
         plot(dt(), indicator = 'measles1',
              denominator = input$denominator,
              palette = input$palette,
-             title = title)
+             title = title,
+             plot_year = years())
       })
 
       output$custom <- renderCustomPlot({
@@ -176,7 +196,8 @@ subnationalMappingServer <- function(id, cache) {
         plot(dt(), indicator = input$indicator,
              denominator = input$denominator,
              palette = input$palette,
-             title = title)
+             title = title,
+             plot_year = years())
       })
 
       downloadPlot(
@@ -187,7 +208,8 @@ subnationalMappingServer <- function(id, cache) {
           plot(dt(), indicator = 'penta3',
                denominator = input$denominator,
                palette = input$palette,
-               title = paste("Distribution of Penta3 Coverage in ", country(), "by Regions"))
+               title = paste("Distribution of Penta3 Coverage in ", country(), "by Regions"),
+               plot_year = years())
         }
       )
 
@@ -199,7 +221,8 @@ subnationalMappingServer <- function(id, cache) {
           plot(dt(), indicator = 'measles1',
                denominator = input$denominator,
                palette = input$palette,
-               title = paste("Distribution of Measles 1 Coverage in ", country(), "by Regions"))
+               title = paste("Distribution of Measles 1 Coverage in ", country(), "by Regions"),
+               plot_year = years())
         }
       )
 
@@ -211,7 +234,8 @@ subnationalMappingServer <- function(id, cache) {
           plot(dt(), indicator = 'dropout_penta13',
                denominator = input$denominator,
                palette = input$palette,
-               title = paste("Distribution of Penta1 to Penta3 dropout Coverage in ", country(), "by Regions"))
+               title = paste("Distribution of Penta1 to Penta3 dropout Coverage in ", country(), "by Regions"),
+               plot_year = years())
         }
       )
 
@@ -223,7 +247,8 @@ subnationalMappingServer <- function(id, cache) {
           plot(dt(), indicator = 'dropout_penta3mcv1',
                denominator = input$denominator,
                palette = input$palette,
-               title = paste("Distribution of Penta1 to Measles3 dropout in ", country(), "by Regions"))
+               title = paste("Distribution of Penta1 to Measles3 dropout in ", country(), "by Regions"),
+               plot_year = years())
         }
       )
 
@@ -235,12 +260,15 @@ subnationalMappingServer <- function(id, cache) {
           plot(dt(), indicator = input$indicator,
                denominator = input$denominator,
                palette = input$palette,
-               title = paste('Distribution of ', input$indicator,' Coverage in ', country(), 'by Regions'))
+               title = paste('Distribution of ', input$indicator,' Coverage in ', country(), 'by Regions'),
+               plot_year = years())
         }
       )
 
       contentHeaderServer(
-        'mapping',
+        'subnational_mapping',
+        cache = cache,
+        objects = pageObjectsConfig(input),
         md_title = 'Mapping',
         md_file = '2_reporting_rate.md'
       )

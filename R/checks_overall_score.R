@@ -30,8 +30,9 @@
 #' }
 #'
 #' @export
-calculate_overall_score <- function(.data, ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3"),
-                                                                ratioOO = c("opv1", "opv3"))) {
+calculate_overall_score <- function(.data,
+                                    threshold,
+                                    ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3"))) {
 
   year = mean_rr = low_mean_rr = mean_mis_vacc_tracer = mean_out_vacc_tracer =
     value = `Data Quality Metrics` = value = no = NULL
@@ -46,11 +47,11 @@ calculate_overall_score <- function(.data, ratio_pairs = list(ratioAP = c("anc1"
       no = '1a'
     )
 
-  district_reporting_rate <- calculate_district_reporting_rate(.data) %>%
+  district_reporting_rate <- calculate_district_reporting_rate(.data, threshold = threshold) %>%
     select(year, low_mean_rr) %>%
     pivot_wider(names_from = year, values_from = low_mean_rr) %>%
     mutate(
-      `Data Quality Metrics` = '% of districts with completeness of facility reporting >= 90%',
+      `Data Quality Metrics` = paste0('% of districts with completeness of facility reporting >= ', threshold),
       no = '1b'
     )
 

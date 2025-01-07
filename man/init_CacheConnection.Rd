@@ -4,7 +4,7 @@
 \alias{init_CacheConnection}
 \title{Create a CacheConnection}
 \usage{
-init_CacheConnection(rds_path = NULL, countdown_data)
+init_CacheConnection(rds_path = NULL, countdown_data = NULL)
 }
 \arguments{
 \item{rds_path}{Path to the RDS file (NULL for in-memory only).}

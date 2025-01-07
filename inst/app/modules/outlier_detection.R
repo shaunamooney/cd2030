@@ -23,7 +23,7 @@ outlierDetectionUI <- function(id) {
         fluidRow(
           column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
           column(4, offset = 4, downloadButtonUI(ns('download_outliers'))),
-          column(12, DTOutput(ns('district_outlier_summary')))
+          column(12, reactableOutput(ns('district_outlier_summary')))
         )
       ),
       box(
@@ -100,24 +100,40 @@ outlierDetectionServer <- function(id, cache) {
           arrange(district) %>%
           pull(district)
 
-        updateSelectizeInput(session, 'district', choices = c('Select' = '0', years))
+        updateSelectizeInput(session, 'district', choices = c('Select' = '', years))
       })
 
 
-      output$district_outlier_summary <- renderDT({
+      output$district_outlier_summary <- renderReactable({
         req(outlier_districts())
 
         dt <- outlier_districts()
 
-        cols <- grep('_rr', colnames(dt))
-
-        dt %>%
-          datatable(options = list(pageLength = 10)) %>%
-          formatRound(columns = cols, digits = 0) # %>%
-          # formatStyle(
-          #   columns = input$indicator,
-          #   backgroundColor = styleInterval(input$threshold, c('red', 'white'))
-          # )
+        outlier_districts() %>%
+          reactable(
+            filterable = FALSE,
+            minRows = 10,
+            groupBy = c('district'),
+            columns = list(
+              year = colDef(
+                aggregate = 'unique'
+              ),
+              month = colDef(
+                aggregate = 'count',
+                format = list(
+                  aggregated = colFormat(suffix = ' month(s)')
+                )
+              )
+            ),
+            defaultColDef = colDef(
+              cell = function(value) {
+                if (!is.numeric(value)) {
+                  return(value)
+                }
+                format(round(value), nsmall = 0)
+              }
+            )
+          )
       })
 
       output$district_outlier_heatmap <- renderPlotly({
@@ -142,7 +158,7 @@ outlierDetectionServer <- function(id, cache) {
       })
 
       output$district_trend <- renderPlotly({
-        req(outlier_summary(), input$district != '0', input$indicator)
+        req(outlier_summary(), input$district, input$indicator)
 
         indicator <- input$indicator
         mad <- paste0(indicator, '_mad')
@@ -210,6 +226,8 @@ outlierDetectionServer <- function(id, cache) {
 
       contentHeaderServer(
         'outlier_detection',
+        cache = cache,
+        objects = pageObjectsConfig(input),
         md_title = 'Outlier Detection',
         md_file = 'quality_checks_outlier_detection.md'
       )

@@ -24,7 +24,7 @@ dataCompletenessUI <- function(id) {
           column(4, offset = 4, downloadButtonUI(ns('download_incompletes')))
         ),
         fluidRow(
-          column(12, DTOutput(ns('incomplete_district')))
+          column(12, reactableOutput(ns('incomplete_district')))
         )
       )
     )
@@ -84,11 +84,34 @@ dataCompletenessServer <- function(id, cache) {
         updateSelectizeInput(session, 'year', choices = c('All Years' = 0, years))
       })
 
-      output$incomplete_district <- renderDT({
+      output$incomplete_district <- renderReactable({
         req(completeness_summary())
 
         incomplete_district() %>%
-          datatable(options = list(pageLength = 10))
+          reactable(
+            filterable = FALSE,
+            minRows = 10,
+            groupBy = c('district'),
+            columns = list(
+              year = colDef(
+                aggregate = 'unique'
+              ),
+              month = colDef(
+                aggregate = 'count',
+                format = list(
+                  aggregated = colFormat(suffix = ' month(s)')
+                )
+              )
+            ),
+            defaultColDef = colDef(
+              cell = function(value) {
+                if (!is.numeric(value)) {
+                  return(value)
+                }
+                format(round(value), nsmall = 0)
+              }
+            )
+          )
       })
 
       output$district_missing_heatmap <- renderPlotly({
@@ -151,6 +174,8 @@ dataCompletenessServer <- function(id, cache) {
 
       contentHeaderServer(
         'data_completeness',
+        cache = cache,
+        objects = pageObjectsConfig(input),
         md_title = 'Data Completeness',
         md_file = 'quality_checks_data_completeness.md'
       )

@@ -83,7 +83,7 @@ equityServer <- function(id, cache) {
                          "dropout_penta3mcv1")
 
         names(indicators) <- indicators
-        indicators <- c('Select' = '0', indicators)
+        indicators <- c('Select' = '', indicators)
 
         updateSelectInput(session, 'indicator', choices = indicators)
       })
@@ -107,7 +107,7 @@ equityServer <- function(id, cache) {
       })
 
       custom_equiplot <- reactive({
-        req(wiq(), area(), meduc(), input$type, input$indicator != '0')
+        req(wiq(), area(), meduc(), input$type, input$indicator)
 
         switch(input$type,
                'area' = equiplot_area(area(), input$indicator),
@@ -159,6 +159,8 @@ equityServer <- function(id, cache) {
 
       contentHeaderServer(
         'equity_assessment',
+        cache = cache,
+        objects = pageObjectsConfig(input),
         md_title = 'Equity Assessment',
         md_file = '2_reporting_rate.md'
       )

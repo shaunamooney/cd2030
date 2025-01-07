@@ -7,10 +7,8 @@
 analyze_inequality(
   .data,
   admin_level = c("adminlevel_1", "district"),
-  indicator = c("bcg", "anc1", "pcv3", "opv1", "opv2", "opv3", "penta2", "pcv1", "pcv2",
-    "penta1", "penta3", "measles1", "rota1", "rota2", "instdeliveries", "measles2",
-    "ipv1", "ipv2", "undervax", "dropout_penta13", "zerodose", "dropout_measles12",
-    "dropout_penta3mcv1"),
+  indicator = c("anc1", "bcg", "measles1", "measles2", "opv1", "opv2", "opv3", "pcv1",
+    "pcv2", "pcv3", "penta1", "penta2", "penta3", "rota1", "rota2", "ipv1", "ipv2"),
   denominator = c("dhis2", "anc1", "penta1"),
   un_estimates,
   sbr = 0.02,

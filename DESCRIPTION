@@ -25,6 +25,7 @@ Imports:
     khisr,
     lubridate,
     openxlsx,
+    pacman,
     purrr,
     R6,
     readxl,
@@ -33,17 +34,11 @@ Imports:
     scales,
     sf,
     shiny,
-    stringdist,
     stringr,
     tibble,
     tidyr,
     withr
 Suggests:
-    gt,
-    RColorBrewer,
-    shinydashboard,
-    shinyFiles,
-    shinyjs,
     knitr,
     spelling
 Encoding: UTF-8

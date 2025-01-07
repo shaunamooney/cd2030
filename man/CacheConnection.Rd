@@ -13,7 +13,10 @@ An R6 class for handling RDS caching for data analysis and report generation.
 \item \href{#method-CacheConnection-load_from_disk}{\code{CacheConnection$load_from_disk()}}
 \item \href{#method-CacheConnection-save_to_disk}{\code{CacheConnection$save_to_disk()}}
 \item \href{#method-CacheConnection-append_page_note}{\code{CacheConnection$append_page_note()}}
+\item \href{#method-CacheConnection-get_notes}{\code{CacheConnection$get_notes()}}
 \item \href{#method-CacheConnection-reactive}{\code{CacheConnection$reactive()}}
+\item \href{#method-CacheConnection-get_cache_path}{\code{CacheConnection$get_cache_path()}}
+\item \href{#method-CacheConnection-set_cache_path}{\code{CacheConnection$set_cache_path()}}
 \item \href{#method-CacheConnection-get_data}{\code{CacheConnection$get_data()}}
 \item \href{#method-CacheConnection-get_country}{\code{CacheConnection$get_country()}}
 \item \href{#method-CacheConnection-get_country_iso}{\code{CacheConnection$get_country_iso()}}
@@ -25,10 +28,9 @@ An R6 class for handling RDS caching for data analysis and report generation.
 \item \href{#method-CacheConnection-get_excluded_years}{\code{CacheConnection$get_excluded_years()}}
 \item \href{#method-CacheConnection-get_k_factors}{\code{CacheConnection$get_k_factors()}}
 \item \href{#method-CacheConnection-get_adjusted_flag}{\code{CacheConnection$get_adjusted_flag()}}
+\item \href{#method-CacheConnection-get_start_survey_year}{\code{CacheConnection$get_start_survey_year()}}
 \item \href{#method-CacheConnection-get_survey_estimates}{\code{CacheConnection$get_survey_estimates()}}
 \item \href{#method-CacheConnection-get_national_estimates}{\code{CacheConnection$get_national_estimates()}}
-\item \href{#method-CacheConnection-get_file_locations}{\code{CacheConnection$get_file_locations()}}
-\item \href{#method-CacheConnection-get_mapping}{\code{CacheConnection$get_mapping()}}
 \item \href{#method-CacheConnection-get_un_estimates}{\code{CacheConnection$get_un_estimates()}}
 \item \href{#method-CacheConnection-get_wuenic_estimates}{\code{CacheConnection$get_wuenic_estimates()}}
 \item \href{#method-CacheConnection-get_national_survey}{\code{CacheConnection$get_national_survey()}}
@@ -45,9 +47,9 @@ An R6 class for handling RDS caching for data analysis and report generation.
 \item \href{#method-CacheConnection-set_excluded_years}{\code{CacheConnection$set_excluded_years()}}
 \item \href{#method-CacheConnection-set_k_factors}{\code{CacheConnection$set_k_factors()}}
 \item \href{#method-CacheConnection-toggle_adjusted_flag}{\code{CacheConnection$toggle_adjusted_flag()}}
+\item \href{#method-CacheConnection-set_start_survey_year}{\code{CacheConnection$set_start_survey_year()}}
 \item \href{#method-CacheConnection-set_survey_estimates}{\code{CacheConnection$set_survey_estimates()}}
 \item \href{#method-CacheConnection-set_national_estimates}{\code{CacheConnection$set_national_estimates()}}
-\item \href{#method-CacheConnection-set_file_locations}{\code{CacheConnection$set_file_locations()}}
 \item \href{#method-CacheConnection-set_un_estimates}{\code{CacheConnection$set_un_estimates()}}
 \item \href{#method-CacheConnection-set_wuenic_estimates}{\code{CacheConnection$set_wuenic_estimates()}}
 \item \href{#method-CacheConnection-set_national_survey}{\code{CacheConnection$set_national_survey()}}
@@ -65,7 +67,7 @@ An R6 class for handling RDS caching for data analysis and report generation.
 \if{latex}{\out{\hypertarget{method-CacheConnection-new}{}}}
 \subsection{Method \code{new()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$new(rds_path = NULL, countdown_data)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$new(rds_path = NULL, countdown_data = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -102,7 +104,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 
 \subsection{Returns}{
 None
-Append a page note (with change tracking)
+Reactive method for the CacheConnection object
 }
 }
 \if{html}{\out{<hr>}}
@@ -112,32 +114,25 @@ Append a page note (with change tracking)
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$append_page_note(
   page_id,
+  object_id,
   note,
   title,
-  items = list(),
-  variables = list()
+  parameters = list(),
+  include_in_report = FALSE,
+  include_plot_table = FALSE,
+  single_entry = FALSE
 )}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{page_id}}{ID of the page}
-
-\item{\code{note}}{Note content}
-
-\item{\code{title}}{Title of the note}
-
-\item{\code{items}}{List of items}
-
-\item{\code{variables}}{List of variables}
 }
-\if{html}{\out{</div>}}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_notes"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_notes}{}}}
+\subsection{Method \code{get_notes()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_notes(page_id, object_id, parameters = NULL)}\if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-None
-Reactive method for the CacheConnection object
-}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-reactive"></a>}}
@@ -151,6 +146,24 @@ Reactive method for the CacheConnection object
 A Shiny reactive expression tracking changes
 Gets for count down data
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_cache_path"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_cache_path}{}}}
+\subsection{Method \code{get_cache_path()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_cache_path()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_cache_path"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_cache_path}{}}}
+\subsection{Method \code{set_cache_path()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_cache_path(value)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-get_data"></a>}}
@@ -276,6 +289,19 @@ Get adjusted flag
 
 \subsection{Returns}{
 Factor TRUE or FALSE
+Get excluded years
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_start_survey_year"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_start_survey_year}{}}}
+\subsection{Method \code{get_start_survey_year()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_start_survey_year()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Numeric vector of excluded years
 Get survey estimates
 }
 }
@@ -302,32 +328,6 @@ Get national estimates
 
 \subsection{Returns}{
 List of national estimates
-Get file locations
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_file_locations"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_file_locations}{}}}
-\subsection{Method \code{get_file_locations()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_file_locations()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-List of file locations
-Get mapping information
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_mapping"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_mapping}{}}}
-\subsection{Method \code{get_mapping()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_mapping()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-List of mapping information
 Get mapping information
 }
 }
@@ -578,6 +578,26 @@ Toggle adjusted flag
 }
 \subsection{Returns}{
 None
+Set excluded years
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_start_survey_year"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_start_survey_year}{}}}
+\subsection{Method \code{set_start_survey_year()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_start_survey_year(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Numeric vector of years to exclude}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+None
 Set survey estimates
 }
 }
@@ -613,26 +633,6 @@ Set national estimates
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{value}}{List of national estimates}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set file locations
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-set_file_locations"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-set_file_locations}{}}}
-\subsection{Method \code{set_file_locations()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_file_locations(value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{List of file locations}
 }
 \if{html}{\out{</div>}}
 }

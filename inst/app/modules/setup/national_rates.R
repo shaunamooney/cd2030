@@ -1,3 +1,10 @@
+dedupe <- function(r) {
+  makeReactiveBinding("val")
+  observe(val <<- r(), priority = 10)
+  reactive(val)
+}
+
+
 nationalRatesUI <- function(id) {
   ns <- NS(id)
 
@@ -67,28 +74,28 @@ nationalRatesServer <- function(id, cache) {
         updateNumericInput(session, "pregnancy_loss", value = national_estimates$preg_loss)
         updateNumericInput(session, "stillbirth_rate", value = national_estimates$sbr)
         updateNumericInput(session, "penta1_mortality_rate", value = national_estimates$penta1_mort_rate)
-        updateNumericInput(session, 'anc1_prop', value = national_estimates$anc1)
-        updateNumericInput(session, 'penta1_prop', value = national_estimates$penta1)
       })
 
-      # observeEvent(c(input$anc1_prop, input$penta1_prop), {
-      #   req(cache())
-      #
-      #   # Retrieve the survey estimates from the cache
-      #   estimates <- cache()$get_survey_estimates()
-      #
-      #   # Check if cached values differ from inputs before updating the cache
-      #   if (#any(is.na(estimates)) ||
-      #       !identical(estimates["anc1"], input$anc1_prop) ||
-      #       !identical(estimates["penta1"], input$penta1_prop)) {
-      #     # Update estimates using input values
-      #     estimates["anc1"] <- as.numeric(input$anc1_prop)
-      #     estimates["penta1"] <- as.numeric(input$penta1_prop)
-      #
-      #     # Save the updated estimates to the cache
-      #     cache()$set_survey_estimates(estimates)
-      #   }
-      # })
+      observe({
+        req(cache())
+
+        estimates <- cache()$get_survey_estimates()
+        isolate({
+          updateNumericInput(session, 'anc1_prop', value = unname(estimates['anc1']))
+          updateNumericInput(session, 'penta1_prop', value = unname(estimates['penta1']))
+        })
+      })
+
+      observeEvent(c(input$anc1_prop, input$penta1_prop), {
+        req(cache())
+
+        estimates <- c(
+          anc1 = as.numeric(input$anc1_prop),
+          penta1 = as.numeric(input$penta1_prop)
+        )
+
+        cache()$set_survey_estimates(estimates)
+      })
 
 
 

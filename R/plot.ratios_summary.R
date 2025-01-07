@@ -42,12 +42,16 @@ plot.cd_ratios_summary <-  function(x, ...) {
   plot_data %>%
     ggplot(aes(name, value, fill = year)) +
       geom_col(position = position_dodge2()) +
-      # scale_y_continuous(expand = c(0,0)) +
+      scale_y_continuous(breaks = scales::pretty_breaks(6)) +
       scale_fill_manual(values = color_mapping) +
       labs(
-        title = 'Figure 1b: Ratio of number of facility reported ANC1 to penta1, penta1 to penta3 and of OPV1 to OPV3. compared with expected ratioss',
+        title = 'Figure 1b: Ratio of number of facility reported ANC1 to penta1, and penta1 to penta3 compared to expected ratios',
         x = NULL,
         y = NULL
       ) +
-      cd_plot_theme()
+      cd_plot_theme() +
+      theme(
+        plot.title = element_text(size = 14, hjust = 0.5),
+        panel.grid.major.y = element_line(colour = 'lightblue1', linetype = 'dashed'),
+      )
 }

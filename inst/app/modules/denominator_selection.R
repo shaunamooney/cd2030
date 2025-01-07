@@ -125,6 +125,8 @@ denominatorSelectionServer <- function(id, cache) {
 
       contentHeaderServer(
         'denominator_selection',
+        cache = cache,
+        object = pageObjectsConfig(input),
         md_title = 'Denominator Selection',
         md_file = '2_reporting_rate.md'
       )

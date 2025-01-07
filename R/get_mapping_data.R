@@ -98,11 +98,7 @@ get_country_shapefile <- function(country_iso, level = c('admin_level_1', 'distr
   level <- arg_match(level)
 
   shapefile_path <- system.file(file.path('shapefiles', country_iso, paste0(country_iso, '_', level, '.shp')), package = 'cd2030')
-  if (!file.exists(shapefile_path)) {
-    cd_abort(
-      c('x' = 'Shapefile not found for {.arg {country_iso}} and admin level {.arg {level}}.')
-    )
-  }
+  check_file_path(shapefile_path)
 
   st_read(shapefile_path, quiet = TRUE)
 }

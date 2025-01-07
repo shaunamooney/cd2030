@@ -3,58 +3,62 @@ options(shiny.maxRequestSize = 2000*1024^2)
 # options(shiny.trace = TRUE)
 # options(shiny.trace = FALSE)
 
-library(shiny)
-library(shinydashboard)
-library(shinycssloaders)
-library(shinyFiles)
-library(cd2030)
-library(cli)
-library(dplyr)
-# library(echarts4r)
-library(gt)
-library(DT)
-library(openxlsx)
-library(khisr)
-library(plotly)
-library(purrr)
-library(forcats)
-library(lubridate)
-library(RColorBrewer)
-library(tidyr)
-library(sf)
-library(shinyjs)
-library(stringr)
+pacman::p_load(
+  shiny,
+  shinydashboard,
+  shinycssloaders,
+  shinyFiles,
+  shinyjs,
+  cd2030,
+  dplyr,
+  kableExtra,
+  flextable,
+  openxlsx,
+  khisr,
+  plotly,
+  purrr,
+  # forcats,
+  lubridate,
+  RColorBrewer,
+  reactable,
+  tidyr,
+  # sf,
+  stringr
+)
 
-source('logic/survey_helper.R')
-source('modules/help_button.R')
-source('modules/introduction.R')
-source('modules/setup.R')
-source('modules/upload_data.R')
-source('modules/reporting_rate.R')
-source('modules/data_completeness.R')
-source('modules/consistency_check.R')
-source('modules/outlier_detection.R')
+source('modules/page_objects_config.R')
+
+source('ui/content_body.R')
+source('ui/content_header.R')
+source('ui/documentation_button.R')
+source('ui/download/download_button.R')
+source('ui/download/download_coverage.R')
+source('ui/download/download_helper.R')
+source('ui/download_report.R')
+source('ui/help_button.R')
+source('ui/message_box.R')
+source('ui/render-plot.R')
+source('ui/save_cache.R')
+
 source('modules/calculate_ratios.R')
-source('modules/overall_score.R')
-source('modules/remove_years.R')
+source('modules/consistency_check.R')
+source('modules/data_adjustment_changes.R')
 source('modules/data_adjustment.R')
+source('modules/data_completeness.R')
 source('modules/denominator_assessment.R')
 source('modules/denominator_selection.R')
+source('modules/equity.R')
+source('modules/introduction.R')
 source('modules/national_coverage.R')
+source('modules/outlier_detection.R')
+source('modules/overall_score.R')
+source('modules/remove_years.R')
+source('modules/reporting_rate.R')
+source('modules/setup.R')
 source('modules/subnational_coverage.R')
 source('modules/subnational_inequality.R')
 source('modules/subnational_mapping.R')
-source('modules/equity.R')
-source('modules/download/download_button.R')
-source('modules/download/download_coverage.R')
-source('modules/download/download_helper.R')
-source('modules/download/download_report.R')
-source('modules/adjustment_changes.R')
-source('modules/documentation_button.R')
-source('modules/content_header.R')
-source('modules/content_body.R')
-source('modules/message_box.R')
-source('modules/render-plot.R')
+source('modules/upload_data.R')
 
 ui <- dashboardPage(
   skin = 'green',
@@ -156,15 +160,10 @@ ui <- dashboardPage(
 
 server <- function(input, output, session) {
 
-  cache <- reactiveVal()
-
   introductionServer('introduction')
-  data <- uploadDataServer('upload_data')
-  observeEvent(data(), {
-    req(data())
-
-    cache_instance <- init_CacheConnection(countdown_data = data())$reactive()
-    cache(cache_instance())
+  cache <- uploadDataServer('upload_data')
+  observeEvent(cache(), {
+    req(cache())
 
     shinyjs::delay(500, {
       country <- cache()$get_country()
@@ -191,6 +190,9 @@ server <- function(input, output, session) {
   subnationalMappingServer('subnational_mapping', cache)
   equityServer('equity_assessment', cache)
   downloadReportServer('download_report', cache)
+  saveCacheServe('save_cache', cache)
+
+  # session$onSessionEnded(stopApp)
 
   updateHeader <- function(country) {
     header_title <- div(
@@ -202,7 +204,8 @@ server <- function(input, output, session) {
     header <- htmltools::tagQuery(
       dashboardHeader(
         title = 'cd2030',
-        tags$li(class = 'dropdown', downloadReportUI('download_report'))
+        saveCacheUI('save_cache'),
+        downloadReportUI('download_report')
       )
     )
     header <- header$

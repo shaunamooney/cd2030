@@ -2,7 +2,7 @@ removeYearsUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('remove_years'), 'Remove Years'),
+    contentHeader(ns('remove_years'), 'Remove Years', include_buttons = FALSE),
     contentBody(
       fluidRow(
         column(
@@ -60,29 +60,48 @@ removeYearsServer <- function(id, cache) {
       messageBox <- messageBoxServer('remove_feedback',
                                      default_message = 'No years have been removed yet.')
 
+      data <- reactive({
+        req(cache())
+        cache()$get_data()
+      })
+
+      excluded_years <- reactive({
+        req(cache())
+        cache()$get_excluded_years()
+      })
+
       observe({
         req(cache())
 
-        years <- cache()$get_data() %>%
+        years <- data() %>%
           distinct(year) %>%
           pull(year)
 
         updateSelectInput(session, 'year_to_remove', choices = years)
       })
 
+      observeEvent(excluded_years(), {
+        req(cache(), data())
+
+        if (length(excluded_years()) > 0) {
+          updateSelectInput(session, 'year_to_remove', selected = excluded_years())
+          messageBox$update_message(
+            paste0('Data for the following years has been removed: ', paste(excluded_years(), collapse = ', ')),
+            'success'
+          )
+        } else {
+          messageBox$update_message('No years have been removed yet.', 'info')
+        }
+      })
+
       observeEvent(input$remove_year, {
         req(cache())
-
         cache()$set_excluded_years(as.numeric(input$year_to_remove))
-
-        messageBox$update_message(
-          paste0('Data for the following years has been removed: ', paste(input$year_to_remove, collapse = ', ')),
-          'success'
-        )
       })
 
       contentHeaderServer(
         'remove_years',
+        cache = cache,
         md_title = 'Remove Years',
         md_file = '2_reporting_rate.md'
       )

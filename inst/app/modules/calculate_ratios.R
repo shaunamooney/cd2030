@@ -54,34 +54,22 @@ calculateRatiosServer <- function(id, cache) {
         req(cache())
 
         estimates <- survey_estimates()
-
-        if (!identical(estimates["anc1"], input$anc1_coverage)) {
-          updateNumericInput(session, 'anc1_coverage', value = unname(estimates["anc1"]))
-        }
-        if (!identical(estimates["penta1"], input$penta1_coverage)) {
-          updateNumericInput(session, 'penta1_coverage', value = unname(estimates["penta1"]))
-        }
-        if (!identical(estimates["penta3"], input$penta3_coverage)) {
-          updateNumericInput(session, 'penta3_coverage', value = unname(estimates["penta3"]))
-        }
+        updateNumericInput(session, 'anc1_coverage', value = unname(estimates["anc1"]))
+        updateNumericInput(session, 'penta1_coverage', value = unname(estimates["penta1"]))
+        updateNumericInput(session, 'penta3_coverage', value = unname(estimates["penta3"]))
       })
 
-      observeEvent(c(input$anc1_coverage, input$penta1_coverage, input$penta3_coverage), {
-        req(cache())
-
-        estimates <- survey_estimates()
-
-        if (!identical(estimates["anc1"], input$anc1_coverage) ||
-            !identical(estimates["penta1"], input$penta1_coverage) ||
-            !identical(estimates["penta3"], input$penta3_coverage)) {
-          estimates <- c(
-            anc1 = as.numeric(input$anc1_coverage),
-            penta1 = as.numeric(input$penta1_coverage),
-            penta3 = as.numeric(input$penta3_coverage)
-          )
-          cache()$set_survey_estimates(estimates)
-        }
-      })
+      # Causing a loop the national_rates.R
+      # observeEvent(c(input$anc1_coverage, input$penta1_coverage, input$penta3_coverage), {
+      #   req(cache())
+      #
+      #     estimates <- c(
+      #       anc1 = as.numeric(input$anc1_coverage),
+      #       penta1 = as.numeric(input$penta1_coverage),
+      #       penta3 = as.numeric(input$penta3_coverage)
+      #     )
+      #     cache()$set_survey_estimates(estimates)
+      # })
 
       output$ratios_plot <- renderCustomPlot({
         req(data(), input$anc1_coverage)
@@ -93,13 +81,14 @@ calculateRatiosServer <- function(id, cache) {
         filename = 'ratio_plot',
         data = data,
         plot_function = function() {
-          print(survey_estimates())
           plot(calculate_ratios_summary(data(), survey_coverage = survey_estimates()))
         }
       )
 
       contentHeaderServer(
         'ratios',
+        cache = cache,
+        objects = pageObjectsConfig(input),
         md_title = 'Ratios',
         md_file = '2_calculate_ratios.md'
       )
