@@ -1,0 +1,167 @@
+---
+title: "Data Adjustment Changes for `r params$country` --- Countdown Analysis"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  word_document:
+    toc: false
+    reference_docx: report-template.docx
+  pdf_document:
+    toc: false
+    latex_engine: lualatex
+params:
+  cache: NULL
+  country: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  fig.width=7, 
+  fig.height=5, 
+  dpi=1200
+)
+
+library(cd2030)
+library(dplyr)
+library(purrr)
+library(gt)
+library(reactable)
+library(gridExtra)
+
+cache <- params$cache
+
+data <- cache$get_data()
+k_factors <- cache$get_k_factors()
+
+# Function to print notes for a given page
+print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
+  # Retrieve the notes from the cache
+  page_notes <- cache$get_notes(page_id, object_id, parameters) %>% 
+    filter(include_in_report == TRUE, !is.null(note))
+  
+  # Check if there are any notes
+  if (nrow(page_notes) > 0) {
+    page_notes %>% 
+      pull(note) %>% 
+      walk(~ cat(paste0(,x, '\n\n')))
+  } else {
+    cat(paste0("**--- Enter notes related to ", page_id, ' ', object_id, '. ---**\n\n'))
+  }
+}
+```
+
+## 2. Health Facility Data Adjustments {-}
+
+### Background
+
+Completeness of reporting affects analysis, especially if it is low or varies between 
+years. Extreme outliers can have a large impact, especially on subnational numbers.
+Several steps are necessary to obtain a clean data set for “endline” analysis, 
+including adjusting for incomplete reporting and correcting for extreme outliers. 
+These graphs show the impact on the numbers.
+
+```{r}
+adjustments <- data %>%
+  generate_adjustment_values(adjustment = 'custom', k_factors = !!k_factors)
+```
+
+### Health facility data adjustment: Numerators - reported live births
+
+```{r}
+plot(adjustments,
+     indicator = 'ideliv',
+     title = 'Figure 1c: Comparison of number of live births before and after adjustments for completness and outliers') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('adjustment_changes', 'Live Births')
+```
+
+---
+
+:::
+
+### Health facility data adjustment: Numerators - reported Penta 1 doses
+
+```{r}
+plot(adjustments,
+     indicator = 'penta1',
+     title = 'Figure 1d: Comparison of number of penta1 vaccination before and after adjustments for completness and outliers') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('adjustment_changes', 'Penta1')
+```
+
+---
+
+:::
+
+### Health facility data adjustment: Numerators - reported BCG doses
+
+```{r}
+plot(adjustments,
+     indicator = 'bcg',
+     title = 'Figure 1e: Comparison of number of BCG vaccination before and after adjustments for completness and outliers') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('adjustment_changes', 'BCG')
+```
+
+---
+
+:::
+
+### Health facility data adjustment: Numerators - reported Measles 1 doses
+
+```{r}
+plot(adjustments,
+     indicator = 'measles1',
+     title = 'Figure 1f: Comparison of number of measles vaccination before and after adjustments for completness and outliers') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('adjustment_changes', 'Measles 1')
+```
+
+---
+
+:::

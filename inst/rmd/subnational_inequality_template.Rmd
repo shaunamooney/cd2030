@@ -1,0 +1,343 @@
+---
+title: "Subnational Inequality for `r params$country` --- Countdown Analysis"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  word_document:
+    toc: false
+    reference_docx: report-template.docx
+  pdf_document:
+    toc: false
+    latex_engine: lualatex
+params:
+  cache: NULL
+  country: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  fig.width=7, 
+  fig.height=5, 
+  dpi=1200
+)
+
+library(cd2030)
+library(dplyr)
+library(purrr)
+library(gt)
+library(reactable)
+library(gridExtra)
+
+cache <- params$cache
+
+adjusted_data <- cache$get_adjusted_data()
+un_estimates <- cache$get_un_estimates()
+rates <- cache$get_national_estimates()
+denominator <- cache$get_denominator()
+
+# Function to print notes for a given page
+print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
+  # Retrieve the notes from the cache
+  page_notes <- cache$get_notes(page_id, object_id, parameters) %>% 
+    filter(include_in_report == TRUE, !is.null(note))
+  
+  # Check if there are any notes
+  if (nrow(page_notes) > 0) {
+    page_notes %>% 
+      pull(note) %>% 
+      walk(~ cat(paste0(,x, '\n\n')))
+  } else {
+    cat(paste0("**--- Enter notes related to ", parameters$level, ' ', object_id, ': ', page_id, '. ---**\n\n'))
+  }
+}
+```
+
+## 5. Admin Level 1 Vaccination Inequality trends {-}
+
+### Background
+
+Monitoring the coverage of interventions is a critical and direct output of health 
+systems. It is most useful if the national plan has meaningful targets. Both health 
+facility and survey data need to be used.
+
+### Measles 1 Inequality -- Admin Level 1
+
+```{r}
+measles1_inequality <- analyze_inequality(adjusted_data,
+                           admin_level = 'adminlevel_1',
+                           indicator = 'measles1',
+                           denominator =  denominator,
+                           un_estimates = un_estimates,
+                           sbr = rates$sbr,
+                           nmr = rates$nmr,
+                           pnmr = rates$pnmr,
+                           anc1survey = rates$anc1,
+                           dpt1survey = rates$penta1,
+                           twin = rates$twin_rate,
+                           preg_loss = rates$preg_loss)
+
+plot(measles1_inequality) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('subnational_inequality', 'Measles 1', list(level = 'adminlevel_1'))
+```
+
+---
+
+:::
+
+### Penta 3 Inequality -- Admin Level 1
+
+```{r}
+penta3_inequality <- analyze_inequality(adjusted_data,
+                           admin_level = 'adminlevel_1',
+                           indicator = 'penta3',
+                           denominator =  denominator,
+                           un_estimates = un_estimates,
+                           sbr = rates$sbr,
+                           nmr = rates$nmr,
+                           pnmr = rates$pnmr,
+                           anc1survey = rates$anc1,
+                           dpt1survey = rates$penta1,
+                           twin = rates$twin_rate,
+                           preg_loss = rates$preg_loss)
+
+plot(penta3_inequality) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('subnational_inequality', 'Penta 3', list(level = 'adminlevel_1'))
+```
+
+---
+
+:::
+
+### Penta1 to Penta3 Dropout Inequality -- Admin Level 1
+
+```{r}
+dropout_penta13_inequality <- analyze_inequality(adjusted_data,
+                           admin_level = 'adminlevel_1',
+                           indicator = 'dropout_penta13',
+                           denominator =  denominator,
+                           un_estimates = un_estimates,
+                           sbr = rates$sbr,
+                           nmr = rates$nmr,
+                           pnmr = rates$pnmr,
+                           anc1survey = rates$anc1,
+                           dpt1survey = rates$penta1,
+                           twin = rates$twin_rate,
+                           preg_loss = rates$preg_loss)
+
+plot(dropout_penta13_inequality) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('subnational_inequality', 'Penta1 to Penta3 Dropout', list(level = 'adminlevel_1'))
+```
+
+---
+
+:::
+
+### Penta3 to Measles 1 Dropout -- Admin Level 1
+
+```{r}
+dropout_penta3mcv1_inequality <- analyze_inequality(adjusted_data,
+                           admin_level = 'adminlevel_1',
+                           indicator = 'dropout_penta3mcv1',
+                           denominator =  denominator,
+                           un_estimates = un_estimates,
+                           sbr = rates$sbr,
+                           nmr = rates$nmr,
+                           pnmr = rates$pnmr,
+                           anc1survey = rates$anc1,
+                           dpt1survey = rates$penta1,
+                           twin = rates$twin_rate,
+                           preg_loss = rates$preg_loss)
+
+plot(dropout_penta3mcv1_inequality) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('subnational_inequality', 'Penta3 to Measles 1 Dropout', list(level = 'adminlevel_1'))
+```
+
+---
+
+:::
+
+
+## 5. District Vaccination Inequality trends {-}
+
+### Background
+
+Monitoring the coverage of interventions is a critical and direct output of health 
+systems. It is most useful if the national plan has meaningful targets. Both health 
+facility and survey data need to be used.
+
+### Measles 1 Inequality -- District
+
+```{r}
+measles1_inequality <- analyze_inequality(adjusted_data,
+                           admin_level = 'district',
+                           indicator = 'measles1',
+                           denominator =  denominator,
+                           un_estimates = un_estimates,
+                           sbr = rates$sbr,
+                           nmr = rates$nmr,
+                           pnmr = rates$pnmr,
+                           anc1survey = rates$anc1,
+                           dpt1survey = rates$penta1,
+                           twin = rates$twin_rate,
+                           preg_loss = rates$preg_loss)
+
+plot(measles1_inequality) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('subnational_inequality', 'Measles 1', list(level = 'district'))
+```
+
+---
+
+:::
+
+### Penta 3 Inequality -- District
+
+```{r}
+penta3_inequality <- analyze_inequality(adjusted_data,
+                           admin_level = 'district',
+                           indicator = 'penta3',
+                           denominator =  denominator,
+                           un_estimates = un_estimates,
+                           sbr = rates$sbr,
+                           nmr = rates$nmr,
+                           pnmr = rates$pnmr,
+                           anc1survey = rates$anc1,
+                           dpt1survey = rates$penta1,
+                           twin = rates$twin_rate,
+                           preg_loss = rates$preg_loss)
+
+plot(penta3_inequality) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('subnational_inequality', 'Penta 3', list(level = 'district'))
+```
+
+---
+
+:::
+
+### Penta1 to Penta3 Dropout Inequality -- District
+
+```{r}
+dropout_penta13_inequality <- analyze_inequality(adjusted_data,
+                           admin_level = 'district',
+                           indicator = 'dropout_penta13',
+                           denominator =  denominator,
+                           un_estimates = un_estimates,
+                           sbr = rates$sbr,
+                           nmr = rates$nmr,
+                           pnmr = rates$pnmr,
+                           anc1survey = rates$anc1,
+                           dpt1survey = rates$penta1,
+                           twin = rates$twin_rate,
+                           preg_loss = rates$preg_loss)
+
+plot(dropout_penta13_inequality) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('subnational_inequality', 'Penta1 to Penta3 Dropout', list(level = 'district'))
+```
+
+---
+
+:::
+
+### Penta3 to Measles 1 Dropout -- District
+
+```{r}
+dropout_penta3mcv1_inequality <- analyze_inequality(adjusted_data,
+                           admin_level = 'district',
+                           indicator = 'dropout_penta3mcv1',
+                           denominator =  denominator,
+                           un_estimates = un_estimates,
+                           sbr = rates$sbr,
+                           nmr = rates$nmr,
+                           pnmr = rates$pnmr,
+                           anc1survey = rates$anc1,
+                           dpt1survey = rates$penta1,
+                           twin = rates$twin_rate,
+                           preg_loss = rates$preg_loss)
+
+plot(dropout_penta3mcv1_inequality) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('subnational_inequality', 'Penta3 to Measles 1 Dropout', list(level = 'district'))
+```
+
+---
+
+:::

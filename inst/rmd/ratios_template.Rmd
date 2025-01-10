@@ -1,0 +1,154 @@
+---
+title: "Ratios for `r params$country` --- Countdown Analysis"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  word_document:
+    toc: false
+    reference_docx: report-template.docx
+  pdf_document:
+    toc: false
+    latex_engine: lualatex
+params:
+  cache: NULL
+  country: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  fig.width=7, 
+  fig.height=5, 
+  dpi=1200
+)
+
+library(cd2030)
+library(dplyr)
+library(purrr)
+library(gt)
+library(reactable)
+library(gridExtra)
+
+cache <- params$cache
+
+data <- cache$get_data()
+country <- cache$get_country()
+threshold <- cache$get_threshold()
+
+# Function to print notes for a given page
+print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
+  # Retrieve the notes from the cache
+  page_notes <- cache$get_notes(page_id, object_id, parameters) %>% 
+    filter(include_in_report == TRUE, !is.null(note))
+  
+  # Check if there are any notes
+  if (nrow(page_notes) > 0) {
+    page_notes %>% 
+      pull(note) %>% 
+      walk(~ cat(paste0(,x, '\n\n')))
+  } else {
+    cat(paste0("**--- Enter notes related to ", page_id, ' ', object_id, '. ---**\n\n'))
+  }
+}
+```
+
+## 1. Health Facility Data Quality Assessment {-}
+
+### Background
+
+Routinely reported health facility data are an important data source for health
+indicators. The data are reported by health facilities on events such as immunizations
+given, or live births attended. As with any data, quality is an issue. Data are checked
+to consider completeness of reporting by health facilities, identify extreme outliers
+and internal consistency. 
+
+### Data Quality Sumary Table
+
+```{r}
+
+years <- unique(data$year)
+
+data %>%
+          calculate_overall_score(threshold) %>%
+          mutate(
+            type = case_when(
+              no %in% c("1a", "1b", "1c") ~ '1. Completeness of monthly facility reporting (Immunization)',
+              no %in% c("2a", "2b") ~ '2. Extreme outliers (Common Vaccine antigens)',
+              no %in% c("3a", "3b",'3f', '3g') ~ '3. Consistency of annual reporting'
+            )
+          ) %>%
+          as_grouped_data(groups = 'type') %>%
+          as_flextable() %>%
+          bold(j = 1, i = ~ !is.na(type), bold = TRUE, part = "body") %>%
+          bold(part = "header", bold = TRUE) %>%
+          colformat_double(i = ~ is.na(type) & !no %in% c("3a", "3b"), j = as.character(years), digits = 0, big.mark = ",") %>%
+          colformat_double(i = ~ is.na(type) & no %in% c("3a", "3b"), j = as.character(years), digits = 2) %>%
+          bg(
+            i = ~ is.na(type) & !no %in% c("3a", "3b"),
+            j = as.character(years),
+            bg = function(x) {
+              # Use map to apply function to each cell
+              result <- map_chr(as.list(x), ~ {
+                if (is.na(.x) || is.null(.x)) {
+                  return("transparent")
+                } else if (.x >= threshold) {
+                  return("seagreen")
+                } else if (.x >= 41 && .x < threshold) {
+                  return("yellow")
+                } else if (.x <= 40) {
+                  return("red")
+                } else {
+                  return("transparent")
+                }
+              })
+              return(result)
+            },
+            part = "body"
+          ) %>%
+          bg(
+            i = ~ !is.na(type), part = "body",
+            bg = 'lightgoldenrodyellow'
+          ) %>%
+   fontsize(size = 9) %>% 
+          theme_vanilla() %>%
+  set_table_properties(layout = "autofit") %>% 
+  set_caption(caption = 'Table 1: Summary reported immunization health facility data DHIS2')
+```
+
+
+\newpage
+
+
+## ANC1/Penta1 and Penta/Penta3 Ratios
+
+Routinely reported health facility data are essential for monitoring immunization
+coverage. Data quality assessments often reveal discrepancies in the  Penta1/Penta3 
+ratio, which should ideally be close to 1.
+
+
+```{r}
+plot(calculate_ratios_summary(data, ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3")))) +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('ratios')
+```
+
+---
+
+:::

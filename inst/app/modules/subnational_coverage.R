@@ -137,13 +137,39 @@ subnationalCoverageServer <- function(id, cache) {
           arrange(!!sym(input$admin_level)) %>%
           pull(!!sym(input$admin_level))
 
+        selected_region <- if (input$admin_level == 'adminlevel_1') {
+          admin_level_1 <- cache()$get_admin_level_1()
+          if (is.null(admin_level_1)) {
+            admin_level[1]
+          } else {
+            admin_level_1
+          }
+        } else {
+          district <- cache()$get_district()
+          if (is.null(district)) {
+            admin_level[1]
+          } else {
+            district
+          }
+        }
+
         # Update the select input
         updateSelectInput(
           session,
           'region',
           choices = admin_level,
+          selected = selected_region,
           label = if (input$admin_level == 'adminlevel_1') 'Admin Level 1' else 'District'
         )
+      })
+
+      observeEvent(input$region, {
+        req(cache())
+        if (input$admin_level == 'adminlevel_1') {
+          cache()$set_admin_level_1(input$region)
+        } else {
+          cache()$set_district(input$region)
+        }
       })
 
       observe({
@@ -153,7 +179,26 @@ subnationalCoverageServer <- function(id, cache) {
           distinct(year) %>%
           pull(year)
 
-        updateSelectInput(session, 'year', choices = years)
+        selected_year <- cache()$get_start_survey_year()
+
+        updateSelectInput(session, 'year', choices = years, selected = selected_year)
+      })
+
+      observe({
+        req(cache())
+
+        selected_denoninator <- cache()$get_denominator()
+        updateSelectInput(session, 'denominator', selected = selected_denoninator)
+      })
+
+      observeEvent(input$year, {
+        req(cache())
+        cache()$set_start_survey_year(as.numeric(input$year))
+      })
+
+      observeEvent(input$denominator, {
+        req(cache())
+        cache()$set_denominator(input$denominator)
       })
 
       measles1_coverage <- reactive({

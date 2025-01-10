@@ -1,0 +1,189 @@
+---
+title: "National Coverage for `r params$country` --- Countdown Analysis"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  word_document:
+    toc: false
+    reference_docx: report-template.docx
+  pdf_document:
+    toc: false
+    latex_engine: lualatex
+params:
+  cache: NULL
+  country: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  fig.width=7, 
+  fig.height=5, 
+  dpi=1200
+)
+
+library(cd2030)
+library(dplyr)
+library(purrr)
+library(gt)
+library(reactable)
+library(gridExtra)
+
+cache <- params$cache
+
+adjusted_data <- cache$get_adjusted_data()
+un_estimates <- cache$get_un_estimates()
+rates <- cache$get_national_estimates()
+denominator <- cache$get_denominator()
+wuenic_estimates <- cache$get_wuenic_estimates()
+survey_start_year <- cache$get_start_survey_year()
+survdata <- cache$get_national_survey() %>% 
+  filter(if(is.null(survey_start_year)) TRUE else year >= survey_start_year)
+
+# Function to print notes for a given page
+print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
+  # Retrieve the notes from the cache
+  page_notes <- cache$get_notes(page_id, object_id, parameters) %>% 
+    filter(include_in_report == TRUE, !is.null(note))
+  
+  # Check if there are any notes
+  if (nrow(page_notes) > 0) {
+    page_notes %>% 
+      pull(note) %>% 
+      walk(~ cat(paste0(,x, '\n\n')))
+  } else {
+    cat(paste0("**--- Enter notes related to ", page_id, ' ', object_id, '. ---**\n\n'))
+  }
+}
+```
+
+## 5. National Estimates: National Vaccination Coverage trends {-}
+
+### Background
+
+Monitoring the coverage of interventions is a critical and direct output of health 
+systems. It is most useful if the national plan has meaningful targets. Both health 
+facility and survey data need to be used.
+
+### Measles 1 Coverage
+
+```{r}
+indicator_coverage <- adjusted_data %>%
+  calculate_indicator_coverage(un_estimates = un_estimates,
+                               sbr = rates$sbr,
+                               nmr = rates$nmr,
+                               pnmr = rates$pnmr,
+                               twin = rates$twin_rate,
+                               preg_loss = rates$preg_loss,
+                               anc1survey = rates$anc1,
+                               dpt1survey = rates$penta1)
+
+measles1_coverage <- analyze_coverage(indicator_coverage,
+                                      indicator = 'measles1',
+                                      denominator = denominator,
+                                      wuenic_data = wuenic_estimates,
+                                      survey_data = survdata)
+
+
+plot(measles1_coverage) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('national_coverage', 'Measles 1')
+```
+
+---
+
+:::
+
+### Penta 3 Coverage
+
+```{r}
+penta3_coverage <- analyze_coverage(indicator_coverage,
+                                    indicator = 'penta3',
+                                    denominator = denominator,
+                                    wuenic_data = wuenic_estimates,
+                                    survey_data = survdata)
+
+plot(penta3_coverage) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('national_coverage', 'Penta 3')
+```
+
+---
+
+:::
+
+### Penta1 to Penta3 Dropout
+
+```{r}
+dropout_penta13_coverage <- analyze_coverage(indicator_coverage,
+                                    indicator = 'dropout_penta13',
+                                    denominator = denominator,
+                                    wuenic_data = wuenic_estimates,
+                                    survey_data = survdata)
+
+plot(dropout_penta13_coverage) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('national_coverage', 'Penta1 to Penta3 Dropout')
+```
+
+---
+
+:::
+
+### Penta3 to Measles 1 Dropout
+
+```{r}
+dropout_penta3mcv1_coverage <- analyze_coverage(indicator_coverage,
+                                    indicator = 'dropout_penta3mcv1',
+                                    denominator = denominator,
+                                    wuenic_data = wuenic_estimates,
+                                    survey_data = survdata)
+
+plot(dropout_penta3mcv1_coverage) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('national_coverage', 'Penta3 to Measles 1 Dropout')
+```
+
+---
+
+:::

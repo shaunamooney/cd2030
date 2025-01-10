@@ -7,13 +7,25 @@ reportingRateUI <- function(id) {
     contentHeader(ns('reporting_rate'), 'Reporting Rate'),
     contentBody(
       box(
-        title = 'Average Reporting Rate',
+        title = 'District Reporting Rate',
         status = 'success',
         collapsible = TRUE,
         width = 12,
         fluidRow(
           column(3, numericInput(ns('threshold'), label = 'Performance Threshold', value = 90)),
-        ),
+          column(3, selectizeInput(ns('indicator'),
+                                   label = 'Indicator',
+                                   choices = c('ANC' = 'anc_rr',
+                                               'Institutional Delivery' = 'idelv_rr',
+                                               'Vaccination' = 'vacc_rr'))),
+          column(12, withSpinner(plotlyOutput(ns('district_missing_heatmap'))))
+        )
+      ),
+      box(
+        title = 'Average Reporting Rate',
+        status = 'success',
+        collapsible = TRUE,
+        width = 6,
         fluidRow(
           column(12, plotCustomOutput(ns('district_report_plot'))),
           column(4, downloadButtonUI(ns('download_plot'))),
@@ -25,26 +37,11 @@ reportingRateUI <- function(id) {
         width = 6,
         status = 'success',
         fluidRow(
-          column(3, selectizeInput(ns('indicator'),
-                                   label = 'Indicator',
-                                   choices = c('ANC' = 'anc_rr',
-                                               'Institutional Delivery' = 'idelv_rr',
-                                               'Vaccination' = 'vacc_rr'))),
           column(3, selectizeInput(ns('year'),
                                    label = 'Year',
                                    choices =NULL)),
-          column(3, offset = 3, downloadButtonUI(ns('download_districts'))),
+          column(3, offset = 6, downloadButtonUI(ns('download_districts'))),
           column(12, reactableOutput(ns('low_reporting')))
-        )
-      ),
-      box(
-        title = 'Districts Trends',
-        status = 'success',
-        collapsible = TRUE,
-        width = 6,
-        fluidRow(
-          column(6, selectizeInput(ns('district'), label = 'District', choice = NULL)),
-          column(12, withSpinner(plotCustomOutput(ns('district_trend'))))
         )
       )
     )
@@ -89,7 +86,7 @@ reportingRateServer <- function(id, cache) {
 
         data() %>%
           district_low_reporting(threshold()) %>%
-          filter(if_any(input$indicator, ~ .x < threshold()), year == input$year)
+          filter(year == input$year)
       })
 
       observeEvent(data(), {
@@ -117,6 +114,48 @@ reportingRateServer <- function(id, cache) {
           pull(year)
 
         updateSelectizeInput(session, 'year', choices = years)
+      })
+
+      output$district_missing_heatmap <- renderPlotly({
+        req(data())
+
+        indicator_groups <- attr(data(), 'indicator_groups')
+        indicator_groups <- paste0(names(indicator_groups), '_rr')
+
+        greater <- paste0('>= ', threshold())
+        mid <- paste0(' >= 40 and < ', threshold())
+        low <- '< 40'
+
+        dt <- data() %>%
+          select(district, year, any_of(input$indicator)) %>%
+          summarise(
+            value = mean(.data[[input$indicator]], na.rm = TRUE),
+            .by = c(district, year)
+          ) %>%
+          mutate(
+            color_category = case_when(
+              round(value, 0) >= threshold() ~ greater,
+              round(value, 0) >= 40 & round(value, 0) < threshold() ~ mid,
+              round(value, 0) < 40 ~ low,
+              .ptype = factor(levels = c(low, mid, greater))
+            )
+          )
+
+        ggplotly(
+          ggplot(dt, aes(x = district, y = year, fill = color_category)) +
+            geom_tile(color = 'white') +
+            scale_fill_manual(
+              values = set_names(
+                c("forestgreen", "orange", "red"),
+                c(greater, mid, low)
+              ),
+              name = "Value Category",
+              drop = FALSE
+            ) +
+            labs(title = NULL, x = 'District', y = 'Year', fill = 'Value') +
+            theme_minimal() +
+            theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
+        )
       })
 
       output$district_report_plot <- renderCustomPlot({
@@ -150,12 +189,6 @@ reportingRateServer <- function(id, cache) {
               }
             )
           )
-      })
-
-      output$district_trend <- renderCustomPlot({
-        req(outlier_summary(), input$district != '', input$indicator)
-
-        indicator <- input$indicator
       })
 
       downloadPlot(

@@ -59,20 +59,24 @@ calculateRatiosServer <- function(id, cache) {
         updateNumericInput(session, 'penta3_coverage', value = unname(estimates["penta3"]))
       })
 
+      debounced_anc1 <- debounce(reactive(input$anc1_coverage), millis = 500)
+      debounced_penta1 <- debounce(reactive(input$penta1_coverage), millis = 500)
+      debounced_penta3 <- debounce(reactive(input$penta3_coverage), millis = 500)
+
       # Causing a loop the national_rates.R
-      # observeEvent(c(input$anc1_coverage, input$penta1_coverage, input$penta3_coverage), {
-      #   req(cache())
-      #
-      #     estimates <- c(
-      #       anc1 = as.numeric(input$anc1_coverage),
-      #       penta1 = as.numeric(input$penta1_coverage),
-      #       penta3 = as.numeric(input$penta3_coverage)
-      #     )
-      #     cache()$set_survey_estimates(estimates)
-      # })
+      observeEvent(c(debounced_anc1(), debounced_penta1(), debounced_penta3()), {
+        req(cache())
+
+          estimates <- c(
+            anc1 = as.numeric(input$anc1_coverage),
+            penta1 = as.numeric(input$penta1_coverage),
+            penta3 = as.numeric(input$penta3_coverage)
+          )
+          cache()$set_survey_estimates(estimates)
+      })
 
       output$ratios_plot <- renderCustomPlot({
-        req(data(), input$anc1_coverage)
+        req(data())
         plot(calculate_ratios_summary(data(), survey_coverage = survey_estimates()))
       })
 

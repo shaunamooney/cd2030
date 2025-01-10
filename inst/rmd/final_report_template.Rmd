@@ -11,10 +11,10 @@ output:
     toc: false
     reference_docx: report-template.docx
   pdf_document:
-    toc: true
+    toc: false
+    latex_engine: lualatex
 params:
   cache: NULL
-  denominator: dhis2
   country: NULL
 ---
 
@@ -24,6 +24,7 @@ knitr::opts_chunk$set(
   echo = FALSE,
   message = FALSE,
   warning = FALSE,
+  error = TRUE,
   fig.width=7, 
   fig.height=5, 
   dpi=1200
@@ -37,7 +38,6 @@ library(reactable)
 library(gridExtra)
 
 cache <- params$cache
-denominator <- params$denominator
 
 data <- cache$get_data()
 adjusted_data <- cache$get_adjusted_data()
@@ -45,6 +45,8 @@ country <- cache$get_country()
 threshold <- cache$get_threshold()
 k_factors <- cache$get_k_factors()
 rates <- cache$get_national_estimates()
+denominator <- cache$get_denominator()
+mapping_years <- cache$get_mapping_years()
 un_estimates <- cache$get_un_estimates()
 wuenic_estimates <- cache$get_wuenic_estimates()
 survey_start_year <- cache$get_start_survey_year()
@@ -57,6 +59,9 @@ map_mapping <- cache$get_map_mapping()
 meduc <- cache$get_education_survey()
 wiq <- cache$get_wiq_survey()
 area <- cache$get_area_survey()
+selected_admin_level_1 <- cache$get_admin_level_1()
+selected_district <- cache$get_district()
+
 
 # Function to print notes for a given page
 print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
@@ -66,20 +71,23 @@ print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
   
   # Check if there are any notes
   if (nrow(page_notes) > 0) {
+    
+    
     page_notes %>% 
-      reframe(note = list(list(title = title, note = list(note))), .by = title) %>% 
+      # reframe(note = list(list(title = title, note = list(note))), .by = title) %>% 
       pull(note) %>% 
       walk(~ {
-        cat(paste0('**', .x$title, '**\n\n'))
-        walk(.x$note, function(x) cat(paste0(x, '\n\n')))
+        cat(paste0(,x, '\n\n'))
+        # cat(paste0('**', .x$title, '**\n\n'))
+        # walk(.x$note, function(x) cat(paste0(x, '\n\n')))
       })
   } else {
-    cat(paste0("**--- Enter notes related to ", page_id, '. ---**\n\n'))
+    cat(paste0("**--- Enter notes related to ", page_id, ' ', object_id, '. ---**\n\n'))
   }
 }
 ```
 
-## 1. Health Facility Data Quality Assessment
+## 1. Health Facility Data Quality Assessment {-}
 
 ### Background
 
@@ -155,9 +163,18 @@ plot(calculate_district_reporting_rate(data, threshold)) +
 
 ---
 
+#### Reporting Rate
 ```{r, results='asis'}
 print_notes('reporting_rate')
+```
+
+#### Outlier Detection
+```{r, results='asis'}
 print_notes('outlier_detection')
+```
+
+#### Data Completeness
+```{r, results='asis'}
 print_notes('data_completeness')
 ```
 
@@ -195,7 +212,7 @@ print_notes('ratios')
 \newpage
 
 
-## 2. Health Facility Data Adjustments
+## 2. Health Facility Data Adjustments {-}
 
 ### Background
 
@@ -306,7 +323,7 @@ print_notes('adjustment_changes', 'Measles 1')
 \newpage
 
 
-## 3. Health facility data denominator assessment: DHIS2, UN Population and livebirths projections
+## 3. Health facility data denominator assessment: DHIS2, UN Population and livebirths projections {-}
 
 ### Background
 
@@ -362,7 +379,7 @@ print_notes('denominator_assessment', 'Births')
 \newpage
 
 
-## 4. Selection of the best denominator 
+## 4. Selection of the best denominator {-}
 
 ### Background
 
@@ -447,11 +464,10 @@ print_notes('denominator_selection', 'BCG')
 :::
 
 
-
 \newpage
 
 
-## 5. National Estimates: National Vaccination Coverage trends
+## 5. National Estimates: National Vaccination Coverage trends {-}
 
 ### Background
 
@@ -512,21 +528,75 @@ print_notes('national_coverage', 'Penta 3')
 
 :::
 
+### Penta1 to Penta3 Dropout
+
+```{r}
+dropout_penta13_coverage <- analyze_coverage(indicator_coverage,
+                                    indicator = 'dropout_penta13',
+                                    denominator = denominator,
+                                    wuenic_data = wuenic_estimates,
+                                    survey_data = survdata)
+
+plot(dropout_penta13_coverage) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('national_coverage', 'Penta1 to Penta3 Dropout')
+```
+
+---
+
+:::
+
+### Penta3 to Measles 1 Dropout
+
+```{r}
+dropout_penta3mcv1_coverage <- analyze_coverage(indicator_coverage,
+                                    indicator = 'dropout_penta3mcv1',
+                                    denominator = denominator,
+                                    wuenic_data = wuenic_estimates,
+                                    survey_data = survdata)
+
+plot(dropout_penta3mcv1_coverage) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('national_coverage', 'Penta3 to Measles 1 Dropout')
+```
+
+---
+
+:::
+
 
 \newpage
 
 
-## 6. Regional Estimates
+## 6. Regional Estimates {-}
 
 ### Vaccination Access level (Pentavalent 1 – Pentavalent 3 dropout rates)
 
-BACKGROUND: Monitoring the coverage of interventions is a critical and direct
-output of health systems. It is most useful if the national plan has
-meaningful targets. Both health facility and survey data need to be used.
+Monitoring the coverage of interventions is a critical and direct output of health 
+systems. It is most useful if the national plan has meaningful targets. Both health 
+facility and survey data need to be used.
+
+### Penta1-Penta3 dropout rate `r selected_admin_level_1`
 
 ```{r}
 
-subnational_indicator_coverge <- adjusted_data %>%
+subnational_indicator_coverage <- adjusted_data %>%
           calculate_indicator_coverage(
             admin_level = 'adminlevel_1',
             sbr = rates$sbr,
@@ -537,26 +607,157 @@ subnational_indicator_coverge <- adjusted_data %>%
             anc1survey = rates$anc1,
             dpt1survey = rates$penta1)
 
-measles_subnational_coverage <- analyze_coverage(subnational_indicator_coverge,
+dropout_penta13_subnational_coverage <- analyze_coverage(subnational_indicator_coverage,
                          admin_level = 'adminlevel_1',
-                         region = 'Nairobi',
-                         indicator = 'measles1',
+                         region = selected_admin_level_1,
+                         indicator = 'dropout_penta13',
                          subnational_map = subnational_map,
                          denominator = denominator,
                          survey_data = gregion,
                          wuenic_data = wuenic_estimates)
+
+plot(dropout_penta13_subnational_coverage) + cd_report_theme()
+```
+
+### Regions with low/high access to vaccines
+
+```{r}
+dropout_penta13_inequality <- analyze_inequality(adjusted_data,
+                           admin_level = 'adminlevel_1',
+                           indicator = 'dropout_penta13',
+                           denominator =  denominator,
+                           un_estimates = un_estimates,
+                           sbr = rates$sbr,
+                           nmr = rates$nmr,
+                           pnmr = rates$pnmr,
+                           anc1survey = rates$anc1,
+                           dpt1survey = rates$penta1,
+                           twin = rates$twin_rate,
+                           preg_loss = rates$preg_loss)
+
+plot(dropout_penta13_inequality) + cd_report_theme()
+```
+
+```{r}
+mapping_data <- get_mapping_data(adjusted_data, un_estimates, rates, subnational_map)
+
+plot(mapping_data, indicator = 'dropout_penta13',
+               denominator = denominator,
+               palette = 'Reds',
+               plot_year = mapping_years,
+               title = paste("Distribution of Penta1 - Penta3 Dropout in ", country, "by Regions")) +
+            cd_report_theme()
+
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('subnational_coverage', 'Penta1 to Penta3 Dropout', list(admin_level = 'adminlevel_1'))
+print_notes('subnational_inequality', 'Penta1 to Penta3 Dropout', list(level = 'adminlevel_1'))
+print_notes('subnational_mapping', 'Penta1 to Penta3 Dropout', list(level = 'adminlevel_1'))
 ```
 
 ---
 
-## 5. Equity Analysis: Regional Vaccination Coverage inequality using routine health facility data
+:::
 
-### Background
+### Vaccination Utilization level (Pentavalent 1 – Measles 1 dropout rates)
+
+Monitoring the coverage of interventions is a critical and direct output of health 
+systems. There is a very long interval in the EPI schedule between an infant receiving 
+the first pentavalent immunization and completing the ‘fully immunized’ schedule with 
+the first dose of measles vaccine. It is very important to complete all the 
+immunizations to protect children from all the EPI target diseases.
+
+### Penta3-MCV1 dropout rate `r selected_admin_level_1`
+
+```{r}
+dropout_penta3mcv1_subnational_coverage <- analyze_coverage(subnational_indicator_coverage,
+                         admin_level = 'adminlevel_1',
+                         region = selected_admin_level_1,
+                         indicator = 'dropout_penta3mcv1',
+                         subnational_map = subnational_map,
+                         denominator = denominator,
+                         survey_data = gregion,
+                         wuenic_data = wuenic_estimates)
+
+plot(dropout_penta3mcv1_subnational_coverage) + cd_report_theme()
+```
+
+### Regions with low/high utilization rates of vaccines
+
+```{r}
+dropout_penta3mcv1_inequality <- analyze_inequality(adjusted_data,
+                           admin_level = 'adminlevel_1',
+                           indicator = 'dropout_penta3mcv1',
+                           denominator =  denominator,
+                           un_estimates = un_estimates,
+                           sbr = rates$sbr,
+                           nmr = rates$nmr,
+                           pnmr = rates$pnmr,
+                           anc1survey = rates$anc1,
+                           dpt1survey = rates$penta1,
+                           twin = rates$twin_rate,
+                           preg_loss = rates$preg_loss)
+
+plot(dropout_penta3mcv1_inequality) + cd_report_theme()
+```
+
+```{r}
+plot(mapping_data, indicator = 'dropout_penta3mcv1',
+               denominator = denominator,
+               palette = 'Purples',
+               plot_year = mapping_years,
+               title = paste("Distribution of Penta3 - Measles Dropout in ", country, "by Regions")) +
+            cd_report_theme()
+
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('subnational_coverage', 'Penta3 to Measles 1 Dropout', list(admin_level = 'adminlevel_1'))
+print_notes('subnational_inequality', 'Penta3 to Measles 1 Dropout', list(level = 'adminlevel_1'))
+print_notes('subnational_mapping', 'Penta3 to Measles 1 Dropout', list(level = 'adminlevel_1'))
+```
+
+---
+
+:::
+
+
+###  Regional Penta 3 Coverage inequality using routine health facility data
 
 Monitoring intervention coverage is a crucial output of health systems, especially 
 when national plans set clear and actionable targets. To effectively assess vaccination 
 coverage inequality at the subnational level, particularly for Measles 1 and Penta 3, 
 it is essential to utilize both health facility data and survey data. 
+
+### Penta3 Coverage `r selected_admin_level_1`
+
+```{r}
+penta3_subnational_coverage <- analyze_coverage(subnational_indicator_coverage,
+                         admin_level = 'adminlevel_1',
+                         region = selected_admin_level_1,
+                         indicator = 'penta3',
+                         subnational_map = subnational_map,
+                         denominator = denominator,
+                         survey_data = gregion,
+                         wuenic_data = wuenic_estimates)
+
+plot(penta3_subnational_coverage) + cd_report_theme()
+```
+
+### Regions with low/high Coverage of Penta 3
 
 ```{r}
 penta3_inequality <- analyze_inequality(adjusted_data,
@@ -576,17 +777,49 @@ plot(penta3_inequality) + cd_report_theme()
 ```
 
 ```{r}
-max_year <- max(adjusted_data$year, na.rm = TRUE)
-mapping_data <- get_mapping_data(adjusted_data, un_estimates, rates, subnational_map)
-
 plot(mapping_data, indicator = 'penta3',
                denominator = denominator,
                palette = 'Greens',
-               plot_year = max_year,
+               plot_year = mapping_years,
                title = paste("Distribution of Penta3 Coverage in ", country, "by Regions")) +
             cd_report_theme()
 
 ```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('subnational_coverage', 'Penta 3', list(admin_level = 'adminlevel_1'))
+print_notes('subnational_inequality', 'Penta 3', list(level = 'adminlevel_1'))
+print_notes('subnational_mapping', 'Penta 3', list(level = 'adminlevel_1'))
+```
+
+---
+
+:::
+
+###  Regional Measles 1 Coverage inequality using routine health facility data
+
+### Measles1 Coverage `r selected_admin_level_1`
+
+```{r}
+measles1_subnational_coverage <- analyze_coverage(subnational_indicator_coverage,
+                         admin_level = 'adminlevel_1',
+                         region = selected_admin_level_1,
+                         indicator = 'measles1',
+                         subnational_map = subnational_map,
+                         denominator = denominator,
+                         survey_data = gregion,
+                         wuenic_data = wuenic_estimates)
+
+plot(measles1_subnational_coverage) + cd_report_theme()
+```
+
+### Regions with low/high Coverage of Measles 1
 
 ```{r}
 measles1_inequality <- analyze_inequality(adjusted_data,
@@ -606,20 +839,35 @@ plot(measles1_inequality) + cd_report_theme()
 ```
 
 ```{r}
-max_year <- max(adjusted_data$year, na.rm = TRUE)
-mapping_data <- get_mapping_data(adjusted_data, un_estimates, rates, subnational_map)
-
 plot(mapping_data, indicator = 'measles1',
                denominator = denominator,
                palette = 'Blues',
-               plot_year = max_year,
+               plot_year = mapping_years,
                title = paste("Distribution of Measles 1 Coverage in ", country, "by Regions")) +
             cd_report_theme()
 ```
 
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
 ---
 
-## Equity Analysis
+```{r, results='asis'}
+print_notes('subnational_coverage', 'Measles 1', list(admin_level = 'adminlevel_1'))
+print_notes('subnational_inequality', 'Measles 1', list(level = 'adminlevel_1'))
+print_notes('subnational_mapping', 'Measles 1', list(level = 'adminlevel_1'))
+```
+
+---
+
+:::
+
+
+\newpage
+
+
+## 7. Equity Analysis {-}
 
 ### Background 
 
@@ -629,97 +877,131 @@ the mother. Equiplots are used to assess whether the country has made progress
 since 2010 in reducing the poor rich gap or the gap between women with no education 
 or low education and women with higher education.
 
-### Equity Trends
 
-#### Pentavalent 3 coverage by household wealth status
+### Pentavalent 3 coverage by household wealth status
 
 ```{r, fig.cap='Fig 4g: Pentavalent 3 coverage by wealth, recent surveys'}
 equiplot_wealth(wiq, 'penta3') +
   cd_report_theme()
 ```
 
-::: {custom-style="Notes Box"}
-#### Interpretation Notes
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
 
 ```{r, results='asis'}
 print_notes('equity_assessment', 'Penta 3', list(type = 'wiq'))
 ```
+
+---
+
 :::
 
 
-#### Pentavalent 3 coverage by education of mother
+### Pentavalent 3 coverage by education of mother
 
 ```{r, fig.cap='Fig 4h: Penta3 coverage by level of education of the mother, recent surveys'}
 equiplot_education(meduc, 'penta3') +
   cd_report_theme()
 ```
 
-::: {custom-style="Notes Box"}
-#### Interpretation Notes
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
 
 ```{r, results='asis'}
 print_notes('equity_assessment', 'Penta 3', list(type = 'meduc'))
 ```
+
+---
+
 :::
 
-#### Pentavalent 3 coverage by place of residence
+### Pentavalent 3 coverage by place of residence
 
 ```{r, fig.cap='Fig 4g: Penta3 coverage by place of residence, recent surveys'}
 equiplot_area(area, 'penta3') +
   cd_report_theme()
 ```
 
-::: {custom-style="Notes Box"}
-#### Interpretation Notes
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
 
 ```{r, results='asis'}
 print_notes('equity_assessment', 'Penta 3', list(type = 'area'))
 ```
+
+---
+
 :::
 
-#### Measles 1 coverage by household wealth status
+### Measles 1 coverage by household wealth status
 
 ```{r, fig.cap='Fig 4g: Measles 1 coverage by wealth, recent surveys'}
 equiplot_wealth(wiq, 'measles1') +
   cd_report_theme()
 ```
 
-::: {custom-style="Notes Box"}
-#### Interpretation Notes
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
 
 ```{r, results='asis'}
 print_notes('equity_assessment', 'Measles 1', list(type = 'wiq'))
 ```
+
+---
+
 :::
 
-#### Measles 1 coverage by education of mothers
+
+### Measles 1 coverage by education of mothers
 
 ```{r, fig.cap='Fig 4h: Measles 1coverage by level of education of the mother, recent surveys'}
 equiplot_education(meduc, 'measles1') +
   cd_report_theme()
 ```
 
-::: {custom-style="Notes Box"}
-#### Interpretation Notes
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
 
 ```{r, results='asis'}
 print_notes('equity_assessment', 'Measles 1', list(type = 'meduc'))
 ```
+
+---
+
 :::
 
-#### Measles 1 coverage by place of residence
+### Measles 1 coverage by place of residence
 
 ```{r, fig.cap='Fig 4g: Measles 1 coverage by place of residence, recent surveys'}
 equiplot_area(area, 'measles1') +
   cd_report_theme()
 ```
 
-::: {custom-style="Notes Box"}
-#### Interpretation Notes
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
 
 ```{r, results='asis'}
 print_notes('equity_assessment', 'Measles 1', list(type = 'area'))
 ```
-:::
 
 ---
+
+:::

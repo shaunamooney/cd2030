@@ -150,6 +150,18 @@ subnationalInequalityServer <- function(id, cache) {
         plot(custom_coverage())
       })
 
+      observe({
+        req(cache())
+
+        selected_denoninator <- cache()$get_denominator()
+        updateSelectInput(session, 'denominator', selected = selected_denoninator)
+      })
+
+      observeEvent(input$denominator, {
+        req(cache())
+        cache()$set_denominator(input$denominator)
+      })
+
       downloadCoverageServer(
         id = 'measles1_download',
         data_fn = measles1_coverage,

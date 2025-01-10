@@ -75,9 +75,9 @@ CacheConnection <- R6::R6Class(
       }
     },
 
-    append_page_note = function(page_id, object_id, note, title, parameters = list(), include_in_report = FALSE, include_plot_table = FALSE, single_entry = FALSE) {
+    append_page_note = function(page_id, object_id, note, parameters = list(), include_in_report = FALSE, include_plot_table = FALSE, single_entry = FALSE) {
       # Validate inputs
-      stopifnot(is.character(page_id), is.character(object_id), is.character(note), is.character(title))
+      stopifnot(is.character(page_id), is.character(object_id), is.character(note))
       stopifnot(is.list(parameters), is.logical(include_in_report))
 
       # Create a new note
@@ -85,7 +85,6 @@ CacheConnection <- R6::R6Class(
         page_id = page_id,
         object_id = object_id,
         note = note,
-        title = title,
         parameters = list(parameters),   # Wrap in list for storage
         include_in_report = include_in_report,  # Single logical value
         include_plot_table = include_plot_table
@@ -93,11 +92,11 @@ CacheConnection <- R6::R6Class(
 
       if (single_entry) {
         filtered_notes <- private$in_memory_data$page_notes %>%
-          filter(!(page_id == "reporting_rate" & object_id == "Low Reporting DIstricts"))
+          filter(!(page_id == !!page_id & object_id == !!object_id))
       } else {
         filtered_notes <- private$in_memory_data$page_notes %>%
           filter(
-            !(page_id == "reporting_rate" & object_id == "Low Reporting DIstricts" &
+            !(page_id == !!page_id & object_id == !!object_id &
                 map_lgl(parameters, ~ identical(.x, !!parameters)))
           )
       }
@@ -237,6 +236,34 @@ CacheConnection <- R6::R6Class(
       private$in_memory_data$start_survey_year
     },
 
+    #' Get the denominator
+    #' @return Numeric vector of excluded years
+    get_denominator = function() {
+      private$depend('denominator')
+      private$in_memory_data$denominator
+    },
+
+    #' Get the denominator
+    #' @return Numeric vector of excluded years
+    get_mapping_years = function() {
+      private$depend('selected_mapping_years')
+      private$in_memory_data$selected_mapping_years
+    },
+
+    #' Get the selected admin level 1
+    #' @return A string for admin level 1
+    get_admin_level_1 = function() {
+      private$depend('selected_admin_level_1')
+      private$in_memory_data$selected_admin_level_1
+    },
+
+    #' Get the selected district/admin level 2
+    #' @return A string for the selected district
+    get_district = function() {
+      private$depend('selected_district')
+      private$in_memory_data$selected_district
+    },
+
     #' Get survey estimates
     #' @return List of survey estimates
     get_survey_estimates = function() {
@@ -247,7 +274,7 @@ CacheConnection <- R6::R6Class(
     #' Get national estimates
     #' @return List of national estimates
     get_national_estimates = function() {
-      # private$depend('survey_estimates')
+      private$depend('survey_estimates')
       private$depend('national_estimates')
       survey <- self$get_survey_estimates()
       c(
@@ -391,10 +418,50 @@ CacheConnection <- R6::R6Class(
     #' @param value Numeric vector of years to exclude
     #' @return None
     set_start_survey_year = function(value) {
-      if (!is.numeric(value) || length(value) != 1) {
+      if (!is_scalar_integerish(value)) {
         cd_abort(c('x' = 'Start survey years must be a scalar numeric.'))
       }
       private$update_field('start_survey_year', value)
+    },
+
+    #' Set denominator
+    #' @param value Numeric vector of years to exclude
+    #' @return None
+    set_denominator = function(value) {
+      if (!is_scalar_character(value)) {
+        cd_abort(c('x' = 'Denominator must be a scalar string.'))
+      }
+      private$update_field('denominator', value)
+    },
+
+    #' Set denominator
+    #' @param value Numeric vector of years to exclude
+    #' @return None
+    set_mapping_years = function(value) {
+      if (!is_integerish(value)) {
+        cd_abort(c('x' = 'Mapping years must be a numeric.'))
+      }
+      private$update_field('selected_mapping_years', value)
+    },
+
+    #' Set Admin Level 1
+    #' @param value String vector of admin level 1
+    #' @return None
+    set_admin_level_1 = function(value) {
+      if (!is_scalar_character(value)) {
+        cd_abort(c('x' = 'Admin level 1 must be a scalar string.'))
+      }
+      private$update_field('selected_admin_level_1', value)
+    },
+
+    #' Set District
+    #' @param value String vector of district/admin_level_2
+    #' @return None
+    set_district = function(value) {
+      if (!is_scalar_character(value)) {
+        cd_abort(c('x' = 'Admin level 1 must be a scalar string.'))
+      }
+      private$update_field('selected_district', value)
     },
 
     #' Set survey estimates
@@ -502,7 +569,7 @@ CacheConnection <- R6::R6Class(
       countdown_data = NULL,
       performance_threshold = 90,
       excluded_years = numeric(),
-      k_factors = c(anc = 0.25, idelv = 0.25, vacc = 0.25),
+      k_factors = c(anc = 0, idelv = 0, vacc = 0),
       adjusted_flag = FALSE,
       survey_estimates = c(anc1 = 98, penta1 = 97, penta3 = 89),
       national_estimates  = list(
@@ -510,6 +577,11 @@ CacheConnection <- R6::R6Class(
         sbr = NA_real_, penta1_mort_rate = NA_real_
       ),
       start_survey_year = NULL,
+      denominator = 'dhis2',
+      selected_admin_level_1 = NULL,
+      selected_district = NULL,
+      selected_mapping_years = NULL,
+      # palette = c(coverage = 'Greens', dropout = 'Reds'),
       un_estimates = NULL,
       wuenic_estimates = NULL,
       national_survey = NULL,
@@ -523,7 +595,6 @@ CacheConnection <- R6::R6Class(
         page_id = character(),
         object_id = character(),
         note = character(),
-        title = character(),
         parameters = list(),
         include_in_report = logical(),
         include_plot_table = logical()
@@ -552,7 +623,7 @@ CacheConnection <- R6::R6Class(
 
       if (!is.null(parameters)) {
         df <- df %>% filter(
-          map_lgl(parameters, ~ dentical(.x, !!parameters))
+          map_lgl(parameters, ~ identical(.x, !!parameters))
         )
       }
 

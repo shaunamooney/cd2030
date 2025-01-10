@@ -38,11 +38,6 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
                 uiOutput(ns('checkbox_container'))
               )
             ),
-            textInput(
-              inputId = ns('note_title'),
-              label = 'Title:',
-              placeholder = 'Enter a title for the note'
-            ),
             textAreaInput(
               inputId = ns('documentation_text'),
               label = 'Enter your notes or observations:',
@@ -118,14 +113,12 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
       existing_notes <- cache()$get_notes(page_id, input$object_select, params)
 
       if (nrow(existing_notes) > 0) {
-        updateTextInput(session, 'note_title', value = existing_notes$title[1])
         updateTextAreaInput(session, 'documentation_text', value = existing_notes$note[1])
         updateCheckboxInput(session, 'include_in_report', value = existing_notes$include_in_report[1])
         if (!selected_object$always_include) {
           updateCheckboxInput(session, 'include_plot_table', value = existing_notes$include_plot_table[1])
         }
       } else {
-        updateTextInput(session, 'note_title', value = "")
         updateTextAreaInput(session, 'documentation_text', value = "")
         updateCheckboxInput(session, 'include_in_report', value = FALSE)
         if (!selected_object$always_include) {
@@ -136,7 +129,7 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
 
     observeEvent(input$save_documentation, {
       # Validate required inputs
-      req(input$object_select, input$note_title, input$documentation_text)
+      req(input$object_select, input$documentation_text)
 
       # Retrieve the selected object and its parameters
       selected_object <- document_objects[[input$object_select]]
@@ -171,7 +164,6 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
           page_id = page_id,
           object_id = input$object_select,
           note = input$documentation_text,
-          title = input$note_title,
           parameters = params,
           single_entry = selected_object$single_entry,  # Overwrite for single-entry objects
           include_in_report = include_in_report,

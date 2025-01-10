@@ -3,7 +3,7 @@ dataAjustmentUI <- function(id) {
 
   k_factor_options <- c(0, 0.25, 0.5, 0.75)
   tagList(
-    contentHeader(ns('data_adjustment'), 'Data Adjustments'),
+    contentHeader(ns('data_adjustment'), 'Data Adjustments', include_buttons = FALSE),
     contentBody(
       fluidRow(
         column(

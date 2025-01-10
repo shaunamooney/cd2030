@@ -127,7 +127,6 @@ cd_plot_theme <- function() {
 
     legend.background = element_rect(color = "black",size = 0.5),
     legend.position = "bottom",
-    legend.direction = "horizontal",
     legend.title = element_blank(),
     legend.text = element_text(size = 13),
     legend.key.size = unit(8, "mm"),
@@ -305,7 +304,7 @@ plot_line_graph <- function(.data, x, y_vars, y_labels, title, y_axis_title, hli
         labels = scales::label_number(accuracy = 1, big.mark = ",")
         # expand = c(0, 0)
       ) +
-      scale_color_manual(values = set_names(c("darkgreen", "red2", "blue", "purple", "orange", "brown")[1:length(y_vars)], y_labels)) +
+      scale_color_manual(values = set_names(c("darkgreen", "orange",  "blue", "purple", "red2", "brown")[1:length(y_vars)], y_labels)) +
       cd_plot_theme() +
       theme(
         plot.title = element_text(size = 14),

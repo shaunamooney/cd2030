@@ -5,12 +5,7 @@ contentHeader <- function(id, title, include_buttons = TRUE) {
     h1(title),
     if (include_buttons) {
       div(
-        actionButton(
-          inputId = ns('generate_report'),
-          label = 'Generate Report',
-          icon = icon('file-alt'),
-          class ='btn bg-olive btn-flat btn-sm'
-        ),
+        reportButtonUI(ns('report')),
         documentationButtonUI(ns('add_notes')),
         helpButtonUI(ns('get_help')),
         class = 'right-buttons'
@@ -25,6 +20,12 @@ contentHeaderServer <- function(id, cache, objects = NULL, md_title, md_file) {
   moduleServer(
     id = id,
     module = function(input, output, session) {
+
+      reportButtonServer(
+        id = 'report',
+        cache = cache,
+        report_name = id
+      )
 
       helpButtonServer(
         id = 'get_help',

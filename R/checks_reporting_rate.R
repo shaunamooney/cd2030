@@ -127,7 +127,7 @@ district_low_reporting <- function(.data, threshold = 90) {
 
   reporting_rate <- .data %>%
     summarise(across(all_of(indicator_groups), mean, na.rm = TRUE), .by = c(district, year)) %>%
-    filter(if_any(ends_with("rr"), ~ .x < threshold))
+    filter(if_any(ends_with("rr"), ~ round(.x, 0) < threshold))
 
   return(reporting_rate)
 }

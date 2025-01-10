@@ -11,6 +11,7 @@ outlierDetectionUI <- function(id) {
         width = 12,
         fluidRow(
           column(3, selectizeInput(ns('year'), label = 'Year', choice = NULL)),
+          column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
           column(12, withSpinner(plotlyOutput(ns('district_outlier_heatmap')))),
           column(4, downloadButtonUI(ns('download_data')))
         )
@@ -21,8 +22,7 @@ outlierDetectionUI <- function(id) {
         collapsible = TRUE,
         width = 6,
         fluidRow(
-          column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
-          column(4, offset = 4, downloadButtonUI(ns('download_outliers'))),
+          column(4, downloadButtonUI(ns('download_outliers'))),
           column(12, reactableOutput(ns('district_outlier_summary')))
         )
       ),
@@ -78,7 +78,9 @@ outlierDetectionServer <- function(id, cache) {
 
       observe({
         req(data())
-        updateSelectizeInput(session, 'indicator', choices = vaccines_indicator())
+
+        vaccs <- vaccines_indicator()
+        updateSelectizeInput(session, 'indicator', choices = c('Select Indicator' = '', vaccs))
       })
 
       observe({
@@ -139,22 +141,41 @@ outlierDetectionServer <- function(id, cache) {
       output$district_outlier_heatmap <- renderPlotly({
         req(outlier_summary())
 
-        selected_year <- as.numeric(input$year)
+        if (input$indicator == '' || is.null(input$indicator) || length(input$indicator) == 0) {
+          selected_year <- as.numeric(input$year)
 
-        dt <- outlier_summary() %>%
-          filter(if (selected_year == 0) TRUE else year == selected_year) %>%
-          summarise(across(ends_with('_outlier5std'), ~ sum(.x, na.rm = TRUE)), .by = district) %>%
-          pivot_longer(col = ends_with('_outlier5std'), names_to = 'indicator') %>%
-          mutate(indicator = str_remove(indicator, '_outlier5std'))
+          dt <- outlier_summary() %>%
+            filter(if (selected_year == 0) TRUE else year == selected_year) %>%
+            summarise(across(ends_with('_outlier5std'), ~ sum(.x, na.rm = TRUE)), .by = district) %>%
+            pivot_longer(col = ends_with('_outlier5std'), names_to = 'indicator') %>%
+            mutate(indicator = str_remove(indicator, '_outlier5std'))
 
-        ggplotly(
-          ggplot(dt, aes(x = district, y = indicator, fill = value)) +
-            geom_tile(color = 'white') +
-            scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
-            labs(title = NULL, x = 'Indicator', y = 'District', fill = 'Value') +
-            theme_minimal() +
-            theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
-        )
+          ggplotly(
+            ggplot(dt, aes(x = district, y = indicator, fill = value)) +
+              geom_tile(color = 'white') +
+              scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
+              labs(title = NULL, x = 'Indicator', y = 'District', fill = 'Value') +
+              theme_minimal() +
+              theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
+          )
+        } else {
+          dt <- outlier_summary() %>%
+            select(district, year, any_of(paste0(input$indicator, '_outlier5std'))) %>%
+            summarise(
+              value = sum(.data[[paste0(input$indicator, '_outlier5std')]], na.rm = TRUE),
+              .by = c(district, year)
+            ) %>%
+            arrange(year)
+
+          ggplotly(
+            ggplot(dt, aes(x = district, y = year, fill = value)) +
+              geom_tile(color = 'white') +
+              scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
+              labs(title = NULL, x = 'Indicator', y = 'District', fill = 'Value') +
+              theme_minimal() +
+              theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
+          )
+        }
       })
 
       output$district_trend <- renderPlotly({

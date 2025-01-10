@@ -1,5 +1,7 @@
 # increase the uploading file size limit to 2000M, now our upload is not just about hfd file, it also include the saved data.
 options(shiny.maxRequestSize = 2000*1024^2)
+options(future.globals.maxSize = 1 * 1024 * 1024^2) # 1 GB
+
 # options(shiny.trace = TRUE)
 # options(shiny.trace = FALSE)
 
@@ -11,12 +13,14 @@ pacman::p_load(
   shinyjs,
   cd2030,
   dplyr,
+  future,
   kableExtra,
   flextable,
   openxlsx,
   khisr,
   plotly,
   purrr,
+  promises,
   # forcats,
   lubridate,
   RColorBrewer,
@@ -38,6 +42,7 @@ source('ui/download_report.R')
 source('ui/help_button.R')
 source('ui/message_box.R')
 source('ui/render-plot.R')
+source('ui/report_button.R')
 source('ui/save_cache.R')
 
 source('modules/calculate_ratios.R')
@@ -132,7 +137,8 @@ ui <- dashboardPage(
     useShinyjs(),
     tags$head(
       tags$link(rel = 'stylesheet', type = 'text/css', href = 'styles.css'),
-      tags$link(rel = 'stylesheet', type = 'text/css', href = 'rmd-styles.css')
+      tags$link(rel = 'stylesheet', type = 'text/css', href = 'rmd-styles.css'),
+      tags$link(rel = "stylesheet", type = 'text/css', href = "bootstrap-icons.css")
     ),
     tabItems(
       tabItem(tabName = 'introduction', introductionUI('introduction')),
@@ -154,7 +160,8 @@ ui <- dashboardPage(
       tabItem(tabName = 'subnational_inequality', subnationalInequalityUI('subnational_inequality')),
       tabItem(tabName = 'subnational_mapping', subnationalMappingUI('subnational_mapping')),
       tabItem(tabName = 'equity_assessment', equityUI('equity_assessment'))
-    )
+    ),
+    tags$script(src = 'script.js')
   )
 )
 

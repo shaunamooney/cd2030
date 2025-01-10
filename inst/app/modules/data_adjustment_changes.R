@@ -2,7 +2,7 @@ adjustmentChangesUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('adjustment_changes'), 'Data Adjustment Changes', include_buttons = FALSE),
+    contentHeader(ns('adjustment_changes'), 'Data Adjustment Changes'),
     contentBody(
       tabBox(
         title = 'Visualize effects of changes',
@@ -82,6 +82,17 @@ adjustmentChangesServer <- function(id, cache) {
         req(data())
         data() %>%
           generate_adjustment_values(adjustment = 'custom', k_factors = k_factors())
+      })
+
+      vaccines_indicator <- reactive({
+        req(cache())
+        cache()$get_vaccine_indicators()
+      })
+
+      observe({
+        req(cache())
+        vaccs <- vaccines_indicator()
+        updateSelectizeInput(session, 'indicator', choices = c('Select Indicator' = '', vaccs))
       })
 
       output$live_births <- renderCustomPlot({

@@ -1,0 +1,200 @@
+---
+title: "Equity Analysis for `r params$country` --- Countdown Analysis"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  word_document:
+    toc: false
+    reference_docx: report-template.docx
+  pdf_document:
+    toc: false
+    latex_engine: lualatex
+params:
+  cache: NULL
+  country: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  fig.width=7, 
+  fig.height=5, 
+  dpi=1200
+)
+
+library(cd2030)
+library(dplyr)
+library(purrr)
+library(gt)
+library(reactable)
+library(gridExtra)
+
+cache <- params$cache
+
+meduc <- cache$get_education_survey()
+wiq <- cache$get_wiq_survey()
+area <- cache$get_area_survey()
+
+# Function to print notes for a given page
+print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
+  # Retrieve the notes from the cache
+  page_notes <- cache$get_notes(page_id, object_id, parameters) %>% 
+    filter(include_in_report == TRUE, !is.null(note))
+  
+  # Check if there are any notes
+  if (nrow(page_notes) > 0) {
+    page_notes %>% 
+      pull(note) %>% 
+      walk(~ cat(paste0(,x, '\n\n')))
+  } else {
+    cat(paste0("**--- Enter notes related to ", parameters$type, ' ', object_id,  ': ', page_id, '. ---**\n\n'))
+  }
+}
+```
+
+## 7. Equity Analysis {-}
+
+### Background 
+
+Household surveys provide critical information on inequalities. The focus is on 
+two major dimensions of inequality: household wealth quintile and education of 
+the mother. Equiplots are used to assess whether the country has made progress 
+since 2010 in reducing the poor rich gap or the gap between women with no education 
+or low education and women with higher education.
+
+
+### Pentavalent 3 coverage by household wealth status
+
+```{r, fig.cap='Fig 4g: Pentavalent 3 coverage by wealth, recent surveys'}
+equiplot_wealth(wiq, 'penta3') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('equity_assessment', 'Penta 3', list(type = 'wiq'))
+```
+
+---
+
+:::
+
+
+### Pentavalent 3 coverage by education of mother
+
+```{r, fig.cap='Fig 4h: Penta3 coverage by level of education of the mother, recent surveys'}
+equiplot_education(meduc, 'penta3') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('equity_assessment', 'Penta 3', list(type = 'meduc'))
+```
+
+---
+
+:::
+
+### Pentavalent 3 coverage by place of residence
+
+```{r, fig.cap='Fig 4g: Penta3 coverage by place of residence, recent surveys'}
+equiplot_area(area, 'penta3') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('equity_assessment', 'Penta 3', list(type = 'area'))
+```
+
+---
+
+:::
+
+### Measles 1 coverage by household wealth status
+
+```{r, fig.cap='Fig 4g: Measles 1 coverage by wealth, recent surveys'}
+equiplot_wealth(wiq, 'measles1') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('equity_assessment', 'Measles 1', list(type = 'wiq'))
+```
+
+---
+
+:::
+
+
+### Measles 1 coverage by education of mothers
+
+```{r, fig.cap='Fig 4h: Measles 1coverage by level of education of the mother, recent surveys'}
+equiplot_education(meduc, 'measles1') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('equity_assessment', 'Measles 1', list(type = 'meduc'))
+```
+
+---
+
+:::
+
+### Measles 1 coverage by place of residence
+
+```{r, fig.cap='Fig 4g: Measles 1 coverage by place of residence, recent surveys'}
+equiplot_area(area, 'measles1') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('equity_assessment', 'Measles 1', list(type = 'area'))
+```
+
+---
+
+:::

@@ -1,0 +1,112 @@
+---
+title: "Denominator Assessment for `r params$country` --- Countdown Analysis"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  word_document:
+    toc: false
+    reference_docx: report-template.docx
+  pdf_document:
+    toc: false
+    latex_engine: lualatex
+params:
+  cache: NULL
+  country: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  fig.width=7, 
+  fig.height=5, 
+  dpi=1200
+)
+
+library(cd2030)
+library(dplyr)
+library(purrr)
+library(gt)
+library(reactable)
+library(gridExtra)
+
+cache <- params$cache
+
+adjusted_data <- cache$get_adjusted_data()
+un_estimates <- cache$get_un_estimates()
+
+# Function to print notes for a given page
+print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
+  # Retrieve the notes from the cache
+  page_notes <- cache$get_notes(page_id, object_id, parameters) %>% 
+    filter(include_in_report == TRUE, !is.null(note))
+  
+  # Check if there are any notes
+  if (nrow(page_notes) > 0) {
+    page_notes %>% 
+      pull(note) %>% 
+      walk(~ cat(paste0(,x, '\n\n')))
+  } else {
+    cat(paste0("**--- Enter notes related to ", page_id, ' ', object_id, '. ---**\n\n'))
+  }
+}
+```
+
+## 3. Health facility data denominator assessment: DHIS2, UN Population and livebirths projections {-}
+
+### Background
+
+Service coverage is defined as the population who received the service divided by 
+the population who need the services: the denominator. The quality of the population 
+projections in DHIS2 is assessed through consistency over time and comparison with 
+the UN projections.
+
+
+### Total Population Projections: DHIS2 and UN Populations
+
+```{r}
+plot(prepare_population_metrics(adjusted_data, un_estimates = un_estimates), metric = 'population') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('denominator_assessment', 'Total Population')
+```
+
+---
+
+:::
+
+### Live Births Projections: DHIS2 and UN Live births
+
+```{r}
+plot(prepare_population_metrics(adjusted_data, un_estimates = un_estimates), metric = 'births') +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('denominator_assessment', 'Births')
+```
+
+---
+
+:::

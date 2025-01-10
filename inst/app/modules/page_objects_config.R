@@ -1,55 +1,17 @@
 pageObjectsConfig <- function(input) {
   list(
     reporting_rate = list(
-      'Average Report Rate' = list(
-        parameters = list(
-          threshold = reactive({ input$threshold })
-        ),
+      'Reporting Rate' = list(
+        parameters = list(),
         always_include = TRUE,
         single_entry = TRUE
-      ),
-      'Low Reporting DIstricts' = list(
-        parameters = list(
-          threshold = reactive({ input$threshold }),
-          indicator = reactive({ input$indicator }),
-          year = reactive({ input$year })
-        ),
-        always_include = FALSE,
-        single_entry = FALSE
-      ),
-      'District Trend' = list(
-        parameters = list(
-          threshold = reactive({ input$threshold }),
-          indicator = reactive({ input$indicator }),
-          district = reactive({ input$district })
-        ),
-        always_include = FALSE,
-        single_entry = FALSE
       )
     ),
     outlier_detection = list(
-      'Indicator with Outlier' = list(
-        parameters = list(
-          year = reactive({ input$year })
-        ),
-        always_include = FALSE,
-        single_entry = FALSE
-      ),
-      'District with Outlier' = list(
-        parameters = list(
-          year = reactive({ input$year }),
-          indicator = reactive({ input$indicator })
-        ),
-        always_include = FALSE,
-        single_entry = FALSE
-      ),
-      'District Trends' = list(
-        parameters = list(
-          indicator = reactive({ input$indicator }),
-          district = reactive({ input$district })
-        ),
-        always_include = FALSE,
-        single_entry = FALSE
+      'Outlier Detection' = list(
+        parameters = list(),
+        always_include = TRUE,
+        single_entry = TRUE
       )
     ),
     consistency_checks = list(
@@ -78,29 +40,15 @@ pageObjectsConfig <- function(input) {
       )
     ),
     data_completeness = list(
-      'Indicators with Missing Data' = list(
-        parameters = list(
-          year = reactive({ input$year })
-        ),
-        always_include = FALSE,
-        single_entry = FALSE
-      ),
-      'Districts with Missing Data' = list(
-        parameters = list(
-          year = reactive({ input$year }),
-          indicator = reactive({ input$indicator })
-        ),
-        always_include = FALSE,
-        single_entry = FALSE
+      'Data Completeness' = list(
+        parameters = list(),
+        always_include = TRUE,
+        single_entry = TRUE
       )
     ),
     ratios = list(
       'Ratio Plots' = list(
-        parameters = list(
-          anc1_coverage = reactive({ input$anc1_coverage }),
-          penta1_coverage = reactive({ input$penta1_coverage }),
-          penta3_coverage = reactive({ input$penta3_coverage })
-        ),
+        parameters = list(),
         always_include = TRUE,
         single_entry = TRUE
       )
@@ -165,41 +113,27 @@ pageObjectsConfig <- function(input) {
     ),
     national_coverage = list(
       'Measles 1' = list(
-        parameters = list(
-          denominator = reactive({ input$denominator }),
-          year = reactive({ input$year })
-        ),
+        parameters = list(),
         always_include = TRUE,
         single_entry = TRUE
       ),
       'Penta 3' = list(
-        parameters = list(
-          denominator = reactive({ input$denominator }),
-          year = reactive({ input$year })
-        ),
+        parameters = list(),
         always_include = TRUE,
         single_entry = TRUE
       ),
       'Penta1 to Penta3 Dropout' = list(
-        parameters = list(
-          denominator = reactive({ input$denominator }),
-          year = reactive({ input$year })
-        ),
+        parameters = list(),
         always_include = TRUE,
         single_entry = TRUE
       ),
       'Penta3 to Measles 1 Dropout' = list(
-        parameters = list(
-          denominator = reactive({ input$denominator }),
-          year = reactive({ input$year })
-        ),
+        parameters = list(),
         always_include = TRUE,
         single_entry = TRUE
       ),
       'Custom Checks' = list(
         parameters = list(
-          denominator = reactive({ input$denominator }),
-          year = reactive({ input$year }),
           indicator = reactive({ input$indicator })
         ),
         always_include = FALSE,
@@ -209,50 +143,35 @@ pageObjectsConfig <- function(input) {
     subnational_coverage = list(
       'Measles 1' = list(
         parameters = list(
-          admin_level = reactive({ input$admin_level }),
-          region = reactive({ input$region }),
-          denominator = reactive({ input$denominator }),
-          year = reactive({ input$year })
+          admin_level = reactive({ input$admin_level })
         ),
         always_include = TRUE,
-        single_entry = TRUE
+        single_entry = FALSE
       ),
       'Penta 3' = list(
         parameters = list(
-          admin_level = reactive({ input$admin_level }),
-          region = reactive({ input$region }),
-          denominator = reactive({ input$denominator }),
-          year = reactive({ input$year })
+          admin_level = reactive({ input$admin_level })
         ),
         always_include = TRUE,
-        single_entry = TRUE
+        single_entry = FALSE
       ),
       'Penta1 to Penta3 Dropout' = list(
         parameters = list(
-          admin_level = reactive({ input$admin_level }),
-          region = reactive({ input$region }),
-          denominator = reactive({ input$denominator }),
-          year = reactive({ input$year })
+          admin_level = reactive({ input$admin_level })
         ),
         always_include = TRUE,
-        single_entry = TRUE
+        single_entry = FALSE
       ),
       'Penta3 to Measles 1 Dropout' = list(
         parameters = list(
-          admin_level = reactive({ input$admin_level }),
-          region = reactive({ input$region }),
-          denominator = reactive({ input$denominator }),
-          year = reactive({ input$year })
+          admin_level = reactive({ input$admin_level })
         ),
         always_include = TRUE,
-        single_entry = TRUE
+        single_entry = FALSE
       ),
       'Custom Checks' = list(
         parameters = list(
           admin_level = reactive({ input$admin_level }),
-          region = reactive({ input$region }),
-          denominator = reactive({ input$denominator }),
-          year = reactive({ input$year }),
           indicator = reactive({ input$indicator })
         ),
         always_include = FALSE,
@@ -262,23 +181,34 @@ pageObjectsConfig <- function(input) {
     subnational_inequality = list(
       'Measles 1' = list(
         parameters = list(
-          denominator = reactive({ input$denominator }),
           level = reactive({ input$level })
         ),
         always_include = TRUE,
-        single_entry = TRUE
+        single_entry = FALSE
       ),
       'Penta 3' = list(
         parameters = list(
-          denominator = reactive({ input$denominator }),
           level = reactive({ input$level })
         ),
         always_include = TRUE,
-        single_entry = TRUE
+        single_entry = FALSE
+      ),
+      'Penta1 to Penta3 Dropout' = list(
+        parameters = list(
+          level = reactive({ input$level })
+        ),
+        always_include = TRUE,
+        single_entry = FALSE
+      ),
+      'Penta3 to Measles 1 Dropout' = list(
+        parameters = list(
+          level = reactive({ input$level })
+        ),
+        always_include = TRUE,
+        single_entry = FALSE
       ),
       'Custom Checks' = list(
         parameters = list(
-          denominator = reactive({ input$denominator }),
           level = reactive({ input$level }),
           indicator = reactive({ input$indicator })
         ),
@@ -289,50 +219,35 @@ pageObjectsConfig <- function(input) {
     subnational_mapping = list(
       'Measles 1' = list(
         parameters = list(
-          denominator = reactive({ input$denominator }),
-          level = reactive({ input$level }),
-          years = reactive({ input$years }),
-          palette = reactive({ input$palette })
+          level = reactive({ input$level })
         ),
         always_include = TRUE,
-        single_entry = TRUE
+        single_entry = FALSE
       ),
       'Penta 3' = list(
         parameters = list(
-          denominator = reactive({ input$denominator }),
-          level = reactive({ input$level }),
-          years = reactive({ input$years }),
-          palette = reactive({ input$palette })
+          level = reactive({ input$level })
         ),
         always_include = TRUE,
-        single_entry = TRUE
+        single_entry = FALSE
       ),
       'Penta1 to Penta3 Dropout' = list(
         parameters = list(
-          denominator = reactive({ input$denominator }),
-          level = reactive({ input$level }),
-          years = reactive({ input$years }),
-          palette = reactive({ input$palette })
+          level = reactive({ input$level })
         ),
         always_include = TRUE,
-        single_entry = TRUE
+        single_entry = FALSE
       ),
       'Penta3 to Measles 1 Dropout' = list(
         parameters = list(
-          denominator = reactive({ input$denominator }),
-          level = reactive({ input$level }),
-          years = reactive({ input$years }),
-          palette = reactive({ input$palette })
+          level = reactive({ input$level })
         ),
         always_include = TRUE,
-        single_entry = TRUE
+        single_entry = FALSE
       ),
       'Custom Checks' = list(
         parameters = list(
-          denominator = reactive({ input$denominator }),
           level = reactive({ input$level }),
-          years = reactive({ input$years }),
-          palette = reactive({ input$palette }),
           indicator = reactive({ input$indicator })
         ),
         always_include = FALSE,

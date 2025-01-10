@@ -8,10 +8,6 @@
 #' @param output_file A character string specifying the name and path of the output file.
 #' @param output_format A character vector specifying the output format, either
 #'   `'html_document'` or `'word_document'`.
-#' @param denominator A character string or numeric value defining the denominator
-#'   used for rate calculations, such as population size or number of facilities.
-#' @param survey_start_year Numeric. The starting year of the survey data used in
-#'   the analysis.
 #'
 #' @return The function renders the report to the specified file in the chosen format.
 #'
@@ -24,13 +20,13 @@
 #' @export
 generate_final_report <- function(cache,
                           output_file,
-                          denominator,
+                          report_name,
                           output_format = c('word_document', 'pdf_document', 'html_document')) {
 
   # check_cd_data(.data)
   check_required(cache)
   check_required(output_file)
-  check_required(denominator)
+  check_required(report_name)
 
   format <- arg_match(output_format)
 
@@ -46,10 +42,10 @@ generate_final_report <- function(cache,
   dir.create(temp_dir)
 
   render(
-    input = paste0(system.file(package = 'cd2030'), '/rmd/final_report_template.Rmd'),
+    input = file.path(system.file(package = 'cd2030'), 'rmd', paste0(report_name, '_template.Rmd')),
     output_format = format,
     output_file = output_path,
-    params = list(cache = cache, denominator = denominator, country = cache$get_country()),
+    params = list(cache = cache, country = cache$get_country()),
     encoding = 'UTF-8',
     runtime = 'auto',
     intermediates_dir = temp_dir,    # Set unique temp directory

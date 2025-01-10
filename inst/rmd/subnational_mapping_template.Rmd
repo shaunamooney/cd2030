@@ -1,0 +1,175 @@
+---
+title: "Subnational Mapping for `r params$country` --- Countdown Analysis"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  word_document:
+    toc: false
+    reference_docx: report-template.docx
+  pdf_document:
+    toc: false
+    latex_engine: lualatex
+params:
+  cache: NULL
+  country: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  fig.width=7, 
+  fig.height=5, 
+  dpi=1200
+)
+
+library(cd2030)
+library(dplyr)
+library(purrr)
+library(gt)
+library(reactable)
+library(gridExtra)
+
+cache <- params$cache
+
+adjusted_data <- cache$get_adjusted_data()
+country <- cache$get_country()
+un_estimates <- cache$get_un_estimates()
+rates <- cache$get_national_estimates()
+denominator <- cache$get_denominator()
+subnational_map <- cache$get_survey_mapping()
+mapping_years <- cache$get_mapping_years()
+
+# Function to print notes for a given page
+print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
+  # Retrieve the notes from the cache
+  page_notes <- cache$get_notes(page_id, object_id, parameters) %>% 
+    filter(include_in_report == TRUE, !is.null(note))
+  
+  # Check if there are any notes
+  if (nrow(page_notes) > 0) {
+    page_notes %>% 
+      pull(note) %>% 
+      walk(~ cat(paste0(,x, '\n\n')))
+  } else {
+    cat(paste0("**--- Enter notes related to ", parameters$level, ' ', object_id, ': ', page_id, '. ---**\n\n'))
+  }
+}
+```
+
+## 5. Admin Level 1 Vaccination Coverage Map
+
+### Background
+
+Monitoring the coverage of interventions is a critical and direct output of health 
+systems. It is most useful if the national plan has meaningful targets. Both health 
+facility and survey data need to be used.
+
+### Measles 1 Mapping -- Admin Level 1
+
+```{r}
+mapping_data <- get_mapping_data(adjusted_data, un_estimates, rates, subnational_map)
+
+plot(mapping_data, indicator = 'measles1',
+               denominator = denominator,
+               palette = 'Greens',
+               plot_year = mapping_years,
+               title = paste("Distribution of Measles 1 Coverage in ", country, "by Regions")) +
+            cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('subnational_mapping', 'Measles 1', list(level = 'adminlevel_1'))
+```
+
+---
+
+:::
+
+### Penta 3 Mapping -- Admin Level 1
+
+```{r}
+plot(mapping_data, indicator = 'penta3',
+               denominator = denominator,
+               palette = 'Blues',
+               plot_year = mapping_years,
+               title = paste("Distribution of Penta3 Coverage in ", country, "by Regions")) +
+            cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('subnational_mapping', 'Penta 3', list(level = 'adminlevel_1'))
+```
+
+---
+
+:::
+
+### Penta1 to Penta3 Dropout Mapping -- Admin Level 1
+
+```{r}
+plot(mapping_data, indicator = 'dropout_penta13',
+               denominator = denominator,
+               palette = 'Reds',
+               plot_year = mapping_years,
+               title = paste("Distribution of Penta1 to Penta3 Dropout in ", country, "by Regions")) +
+            cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('subnational_mapping', 'Penta1 to Penta3 Dropout', list(level = 'adminlevel_1'))
+```
+
+---
+
+:::
+
+### Penta3 to Measles 1 Dropout Mapping -- Admin Level 1
+
+```{r}
+plot(mapping_data, indicator = 'dropout_penta3mcv1',
+               denominator = denominator,
+               palette = 'Purples',
+               plot_year = mapping_years,
+               title = paste("Distribution of Penta3 to Measles1 Dropout in ", country, "by Regions")) +
+            cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+```{r, results='asis'}
+print_notes('subnational_mapping', 'Penta3 to Measles 1 Dropout', list(level = 'adminlevel_1'))
+```
+
+---
+
+:::

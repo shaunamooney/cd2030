@@ -107,23 +107,37 @@ subnationalMappingServer <- function(id, cache) {
       })
 
       years <- reactive({
-        if (is.null(input$years) || length(input$years) == 0) {
-          NULL
-        } else {
-          as.numeric(input$years)
-        }
+        req(cache())
+        cache()$get_mapping_years()
+      })
+
+      observe({
+        req(cache())
+
+        selected_denoninator <- cache()$get_denominator()
+        updateSelectInput(session, 'denominator', selected = selected_denoninator)
+      })
+
+      observeEvent(input$denominator, {
+        req(cache())
+        cache()$set_denominator(input$denominator)
       })
 
       observe({
         req(data())
 
-        years <- data() %>%
+        survey_years <- data() %>%
           distinct(year) %>%
           arrange(year) %>%
           pull(year)
 
-        years <- c('All years' = '', years)
-        updateSelectizeInput(session, 'years', choices = years)
+        survey_years <- c('All years' = '', survey_years)
+        updateSelectizeInput(session, 'years', choices = survey_years, selected = years())
+      })
+
+      observeEvent(input$years, {
+        req(cache())
+        cache()$set_mapping_years(as.integer(input$years))
       })
 
       observe({
@@ -151,8 +165,8 @@ subnationalMappingServer <- function(id, cache) {
         plot(dt(), indicator = 'dropout_penta13',
              denominator = input$denominator,
              palette = input$palette,
-             title = title)#,
-             # plot_year = years())
+             title = title,
+             plot_year = years())
       })
 
       output$penta3mcv1_dropout <- renderCustomPlot({

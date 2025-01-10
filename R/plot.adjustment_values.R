@@ -85,7 +85,7 @@ plot.cd_adjustment_values <- function(x,
       x = NULL,
       y = NULL
     ) +
-    # scale_y_continuous(labels = scales::number_format(), breaks = scales::pretty_breaks(n = 10)) +
+    scale_y_continuous(labels = scales::number_format(), breaks = scales::pretty_breaks(n = 10)) +
     scale_fill_manual(values = c("darkgreen", "darkgoldenrod3"), name = "Data Type") +
     cd_plot_theme()
 }

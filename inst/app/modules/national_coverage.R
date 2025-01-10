@@ -122,12 +122,26 @@ nationalCoverageServer <- function(id, cache) {
           arrange(year) %>%
           pull(year)
 
-        updateSelectInput(session, 'year', choices = years)
+        selected_year <- cache()$get_start_survey_year()
+
+        updateSelectInput(session, 'year', choices = years, selected = selected_year)
+      })
+
+      observe({
+        req(cache())
+
+        selected_denoninator <- cache()$get_denominator()
+        updateSelectInput(session, 'denominator', selected = selected_denoninator)
       })
 
       observeEvent(input$year, {
         req(cache())
         cache()$set_start_survey_year(as.numeric(input$year))
+      })
+
+      observeEvent(input$denominator, {
+        req(cache())
+        cache()$set_denominator(input$denominator)
       })
 
       measles1_coverage <- reactive({

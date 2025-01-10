@@ -118,7 +118,7 @@ reference:
       To document findings, generate summaries, and create exportable formats for sharing and presentation
     contents:
     - dashboard
-    - generate_checks_report
+    - generate_final_report
 
   - title: "Other Functions"
     contents:
@@ -126,7 +126,9 @@ reference:
     - add_mad_med_columns
     - add_missing_column
     - robust_max
-    - render_with_error_handling
     - new_countdown
     - print.cd_data
     - with_cd_quiet
+    - clean_error_message
+    - CacheConnection
+    - init_CacheConnection

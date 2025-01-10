@@ -17,30 +17,19 @@ downloadReportServer <- function(id, cache) {
   moduleServer(
     id = id,
     module = function(input, output, session) {
+      ns <- session$ns
+      rv <- reactiveValues(generating = FALSE, future = NULL, file_path = NULL)
 
       data <- reactive({
         req(cache())
         cache()$get_adjusted_data()
       })
 
-      country <- reactive({
-        req(data())
-        attr(data(), 'country')
-      })
-
-      extension <- reactive({
-        req(input$format)
-
-        switch(input$format,
-               'word_document' = 'docx',
-               'pdf_document' = 'pdf',
-               'html_document' = 'html')
-      })
-
       observeEvent(input$download, {
         req(cache())
 
-        if (is.null(cache()$get_un_estimates())) {
+        if (is.null(cache()$get_un_estimates()) || is.null(cache()$get_wuenic_estimates()) ||
+            is.null(cache()$get_national_survey()) || is.null(cache()$get_regional_survey())) {
           # Show an error dialog if data is not available
           showModal(
             modalDialog(
@@ -56,38 +45,19 @@ downloadReportServer <- function(id, cache) {
             modalDialog(
               title = 'Download Options',
               selectizeInput(
-                ns('denominator'), 'Select Denominator:',
-                choices = c('DHIS 2' = 'dhis2', 'ANC 1' = 'anc1', 'Penta 1' = 'penta1')
-              ),
-              selectizeInput(
                 ns('format'), 'Select Format:',
                 choices = c('Word' = 'word_document', 'PDF' = 'pdf_document')
               ),
               footer = tagList(
-                fluidRow(
-                  column(6, align = 'left', modalButton('Cancel')),
-                  column(6, align = 'right', downloadButtonUI(ns('download_data')))
-                )
+                modalButton('Cancel'),
+                reportButtonUI(ns('report'))
               )
             )
           )
         }
       })
 
-      downloadButtonServer(
-        id = 'download_data',
-        filename = paste0(country(), '_countdown_report'),
-        extension = extension(),
-        content = function(file) {
-          print(file)
-          generate_final_report(cache = cache(),
-                                output_file = file,
-                                output_format = input$format,
-                                denominator = input$denominator)
-        },
-        data = cache,
-        label = 'Download Report'
-      )
+      reportButtonServer('report', cache, 'final_report')
 
     }
   )

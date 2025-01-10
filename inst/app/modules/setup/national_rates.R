@@ -76,22 +76,23 @@ nationalRatesServer <- function(id, cache) {
         updateNumericInput(session, "penta1_mortality_rate", value = national_estimates$penta1_mort_rate)
       })
 
+      debounced_anc1 <- debounce(reactive(input$anc1_prop), millis = 200)
+      debounced_penta1 <- debounce(reactive(input$penta1_prop), millis = 200)
+
       observe({
         req(cache())
 
         estimates <- cache()$get_survey_estimates()
-        isolate({
-          updateNumericInput(session, 'anc1_prop', value = unname(estimates['anc1']))
-          updateNumericInput(session, 'penta1_prop', value = unname(estimates['penta1']))
-        })
+        updateNumericInput(session, 'anc1_prop', value = unname(estimates['anc1']))
+        updateNumericInput(session, 'penta1_prop', value = unname(estimates['penta1']))
       })
 
-      observeEvent(c(input$anc1_prop, input$penta1_prop), {
+      observeEvent(c(debounced_anc1(), debounced_penta1()), {
         req(cache())
 
         estimates <- c(
-          anc1 = as.numeric(input$anc1_prop),
-          penta1 = as.numeric(input$penta1_prop)
+          anc1 = as.numeric(debounced_anc1()),
+          penta1 = as.numeric(debounced_penta1())
         )
 
         cache()$set_survey_estimates(estimates)

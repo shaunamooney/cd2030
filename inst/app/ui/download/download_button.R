@@ -1,21 +1,22 @@
 downloadButtonUI <- function(id, label = 'Download') {
   ns <- NS(id)
-  uiOutput(ns("download_ui"))
+  uiOutput(ns('download_ui'))
 }
 
-downloadButtonServer <- function(id, filename, extension, content, data, label = 'Download') {
+downloadButtonServer <- function(id, filename, extension, content, data, label = 'Download', message = 'Downloading...') {
   stopifnot(is.reactive(data))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
+      ns <- session$ns
 
       output$download_ui <- renderUI({
         req(data())
 
-        ns <- session$ns
         downloadButton(ns('download_button'),
                        label = label,
+                       icon = icon(name = NULL, class = "bi bi-download"),
                        class = 'btn btn-default btn-flat',
                        style = 'width:100%;margin-top:10px;')
       })
@@ -25,7 +26,15 @@ downloadButtonServer <- function(id, filename, extension, content, data, label =
           paste0(filename, '_', format(Sys.time(), '%Y%m%d%H%M'), '.', extension)
         },
         content = function(file) {
+          session$sendCustomMessage(
+            type = 'starting_download',
+            list(id = ns('download_button'), message = message)
+          )
           content(file)
+          session$sendCustomMessage(
+            type = 'end_download',
+            list(id = ns('download_button'), label = label)
+          )
         }
       )
     }
