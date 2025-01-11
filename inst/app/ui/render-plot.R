@@ -17,8 +17,14 @@ renderCustomPlot <- function(expr) {
   })
 
   renderPlot({
+    print(expr)
     # Evaluate the data from func
-    check_data <- tryCatch(func(), error = function(e) return(NULL))
+    check_data <- tryCatch(
+      rlang::eval_tidy(rlang::enquo(expr)),
+      error = function(e) {
+        clean_error_message(e)
+        return(NULL)
+    })
 
     # Check if data is empty or invalid
     if (is.null(check_data) ||
@@ -29,13 +35,7 @@ renderCustomPlot <- function(expr) {
       return() # Return early, no progress or further processing
     }
     tryCatch({
-      if (inherits(check_data, "ggplot")) {
-        print(check_data) # ggplot object
-      } else if (inherits(check_data, "plotly")) {
-        plotly::plotlyOutput(check_data)
-      } else {
-        func() # Base R plot
-      }
+      func()
     },
     error = function(e) {
       # if (inherits(e, 'shiny.silent.error')) return()

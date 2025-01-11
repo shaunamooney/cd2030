@@ -6,8 +6,8 @@
 \usage{
 calculate_overall_score(
   .data,
-  ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3"),
-    ratioOO = c("opv1", "opv3"))
+  threshold,
+  ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3"))
 )
 }
 \arguments{

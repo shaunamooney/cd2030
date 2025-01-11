@@ -177,7 +177,6 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
         # Handle errors during the save process
         showNotification("Failed to save documentation. Please try again.", type = "error")
         message("Error saving documentation: ", clean_error_message(e))  # Log error details
-        print(e)
       })
     })
 

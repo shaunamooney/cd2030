@@ -81,10 +81,18 @@ nationalCoverageServer <- function(id, cache) {
     id = id,
     module = function(input, output, session) {
 
-      data <- reactive({
-        req(cache(), cache()$get_un_estimates())
+      survey_data <- reactive({
+        req(cache())
+        cache()$get_national_survey()
+      })
+
+      coverage <- reactive({
+        req(cache(), cache()$get_un_estimates(), survey_data(), cache()$get_wuenic_estimates())
 
         rates <- cache()$get_national_estimates()
+        filtered_survey_data <- survey_data() %>%
+          filter(year >= as.numeric(input$year))
+
         cache()$get_adjusted_data() %>%
           calculate_indicator_coverage(
             un_estimates = cache()$get_un_estimates(),
@@ -94,24 +102,16 @@ nationalCoverageServer <- function(id, cache) {
             twin = rates$twin_rate,
             preg_loss = rates$preg_loss,
             anc1survey = rates$anc1,
-            dpt1survey = rates$penta1)
+            dpt1survey = rates$penta1) %>%
+          combine_coverage(
+            survey_data = filtered_survey_data,
+            wuenic_data = cache()$get_wuenic_estimates()
+          )
       })
 
-      wuenic_data <- reactive({
+      denominator <- reactive({
         req(cache())
-        cache()$get_wuenic_estimates()
-      })
-
-      survey_data <- reactive({
-        req(cache())
-        cache()$get_national_survey()
-      })
-
-      filtered_survey_data <- reactive({
-        req(survey_data())
-
-        survey_data() %>%
-          filter(year >= as.numeric(input$year))
+        cache()$get_denominator()
       })
 
       observe({
@@ -129,9 +129,7 @@ nationalCoverageServer <- function(id, cache) {
 
       observe({
         req(cache())
-
-        selected_denoninator <- cache()$get_denominator()
-        updateSelectInput(session, 'denominator', selected = selected_denoninator)
+        updateSelectInput(session, 'denominator', selected = denominator())
       })
 
       observeEvent(input$year, {
@@ -144,122 +142,62 @@ nationalCoverageServer <- function(id, cache) {
         cache()$set_denominator(input$denominator)
       })
 
-      measles1_coverage <- reactive({
-        req(data(), input$denominator, wuenic_data(), filtered_survey_data())
-
-        data() %>%
-          analyze_coverage(
-            indicator = 'measles1',
-            denominator = input$denominator,
-            survey_data = filtered_survey_data(),
-            wuenic_data = wuenic_data()
-          )
-      })
-
-      penta3_coverage <- reactive({
-        req(data(), input$denominator, wuenic_data(), filtered_survey_data())
-
-        data() %>%
-          analyze_coverage(
-            indicator = 'penta3',
-            denominator = input$denominator,
-            survey_data = filtered_survey_data(),
-            wuenic_data = wuenic_data()
-          )
-      })
-
-      dropout_penta13_coverage <- reactive({
-        req(data(), input$denominator, wuenic_data(), filtered_survey_data())
-
-        data() %>%
-          analyze_coverage(
-            indicator = 'dropout_penta13',
-            denominator = input$denominator,
-            survey_data = filtered_survey_data(),
-            wuenic_data = wuenic_data()
-          )
-      })
-
-      dropout_penta3mcv1_coverage <- reactive({
-        req(data(), input$denominator, wuenic_data(), filtered_survey_data())
-
-        data() %>%
-          analyze_coverage(
-            indicator = 'dropout_penta3mcv1',
-            denominator = input$denominator,
-            survey_data = filtered_survey_data(),
-            wuenic_data = wuenic_data()
-          )
-      })
-
-      custom_coverage <- reactive({
-        req(input$indicator, input$denominator, wuenic_data(), filtered_survey_data())
-
-        data() %>%
-          analyze_coverage(
-            indicator = input$indicator,
-            denominator = input$denominator,
-            survey_data = filtered_survey_data(),
-            wuenic_data = wuenic_data()
-          )
-      })
-
       output$measles1 <- renderCustomPlot({
-        req(measles1_coverage())
-        plot(measles1_coverage())
+        req(coverage(), denominator())
+        plot(coverage(), indicator = 'measles1', denominator = denominator())
       })
 
       output$penta3 <- renderCustomPlot({
-        req(penta3_coverage())
-        plot(penta3_coverage())
+        req(coverage(), denominator())
+        plot(coverage(), indicator = 'penta3', denominator = denominator())
       })
 
       output$dropout_penta13 <- renderCustomPlot({
-        req(dropout_penta13_coverage())
-        plot(dropout_penta13_coverage())
+        req(coverage(), denominator())
+        plot(coverage(), indicator = 'dropout_penta13', denominator = denominator())
       })
 
       output$dropout_penta3mcv1 <- renderCustomPlot({
-        req(dropout_penta3mcv1_coverage())
-        plot(dropout_penta3mcv1_coverage())
+        req(coverage(), denominator())
+        plot(coverage(), indicator = 'dropout_penta3mcv1', denominator = denominator())
       })
 
       output$custom_check <- renderCustomPlot({
-        req(custom_coverage())
-        plot(custom_coverage())
+        req(coverage(), denominator())
+        plot(coverage(), indicator = input$indicator, denominator = denominator())
       })
 
       downloadCoverageServer(
         id = 'measles1_download',
-        data_fn = measles1_coverage,
+        data_fn = coverage,
         filename = paste0('measles1_survey_', input$denominator),
         sheet_name = 'Measles 1 Coverage'
       )
 
       downloadCoverageServer(
         id = 'penta3_download',
-        data_fn = measles1_coverage,
+        data_fn = coverage,
         filename = paste0('penta3_survey_', input$denominator),
         sheet_name = 'Penta 3 Coverage'
       )
 
       downloadCoverageServer(
         id = 'dropout_penta13_download',
-        data_fn = dropout_penta13_coverage,
+        data_fn = coverage,
         filename = paste0('dropout_penta13_survey_', input$denominator),
         sheet_name = 'Penta 1 to Penta 3 Dropout'
       )
 
       downloadCoverageServer(
         id = 'dropout_penta3mcv1_download',
-        data_fn = dropout_penta3mcv1_coverage,
+        data_fn = coverage,
         filename = paste0('dropout_penta3mcv1_survey_', input$denominator),
         sheet_name = 'Penta 3 to Measles 1 Dropout'
       )
 
       downloadCoverageServer(
         id = 'custom_download',
-        data_fn = measles1_coverage,
+        data_fn = coverage,
         filename = paste0(input$indicator, '_survey_', input$denominator),
         sheet_name = paste0(input$indicator, ' Coverage')
       )

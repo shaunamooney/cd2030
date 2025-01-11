@@ -29,11 +29,19 @@
 #'
 #' @examples
 #' \dontrun{
-#'   plot(analyze_coverage(dt_adj, indicator = "bcg", denominator = "anc1"))
+#'   plot(combine_coverage(dt_adj, indicator = "bcg", denominator = "anc1"))
 #' }
 #'
 #' @export
-plot.cd_coverage <- function(x, ...) {
+plot.cd_coverage <- function(x,
+                             indicator = c('anc1', 'bcg', 'dropout_measles12', 'dropout_penta13',
+                                           'dropout_penta3mcv1', 'instdeliveries', 'ipv1', 'ipv2',
+                                           'measles1', 'measles2', 'opv1', 'opv2', 'opv3', 'pcv1',
+                                           'pcv2', 'pcv3', 'penta1', 'penta2', 'penta3', 'rota1',
+                                           'rota2', 'undervax', 'zerodose'),
+                             denominator = c('dhis2', 'anc1', 'penta1'),
+                             region = NULL,
+                             ...) {
 
   estimates = year = value = `Survey estimates` = `DHIS2 estimate` = `WUENIC estimates` =
     `95% CI LL` = `95% CI UL` = NULL
@@ -43,6 +51,9 @@ plot.cd_coverage <- function(x, ...) {
   }
 
   data_long <- x %>%
+    filter_coverage(indicator, denominator, region)
+
+  data_long <- data_long %>%
     pivot_longer(cols = -estimates, names_to = 'year') %>%
     mutate(year = as.integer(year))
 
@@ -60,8 +71,6 @@ plot.cd_coverage <- function(x, ...) {
   surv_data <- data_long %>%
     filter(!is.na(`Survey estimates`))
 
-  denominator <- attr(x, 'denominator')
-
   data_long %>%
     ggplot(aes(x = year)) +
     # Add lines and points for DHIS2 and WUENIC estimates
@@ -76,23 +85,12 @@ plot.cd_coverage <- function(x, ...) {
 
     # Add error bars for 95% CI
       geom_errorbar(
-        aes(
-          ymin = `95% CI LL`,
-          ymax = `95% CI UL`,
-          y = `Survey estimates`,
-          color = '95% CI'
-        ),
+        aes(ymin = `95% CI LL`, ymax = `95% CI UL`, y = `Survey estimates`, color = '95% CI'),
         width = 0.2,
         na.rm = TRUE
       ) +
-      scale_y_continuous(
-        expand = c(0, 0),
-        limits = c(min_y, max_y),
-        breaks = scales::pretty_breaks(11)
-      ) +
-      scale_x_continuous(
-        breaks = scales::pretty_breaks(5)
-      ) +
+      scale_y_continuous(expand = c(0, 0), limits = c(min_y, max_y), breaks = scales::pretty_breaks(11)) +
+      scale_x_continuous(breaks = scales::pretty_breaks(5)) +
       scale_color_manual(
         values = c('Survey estimate' = 'royalblue1', '95% CI' = 'royalblue1', 'DHIS2 estimate' = 'forestgreen', 'WUENIC estimate' = 'gold')
       ) +

@@ -123,7 +123,6 @@ fileUploadServer <- function(id, cache) {
           un_message_box$update_message(paste("Upload successful: File", file_name, "is ready."), 'success')
         },
         error = function(e) {
-          print(clean_error_message(e))
           un_message_box$update_message("Upload failed: Check the file format and try again.", 'error')
         })
       })

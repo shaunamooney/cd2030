@@ -29,6 +29,10 @@ An R6 class for handling RDS caching for data analysis and report generation.
 \item \href{#method-CacheConnection-get_k_factors}{\code{CacheConnection$get_k_factors()}}
 \item \href{#method-CacheConnection-get_adjusted_flag}{\code{CacheConnection$get_adjusted_flag()}}
 \item \href{#method-CacheConnection-get_start_survey_year}{\code{CacheConnection$get_start_survey_year()}}
+\item \href{#method-CacheConnection-get_denominator}{\code{CacheConnection$get_denominator()}}
+\item \href{#method-CacheConnection-get_mapping_years}{\code{CacheConnection$get_mapping_years()}}
+\item \href{#method-CacheConnection-get_admin_level_1}{\code{CacheConnection$get_admin_level_1()}}
+\item \href{#method-CacheConnection-get_district}{\code{CacheConnection$get_district()}}
 \item \href{#method-CacheConnection-get_survey_estimates}{\code{CacheConnection$get_survey_estimates()}}
 \item \href{#method-CacheConnection-get_national_estimates}{\code{CacheConnection$get_national_estimates()}}
 \item \href{#method-CacheConnection-get_un_estimates}{\code{CacheConnection$get_un_estimates()}}
@@ -48,6 +52,10 @@ An R6 class for handling RDS caching for data analysis and report generation.
 \item \href{#method-CacheConnection-set_k_factors}{\code{CacheConnection$set_k_factors()}}
 \item \href{#method-CacheConnection-toggle_adjusted_flag}{\code{CacheConnection$toggle_adjusted_flag()}}
 \item \href{#method-CacheConnection-set_start_survey_year}{\code{CacheConnection$set_start_survey_year()}}
+\item \href{#method-CacheConnection-set_denominator}{\code{CacheConnection$set_denominator()}}
+\item \href{#method-CacheConnection-set_mapping_years}{\code{CacheConnection$set_mapping_years()}}
+\item \href{#method-CacheConnection-set_admin_level_1}{\code{CacheConnection$set_admin_level_1()}}
+\item \href{#method-CacheConnection-set_district}{\code{CacheConnection$set_district()}}
 \item \href{#method-CacheConnection-set_survey_estimates}{\code{CacheConnection$set_survey_estimates()}}
 \item \href{#method-CacheConnection-set_national_estimates}{\code{CacheConnection$set_national_estimates()}}
 \item \href{#method-CacheConnection-set_un_estimates}{\code{CacheConnection$set_un_estimates()}}
@@ -116,7 +124,6 @@ Reactive method for the CacheConnection object
   page_id,
   object_id,
   note,
-  title,
   parameters = list(),
   include_in_report = FALSE,
   include_plot_table = FALSE,
@@ -130,7 +137,7 @@ Reactive method for the CacheConnection object
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_notes}{}}}
 \subsection{Method \code{get_notes()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_notes(page_id, object_id, parameters = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_notes(page_id, object_id = NULL, parameters = NULL)}\if{html}{\out{</div>}}
 }
 
 }
@@ -302,6 +309,58 @@ Get excluded years
 
 \subsection{Returns}{
 Numeric vector of excluded years
+Get the denominator
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_denominator"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_denominator}{}}}
+\subsection{Method \code{get_denominator()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_denominator()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Numeric vector of excluded years
+Get the denominator
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_mapping_years"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_mapping_years}{}}}
+\subsection{Method \code{get_mapping_years()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_mapping_years()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Numeric vector of excluded years
+Get the selected admin level 1
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_admin_level_1"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_admin_level_1}{}}}
+\subsection{Method \code{get_admin_level_1()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_admin_level_1()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A string for admin level 1
+Get the selected district/admin level 2
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_district"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_district}{}}}
+\subsection{Method \code{get_district()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_district()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A string for the selected district
 Get survey estimates
 }
 }
@@ -593,6 +652,86 @@ Set excluded years
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{value}}{Numeric vector of years to exclude}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+None
+Set denominator
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_denominator"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_denominator}{}}}
+\subsection{Method \code{set_denominator()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_denominator(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Numeric vector of years to exclude}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+None
+Set denominator
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_mapping_years"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_mapping_years}{}}}
+\subsection{Method \code{set_mapping_years()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_mapping_years(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Numeric vector of years to exclude}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+None
+Set Admin Level 1
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_admin_level_1"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_admin_level_1}{}}}
+\subsection{Method \code{set_admin_level_1()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_admin_level_1(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{String vector of admin level 1}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+None
+Set District
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_district"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_district}{}}}
+\subsection{Method \code{set_district()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_district(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{String vector of district/admin_level_2}
 }
 \if{html}{\out{</div>}}
 }

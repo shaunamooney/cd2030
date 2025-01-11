@@ -6,10 +6,30 @@
 \alias{cd2030-package}
 \title{cd2030: Data Loading, Validation, and Reporting for Countdown 2030}
 \description{
-cd2030 is a comprehensive R package designed to streamline data management and validation for Countdown 2030 initiatives. It efficiently handles data formatted according to the Countdown 2030 standardized structure, providing functionalities for data loading, cleaning, and validation. The package automatically identifies and addresses common data quality issues, ensuring data adherence to Countdown 2030 guidelines. It performs comprehensive checks, including completeness, consistency, outlier detection, and ratio consistency, to guarantee data integrity. cd2030 generates standardized reports summarizing data quality and identifying potential issues, saving researchers time and effort and enabling them to focus on data analysis and interpretation.
+cd2030 is an R package for managing and validating data formatted according to Countdown 2030 standards. It provides tools for data loading, cleaning, and validation, detecting issues like missing values, inconsistencies, outliers, and ratio anomalies. The package ensures compliance with Countdown 2030 guidelines and generates standardized data quality reports, enabling users to focus on analysis and interpretation.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://damurka.github.io/cd2030/}
+}
+
 }
 \author{
-\strong{Maintainer}: First Last \email{first.last@example.com} (\href{https://orcid.org/YOUR-ORCID-ID}{ORCID})
+\strong{Maintainer}: David Kariuki \email{hello@damurka.com} (\href{https://orcid.org/0009-0003-6159-1107}{ORCID})
+
+Authors:
+\itemize{
+  \item Martin Mutua
+  \item Peter Kaberia \email{pkaberia@aphrc.org}
+  \item Godfrey Adero \email{gadero@aphrc.org}
+  \item Rornald Muhumuza \email{rmuhumuza@aphrc.org}
+}
+
+Other contributors:
+\itemize{
+  \item African Population and Health Research Center (APHRC) [copyright holder, funder]
+}
 
 }
 \keyword{internal}

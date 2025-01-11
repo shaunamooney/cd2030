@@ -7,23 +7,17 @@
 generate_final_report(
   cache,
   output_file,
-  denominator,
+  report_name,
   output_format = c("word_document", "pdf_document", "html_document")
 )
 }
 \arguments{
 \item{output_file}{A character string specifying the name and path of the output file.}
 
-\item{denominator}{A character string or numeric value defining the denominator
-used for rate calculations, such as population size or number of facilities.}
-
 \item{output_format}{A character vector specifying the output format, either
 \code{'html_document'} or \code{'word_document'}.}
 
 \item{.data}{A data frame or list object containing the dataset to be analyzed.}
-
-\item{survey_start_year}{Numeric. The starting year of the survey data used in
-the analysis.}
 }
 \value{
 The function renders the report to the specified file in the chosen format.

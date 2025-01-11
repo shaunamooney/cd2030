@@ -115,7 +115,6 @@ reportButtonServer <- function(id, cache, report_name) {
           )
         } %...!% {
           # Handle errors
-          print(.)
           rv$generating <- FALSE
           removeModal()
           showModal(

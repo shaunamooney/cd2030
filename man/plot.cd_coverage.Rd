@@ -4,7 +4,16 @@
 \alias{plot.cd_coverage}
 \title{Plot National Coverage Data}
 \usage{
-\method{plot}{cd_coverage}(x, ...)
+\method{plot}{cd_coverage}(
+  x,
+  indicator = c("anc1", "bcg", "dropout_measles12", "dropout_penta13",
+    "dropout_penta3mcv1", "instdeliveries", "ipv1", "ipv2", "measles1", "measles2",
+    "opv1", "opv2", "opv3", "pcv1", "pcv2", "pcv3", "penta1", "penta2", "penta3",
+    "rota1", "rota2", "undervax", "zerodose"),
+  denominator = c("dhis2", "anc1", "penta1"),
+  region = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{A data frame of type \code{cd_coverage}, containing year-wise
@@ -41,7 +50,7 @@ contains coverage values for different indicators and estimates.
 }
 \examples{
 \dontrun{
-  plot(analyze_coverage(dt_adj, indicator = "bcg", denominator = "anc1"))
+  plot(combine_coverage(dt_adj, indicator = "bcg", denominator = "anc1"))
 }
 
 }
