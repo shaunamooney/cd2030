@@ -51,8 +51,8 @@ consistency of reporting in immunization health facility data.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">calculate_overall_score</span><span class="op">(</span></span>
 <span>  <span class="va">.data</span>,</span>
-<span>  ratio_pairs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ratioAP <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"anc1"</span>, <span class="st">"penta1"</span><span class="op">)</span>, ratioPP <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"penta1"</span>, <span class="st">"penta3"</span><span class="op">)</span>,</span>
-<span>    ratioOO <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"opv1"</span>, <span class="st">"opv3"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">threshold</span>,</span>
+<span>  ratio_pairs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ratioAP <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"anc1"</span>, <span class="st">"penta1"</span><span class="op">)</span>, ratioPP <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"penta1"</span>, <span class="st">"penta3"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -63,6 +63,10 @@ consistency of reporting in immunization health facility data.</p>
 <dl><dt id="arg--data">.data<a class="anchor" aria-label="anchor" href="#arg--data"></a></dt>
 <dd><p>A data frame of type <code>cd_data</code> containing facility data
 including annual reporting rates, completeness, and consistency indicators.</p></dd>
+
+
+<dt id="arg-threshold">threshold<a class="anchor" aria-label="anchor" href="#arg-threshold"></a></dt>
+<dd><p>The data reporting rate threshold.</p></dd>
 
 
 <dt id="arg-ratio-pairs">ratio_pairs<a class="anchor" aria-label="anchor" href="#arg-ratio-pairs"></a></dt>
