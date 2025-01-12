@@ -86,7 +86,7 @@ reportButtonServer <- function(id, cache, report_name) {
             output_format = params$format
           )
           temp_file
-        }, globals = list(cache = cache, params = params, generate_final_report = generate_final_report))
+        }, globals = list(cache = cache, params = params, generate_report = generate_report))
 
         rv$future %...>% {
           rv$generating <- FALSE

@@ -4,7 +4,7 @@ helpButtonUI <- function(id, text = 'Get Help') {
     inputId = ns('help'),
     label = text,
     icon = shiny::icon('question'),
-    class ='btn bg-navy btn-flat btn-sm',
+    class ='btn bg-aqua btn-flat btn-sm',
     style = 'margin-left:4px;'
   )
 }
