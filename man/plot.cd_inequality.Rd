@@ -4,10 +4,21 @@
 \alias{plot.cd_inequality}
 \title{Plot Subnational Health Coverage Analysis}
 \usage{
-\method{plot}{cd_inequality}(x, ...)
+\method{plot}{cd_inequality}(
+  x,
+  indicator = c("anc1", "bcg", "measles1", "measles2", "opv1", "opv2", "opv3", "pcv1",
+    "pcv2", "pcv3", "penta1", "penta2", "penta3", "rota1", "rota2", "ipv1", "ipv2",
+    "dropout_penta13", "dropout_penta3mcv1"),
+  denominator = c("dhis2", "anc1", "penta1"),
+  ...
+)
 }
 \arguments{
-\item{x}{A \code{cd_inequality} object returned by \code{\link[=analyze_inequality]{analyze_inequality()}}.}
+\item{x}{A \code{cd_inequality} object returned by \code{\link[=calculate_inequality]{calculate_inequality()}}.}
+
+\item{indicator}{Character. Indicator to plot}
+
+\item{denominator}{Character. The denominator to use}
 
 \item{...}{Additional arguments passed to the plotting function.}
 }
@@ -23,9 +34,9 @@ indicator, denominator, and level.
 }
 \examples{
 \dontrun{
-data <- analyze_inequality(.data, "Kenya", admin_level = "district",
-                           indicator = "measles1", denominator = "penta1")
-plot(data)
+  data <- calculate_inequality(.data, "Kenya", admin_level = "district",
+                              indicator = "measles1", denominator = "penta1")
+  plot(data)
 }
 
 }

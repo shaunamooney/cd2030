@@ -39,24 +39,8 @@ library(gridExtra)
 
 cache <- params$cache
 
-adjusted_data <- cache$get_adjusted_data()
-un_estimates <- cache$get_un_estimates()
-
-# Function to print notes for a given page
-print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
-  # Retrieve the notes from the cache
-  page_notes <- cache$get_notes(page_id, object_id, parameters) %>% 
-    filter(include_in_report == TRUE, !is.null(note))
-  
-  # Check if there are any notes
-  if (nrow(page_notes) > 0) {
-    page_notes %>% 
-      pull(note) %>% 
-      walk(~ cat(paste0(,x, '\n\n')))
-  } else {
-    cat(paste0("**--- Enter notes related to ", page_id, ' ', object_id, '. ---**\n\n'))
-  }
-}
+adjusted_data <- cache$adjusted_data
+un_estimates <- cache$un_estimates
 ```
 
 ## 3. Health facility data denominator assessment: DHIS2, UN Population and livebirths projections {-}
@@ -83,7 +67,7 @@ plot(prepare_population_metrics(adjusted_data, un_estimates = un_estimates), met
 ---
 
 ```{r, results='asis'}
-print_notes('denominator_assessment', 'Total Population')
+print_notes(cache, 'denominator_assessment', 'Total Population')
 ```
 
 ---
@@ -104,7 +88,7 @@ plot(prepare_population_metrics(adjusted_data, un_estimates = un_estimates), met
 ---
 
 ```{r, results='asis'}
-print_notes('denominator_assessment', 'Births')
+print_notes(cache, 'denominator_assessment', 'Births')
 ```
 
 ---

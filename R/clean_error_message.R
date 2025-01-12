@@ -14,7 +14,7 @@
 #' @examples
 #' # Processing a Valid Error Message
 #' tryCatch({
-#'   stop("✖ Something went wrong! ℹ In index: 3. Caused by error in `.f()`:")
+#'   stop("Something went wrong.")
 #' }, error = function(e) {
 #'   cleaned <- clean_error_message(e)
 #'   print(cleaned)
@@ -35,7 +35,9 @@ clean_error_message <- function(error_message) {
   clean_message <- cli::ansi_strip(conditionMessage(error_message))
 
   # Remove specific CLI bullets (✖, ✔, ℹ, ⚠, !)
-  clean_message <- gsub("[✖✔ℹ⚠!]", "", clean_message)
+  # clean_message <- gsub("[✖✔ℹ⚠!]", "", clean_message)
+  clean_message <- gsub("[\\u2716\\u2714\\u2139\\u26A0!]", "", clean_message)
+
 
   # Remove "In index: ..." patterns
   clean_message <- gsub("In index: \\d+\\.?", "", clean_message)

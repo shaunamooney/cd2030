@@ -59,12 +59,12 @@ reportingRateServer <- function(id, cache) {
 
       data <- reactive({
         req(cache())
-        cache()$get_data()
+        cache()$countdown_data
       })
 
       threshold <- reactive({
         req(data())
-        cache()$get_threshold()
+        cache()$performance_threshold
       })
 
       district_rr <- reactive({
@@ -96,7 +96,7 @@ reportingRateServer <- function(id, cache) {
 
       observeEvent(input$threshold, {
         req(cache())
-        cache()$set_threshold(input$threshold)
+        cache()$set_performance_threshold(input$threshold)
       })
 
       observe({

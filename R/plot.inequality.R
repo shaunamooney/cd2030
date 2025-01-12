@@ -6,26 +6,34 @@
 #' y-axis. Titles, subtitles, and labels dynamically adjust based on the chosen
 #' indicator, denominator, and level.
 #'
-#' @param x A `cd_inequality` object returned by [analyze_inequality()].
+#' @param x A `cd_inequality` object returned by [calculate_inequality()].
+#' @param indicator Character. Indicator to plot
+#' @param denominator Character. The denominator to use
 #' @param ... Additional arguments passed to the plotting function.
 #'
 #' @return A `ggplot` object displaying the subnational health coverage plot.
 #'
 #' @examples
 #' \dontrun{
-#' data <- analyze_inequality(.data, "Kenya", admin_level = "district",
-#'                            indicator = "measles1", denominator = "penta1")
-#' plot(data)
+#'   data <- calculate_inequality(.data, "Kenya", admin_level = "district",
+#'                               indicator = "measles1", denominator = "penta1")
+#'   plot(data)
 #' }
 #'
 #' @export
-plot.cd_inequality <- function(x, ...) {
+plot.cd_inequality <- function(x,
+                               indicator = c('anc1', 'bcg', 'measles1', 'measles2', 'opv1', 'opv2', 'opv3',
+                                             'pcv1', 'pcv2', 'pcv3', 'penta1', 'penta2', 'penta3',
+                                             'rota1', 'rota2', 'ipv1', 'ipv2', 'dropout_penta13', 'dropout_penta3mcv1'),
+                               denominator = c('dhis2', 'anc1', 'penta1'),
+                               ...) {
 
-  year = national_mean = madm = NULL
+  year = nat = madm = NULL
 
-  indicator <- attr(x, 'indicator')
-  denominator <- attr(x, 'denominator')
   admin_level <- attr(x, 'admin_level')
+  indicator <- arg_match(indicator)
+  denominator <- arg_match(denominator)
+  data <- filter_inequality(x, indicator, denominator)
 
   title <- switch (indicator,
                    anc1 = 'Antenatal care 1+ visits',
@@ -61,16 +69,16 @@ plot.cd_inequality <- function(x, ...) {
                      penta1 = 'Denominators derived from Penta 1 estimates')
 
   y_label <- ifelse(indicator == "low_bweight", "Prevalence (%)", "Coverage (%)")
-  max_y <- robust_max(x$rd_max, 100)
+  max_y <- robust_max(data$rd_max, 100)
   limits <- c(0, max_y)
   breaks <- scales::pretty_breaks(n = 11)(limits)
   second_last_break <- sort(breaks, decreasing = TRUE)[2]
   max_break <- robust_max(breaks, 0)
 
-  ggplot(x) +
+  ggplot(data) +
     geom_point(aes(x = year, y = !!sym(paste0("cov_", indicator, "_", denominator)), color = "Coverage at subnational unit"),
                size = 3) +
-    geom_point(aes(x = year, y = national_mean, color = "National coverage"), size = 1.5, shape = 3, stroke = 1.5) +
+    geom_point(aes(x = year, y = nat, color = "National coverage"), size = 1.5, shape = 3, stroke = 1.5) +
     geom_text(aes(x = year, y = second_last_break, label = round(madm, 2)),
               color = "black", fontface = "bold", vjust = 0.5, size = 4) +
     geom_hline(yintercept = 100, linetype = "dashed", color = "gray60") +

@@ -39,24 +39,8 @@ library(gridExtra)
 
 cache <- params$cache
 
-data <- cache$get_data()
-k_factors <- cache$get_k_factors()
-
-# Function to print notes for a given page
-print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
-  # Retrieve the notes from the cache
-  page_notes <- cache$get_notes(page_id, object_id, parameters) %>% 
-    filter(include_in_report == TRUE, !is.null(note))
-  
-  # Check if there are any notes
-  if (nrow(page_notes) > 0) {
-    page_notes %>% 
-      pull(note) %>% 
-      walk(~ cat(paste0(,x, '\n\n')))
-  } else {
-    cat(paste0("**--- Enter notes related to ", page_id, ' ', object_id, '. ---**\n\n'))
-  }
-}
+data <- cache$countdown_data
+k_factors <- cache$k_factors
 ```
 
 ## 2. Health Facility Data Adjustments {-}
@@ -90,7 +74,7 @@ plot(adjustments,
 ---
 
 ```{r, results='asis'}
-print_notes('adjustment_changes', 'Live Births')
+print_notes(cache, 'adjustment_changes', 'Live Births')
 ```
 
 ---
@@ -113,7 +97,7 @@ plot(adjustments,
 ---
 
 ```{r, results='asis'}
-print_notes('adjustment_changes', 'Penta1')
+print_notes(cache, 'adjustment_changes', 'Penta1')
 ```
 
 ---
@@ -136,7 +120,7 @@ plot(adjustments,
 ---
 
 ```{r, results='asis'}
-print_notes('adjustment_changes', 'BCG')
+print_notes(cache, 'adjustment_changes', 'BCG')
 ```
 
 ---
@@ -159,7 +143,7 @@ plot(adjustments,
 ---
 
 ```{r, results='asis'}
-print_notes('adjustment_changes', 'Measles 1')
+print_notes(cache, 'adjustment_changes', 'Measles 1')
 ```
 
 ---

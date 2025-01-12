@@ -36,12 +36,12 @@ denominatorAssessmentServer <- function(id, cache) {
 
       data <- reactive({
         req(cache())
-        cache()$get_adjusted_data()
+        cache()$adjusted_data
       })
 
       un_estimates <- reactive({
         req(cache())
-        cache()$get_un_estimates()
+        cache()$un_estimates
       })
 
       denominators <- reactive({

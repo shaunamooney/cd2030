@@ -1,0 +1,185 @@
+#' Analyze Subnational Health Coverage Data with Inequality Metrics
+#'
+#' `calculate_inequality` computes subnational health coverage metrics and evaluates
+#' disparities compared to national averages. The function provides metrics such as:
+#'
+#' - **Mean Absolute Difference to the Mean (MADM)**: Average absolute deviation
+#'   from the national mean.
+#' - **Weighted MADM**: MADM weighted by population share.
+#' - **Mean Relative Difference to the Mean (MRDM)**: MADM as a percentage of
+#'   the national mean.
+#' - **Weighted MRDM**: MRDM weighted by population share.
+#' - **Relative Difference Max (RD Max)**: Adjusted maximum difference metric.
+#'
+#' The function allows analysis of specific health indicators at subnational levels
+#' (`adminlevel_1` or `district`) and compares them with national-level data.
+#'
+#' @param .data A data frame containing subnational health coverage data.
+#' @param admin_level A character string specifying the administrative level for analysis.
+#'   Options: `"adminlevel_1"` (e.g., regions) or `"district"`.
+#' @param un_estimates (Optional) A data frame with UN population estimates for national
+#'   population-level calculations. Required if using population-based metrics.
+#' @param sbr Numeric. The stillbirth rate (default: 0.02).
+#' @param nmr Numeric. The neonatal mortality rate (default: 0.025).
+#' @param pnmr Numeric. The post-neonatal mortality rate (default: 0.024).
+#' @param anc1survey Numeric. Survey-based ANC-1 coverage rate (default: 0.98).
+#' @param dpt1survey Numeric. Survey-based Penta-1 coverage rate (default: 0.97).
+#' @param twin Numeric. The twin birth rate (default: 0.015).
+#' @param preg_loss Numeric. The pregnancy loss rate (default: 0.03).
+#'
+#' @return A tibble (`cd_inequality` object) containing:
+#'   - Subnational health coverage metrics.
+#'   - Population shares.
+#'   - MADM, MRDM, and related disparity metrics.
+#'
+#' @examples
+#' \dontrun{
+#'   # Example analysis for district-level data
+#'   inequality_metrics <- calculate_inequality(
+#'     .data = health_data,
+#'     admin_level = "district",
+#'     un_estimates = un_data
+#'   )
+#' }
+#'
+#' @export
+calculate_inequality <- function(.data,
+                                 admin_level = c('adminlevel_1', 'district'),
+                                 un_estimates,
+                                 sbr = 0.02,
+                                 nmr = 0.025,
+                                 pnmr = 0.024,
+                                 anc1survey = 0.98,
+                                 dpt1survey = 0.97,
+                                 twin = 0.015,
+                                 preg_loss = 0.03) {
+
+  year = NULL
+
+  # Validation
+  check_cd_data(.data)
+  admin_level <-  arg_match(admin_level)
+
+  national_data <- calculate_populations(.data,
+                                         admin_level = 'national',
+                                         un_estimates = un_estimates,
+                                         sbr = sbr, nmr = nmr, pnmr = pnmr,
+                                         anc1survey = anc1survey, dpt1survey = dpt1survey,
+                                         twin = twin, preg_loss = preg_loss) %>%
+    select(year, matches('^cov_|^tot'), -ends_with('_un')) %>%
+    rename_with(~ paste0('nat_', .x), matches('^cov_|^tot'))
+
+  subnational_data <- calculate_populations(.data,
+                                            admin_level = admin_level,
+                                            sbr = sbr, nmr = nmr, pnmr = pnmr,
+                                            anc1survey = anc1survey, dpt1survey = dpt1survey,
+                                            twin = twin, preg_loss = preg_loss) %>%
+    select(year, any_of(c('adminlevel_1', 'district')), matches('^cov_|^tot'))
+
+  combined_data <- subnational_data %>%
+    left_join(national_data, join_by(year)) %>%
+    mutate(
+      across(starts_with('cov_'), ~ abs(.x - get(paste0('nat_', cur_column()))), .names = 'diff_{.col}'),
+      across(starts_with('tot'), ~ .x/get(paste0('nat_', cur_column())), .names = 'popshare_{.col}')
+    ) %>%
+    mutate(
+      across(starts_with('diff_'), ~ mean(.x, na.rm = TRUE), .names = "{ gsub('^diff', 'madm', .col) }"),
+      across(starts_with('diff_'), ~ {
+        indicator <-  str_extract(cur_column(), "(?<=_cov_).+(?=_[^_]+$)")
+        denominator <-  str_extract(cur_column(), "[^_]+$")
+        population <- get_population_column(indicator, denominator)
+
+        stats::weighted.mean(.x, get(paste('popshare', population, denominator, sep = '_')), na.rm = TRUE)
+      },
+      .names = "{ gsub('^diff', 'madmpop', .col) }"),
+
+      across(starts_with('madm_'), ~ {
+        indicator <- str_replace(cur_column(), '^madm', 'nat')
+
+        (.x / mean(get(indicator))) * 100
+      },
+      .names = "{ gsub('^madm', 'mrdm', .col) }"),
+
+      across(starts_with('madmpop_'), ~ {
+        indicator <- str_replace(cur_column(), '^madmpop', 'nat')
+
+        (.x / mean(get(indicator))) * 100
+      },
+      .names = "{ gsub('^madmpop', 'mrdmpop', .col) }"),
+
+      .by = year
+    ) %>%
+    mutate(
+      across(starts_with('cov_'), ~ {
+        rd_max = round(robust_max(.x, fallback = 100), -1)
+        rd_max = if_else(rd_max < max(.x, na.rm = TRUE), rd_max + 10, rd_max)
+        rd_max = rd_max * 1.05
+
+        if_else(rd_max %% 20 != 0, rd_max + 10, rd_max)
+      },
+      .names = 'rd_max_{.col}')
+    )
+
+  new_tibble(
+    combined_data,
+    class = 'cd_inequality',
+    admin_level = admin_level
+  )
+}
+
+#' Filter Subnational Inequality Metrics
+#'
+#' `filter_inequality` refines the output of `calculate_inequality` by selecting
+#' specific indicators and denominators for analysis. It extracts and renames relevant
+#' columns to streamline further analyses.
+#'
+#' @param .data A `cd_inequality` tibble created by `calculate_inequality`.
+#' @param indicator A character vector of health indicators to include (e.g., `"penta3"`, `"measles1"`).
+#' @param denominator A character vector of denominators to filter by (e.g., `"dhis2"`, `"anc1"`).
+#' @param ... Not used
+#'
+#' @return A tibble containing filtered subnational inequality metrics for
+#'   the specified indicators and denominators.
+#'
+#' @examples
+#' \dontrun{
+#'   # Filter for Penta-3 coverage using DHIS-2 denominator
+#'   filtered_data <- inequality_metrics %>%
+#'     filter_inequality(indicator = "penta3", denominator = "dhis2")
+#' }
+#'
+#' @export
+filter_inequality <- function(.data,
+                              indicator = c('anc1', 'bcg', 'measles1', 'measles2', 'opv1', 'opv2', 'opv3',
+                                            'pcv1', 'pcv2', 'pcv3', 'penta1', 'penta2', 'penta3',
+                                            'rota1', 'rota2', 'ipv1', 'ipv2', 'dropout_penta13', 'dropout_penta3mcv1'),
+                              denominator = c('dhis2', 'anc1', 'penta1'),
+                              ...) {
+
+  # check_cd_inequality(.data)
+  indicator <- arg_match(indicator)
+  denominator <- arg_match(denominator)
+  population <- get_population_column(indicator, denominator)
+
+  dhis_col <- paste('cov', indicator, denominator, sep = '_')
+  pop_col <- paste(population, denominator, sep = '_')
+
+  .data %>%
+    select(year, any_of(c('adminlevel_1', 'district')), ends_with(dhis_col), ends_with(pop_col)) %>%
+    rename_with(~ str_remove(.x, paste0('_', dhis_col)), ends_with(dhis_col)) %>%
+    select(-any_of(paste0('nat_', pop_col))) %>%
+    rename_with(~ str_remove(.x, paste0('_', pop_col)), ends_with(pop_col))
+}
+
+get_population_column <- function(indicator, denominator) {
+  population <- case_match(
+    indicator,
+    c('anc1', 'anc4') ~ 'totpreg',
+    c('bcg', 'instlivebirths', 'instdeliveries') ~ if_else(denominator == 'dhis2', 'totbirths', 'totlbirths'),
+    c('penta1', 'penta2', 'penta3', 'pcv1', 'pcv2', 'pcv3', 'rota1',
+      'rota2', 'ipv1', 'ipv2', 'opv1', 'opv2', 'opv3', "undervax","dropout_penta13","zerodose","dropout_penta3mcv1","dropout_penta1mcv1") ~ 'totinftpenta',
+    c('measles1', 'dropout_measles12') ~ 'totinftmeasles',
+    'measles2' ~ 'totmeasles2'
+  )
+  return(population)
+}

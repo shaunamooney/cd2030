@@ -39,25 +39,9 @@ library(gridExtra)
 
 cache <- params$cache
 
-meduc <- cache$get_education_survey()
-wiq <- cache$get_wiq_survey()
-area <- cache$get_area_survey()
-
-# Function to print notes for a given page
-print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
-  # Retrieve the notes from the cache
-  page_notes <- cache$get_notes(page_id, object_id, parameters) %>% 
-    filter(include_in_report == TRUE, !is.null(note))
-  
-  # Check if there are any notes
-  if (nrow(page_notes) > 0) {
-    page_notes %>% 
-      pull(note) %>% 
-      walk(~ cat(paste0(,x, '\n\n')))
-  } else {
-    cat(paste0("**--- Enter notes related to ", parameters$type, ' ', object_id,  ': ', page_id, '. ---**\n\n'))
-  }
-}
+meduc <- cache$education_survey
+wiq <- cache$wiq_survey
+area <- cache$area_survey
 ```
 
 ## 7. Equity Analysis {-}
@@ -85,7 +69,7 @@ equiplot_wealth(wiq, 'penta3') +
 ---
 
 ```{r, results='asis'}
-print_notes('equity_assessment', 'Penta 3', list(type = 'wiq'))
+print_notes(cache, 'equity_assessment', 'Penta 3', list(type = 'wiq'))
 ```
 
 ---
@@ -107,7 +91,7 @@ equiplot_education(meduc, 'penta3') +
 ---
 
 ```{r, results='asis'}
-print_notes('equity_assessment', 'Penta 3', list(type = 'meduc'))
+print_notes(cache, 'equity_assessment', 'Penta 3', list(type = 'meduc'))
 ```
 
 ---
@@ -128,7 +112,7 @@ equiplot_area(area, 'penta3') +
 ---
 
 ```{r, results='asis'}
-print_notes('equity_assessment', 'Penta 3', list(type = 'area'))
+print_notes(cache, 'equity_assessment', 'Penta 3', list(type = 'area'))
 ```
 
 ---
@@ -149,7 +133,7 @@ equiplot_wealth(wiq, 'measles1') +
 ---
 
 ```{r, results='asis'}
-print_notes('equity_assessment', 'Measles 1', list(type = 'wiq'))
+print_notes(cache, 'equity_assessment', 'Measles 1', list(type = 'wiq'))
 ```
 
 ---
@@ -171,7 +155,7 @@ equiplot_education(meduc, 'measles1') +
 ---
 
 ```{r, results='asis'}
-print_notes('equity_assessment', 'Measles 1', list(type = 'meduc'))
+print_notes(cache, 'equity_assessment', 'Measles 1', list(type = 'meduc'))
 ```
 
 ---
@@ -192,7 +176,7 @@ equiplot_area(area, 'measles1') +
 ---
 
 ```{r, results='asis'}
-print_notes('equity_assessment', 'Measles 1', list(type = 'area'))
+print_notes(cache, 'equity_assessment', 'Measles 1', list(type = 'area'))
 ```
 
 ---

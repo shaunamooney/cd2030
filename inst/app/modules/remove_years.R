@@ -62,12 +62,12 @@ removeYearsServer <- function(id, cache) {
 
       data <- reactive({
         req(cache())
-        cache()$get_data()
+        cache()$countdown_data
       })
 
       excluded_years <- reactive({
         req(cache())
-        cache()$get_excluded_years()
+        cache()$excluded_years
       })
 
       observe({

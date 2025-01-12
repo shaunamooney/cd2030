@@ -86,7 +86,7 @@ prepare_population_metrics <- function(.data,
     ) %>%
     summarise(
       totpop_dhis2 = robust_max(totpop_dhis2),
-      totlivebirths_dhis2 = if_else(all(is.na(totpop_dhis2)), NA, max(totlivebirths_dhis2, na.rm = TRUE)),
+      totlivebirths_dhis2 = robust_max(totlivebirths_dhis2),
       .by =all_of(group_vars)
     )
 

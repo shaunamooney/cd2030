@@ -16,8 +16,7 @@ saveCacheServe <- function(id, cache) {
       output$button <- renderUI({
         req(cache())
 
-        cache_path <- cache()$get_cache_path()
-        if (is.null(cache_path)) {
+        if (is.null(cache()$cache_path)) {
           shinyDirLink(
             session$ns('choose_dir'),
             label = 'Set Cache Directory',
@@ -51,7 +50,7 @@ saveCacheServe <- function(id, cache) {
         }
 
         # Set the cache path
-        cache()$set_cache_path(file.path(path, paste0(cache()$get_country(), ".rds")))
+        cache()$set_cache_path(file.path(path, paste0(cache()$country, ".rds")))
         showNotification("Directory set successfully!", type = "message")
       })
 

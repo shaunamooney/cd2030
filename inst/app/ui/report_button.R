@@ -19,7 +19,7 @@ reportButtonServer <- function(id, cache, report_name) {
 
       country <- reactive({
         req(cache())
-        cache()$get_country()
+        cache()$country
       })
 
       extension <- reactive({
@@ -79,7 +79,7 @@ reportButtonServer <- function(id, cache, report_name) {
         rv$generating <- TRUE
         rv$future <- future({
           temp_file <- tempfile(fileext = paste0(".", extension()))
-          generate_final_report(
+          generate_report(
             cache = cache(),  # Use the minimized data
             output_file = temp_file,
             report_name = report_name,

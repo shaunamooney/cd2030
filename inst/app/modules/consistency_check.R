@@ -51,13 +51,13 @@ consistencyCheckServer <- function(id, cache) {
 
       data <- reactive({
         req(cache())
-        cache()$get_data()
+        cache()$countdown_data
       })
 
       observe({
         req(cache())
 
-        indicator_groups <-cache()$get_indicator_groups()
+        indicator_groups <-cache()$indicator_groups
         all_indicators <- purrr::list_c(indicator_groups)
         names(all_indicators) <- all_indicators
         all_indicators <- c('Select' = '', all_indicators)

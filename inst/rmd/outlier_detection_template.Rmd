@@ -39,25 +39,9 @@ library(gridExtra)
 
 cache <- params$cache
 
-data <- cache$get_data()
-country <- cache$get_country()
-threshold <- cache$get_threshold()
-
-# Function to print notes for a given page
-print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
-  # Retrieve the notes from the cache
-  page_notes <- cache$get_notes(page_id, object_id, parameters) %>% 
-    filter(include_in_report == TRUE, !is.null(note))
-  
-  # Check if there are any notes
-  if (nrow(page_notes) > 0) {
-    page_notes %>% 
-      pull(note) %>% 
-      walk(~ cat(paste0(,x, '\n\n')))
-  } else {
-    cat(paste0("**--- Enter notes related to ", page_id, ' ', object_id, '. ---**\n\n'))
-  }
-}
+data <- cache$countdown_data
+country <- cache$country
+threshold <- cache$performance_threshold
 ```
 
 ## 1. Health Facility Data Quality Assessment {-}
@@ -130,7 +114,7 @@ data %>%
 ---
 
 ```{r, results='asis'}
-print_notes('outlier_detection')
+print_notes(cache, 'outlier_detection')
 ```
 
 ---

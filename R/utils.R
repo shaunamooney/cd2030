@@ -8,6 +8,8 @@ check_file_path <- function(path, call = caller_env()) {
       call = call
     )
   }
+
+  invisible(TRUE)
 }
 
 check_cd_indicator_coverage <- function(.data, arg = caller_arg(.data), call = caller_env()) {
@@ -17,6 +19,8 @@ check_cd_indicator_coverage <- function(.data, arg = caller_arg(.data), call = c
   if (!inherits(.data, 'cd_indicator_coverage')) {
     cd_abort(c('x' = 'The data object must be of class {.field cd_indicator_coverage}.'), call = call)
   }
+
+  invisible(TRUE)
 }
 
 check_cd_data <- function(.data, arg = caller_arg(.data), call = caller_env()) {
@@ -26,6 +30,8 @@ check_cd_data <- function(.data, arg = caller_arg(.data), call = caller_env()) {
   if (!inherits(.data, 'cd_data')) {
     cd_abort(c('x' = 'The data object must be of class {.cls cd_data}.'), call = call)
   }
+
+  invisible(TRUE)
 }
 
 #' Validate UN Estimates Data for Population Metrics
@@ -55,6 +61,8 @@ check_un_estimates_data <- function(.data,
   if (is.null(.data) && admin_level == 'national') {
     cd_abort(c('x' = '{.arg un_estimate} must be provided for {.val {admin_level}} metrics.'), call = call)
   }
+
+  invisible(TRUE)
 }
 
 check_wuenic_data <- function(.data, arg = caller_arg(.data), call = caller_env()) {
@@ -68,6 +76,8 @@ check_wuenic_data <- function(.data, arg = caller_arg(.data), call = caller_env(
   if (!all(c('iso', 'year') %in% colnames(.data))) {
     cd_abort(c('x' = 'WUENIC data must contain {.field iso} and {.field year} columns.'), call = call)
   }
+
+  invisible(TRUE)
 }
 
 check_survey_data <- function(.data,
@@ -91,6 +101,8 @@ check_survey_data <- function(.data,
   if (!all(c('iso', 'year') %in% colnames(.data))) {
     cd_abort(c('x' = 'Survey data must contain {.field iso} and {.field year} columns.'), call = call)
   }
+
+  invisible(TRUE)
 }
 
 check_equity_data <- function(.data, arg = caller_arg(.data), call = caller_env()) {
@@ -100,6 +112,8 @@ check_equity_data <- function(.data, arg = caller_arg(.data), call = caller_env(
   if (!inherits(.data, 'cd_equity_data')) {
     cd_abort(c('x' = 'The data object must be of class {.cls cd_equity_estimates}.'), call = call)
   }
+
+  invisible(TRUE)
 }
 
 check_ratio_pairs <- function(.list, arg = call_args(.list), call = caller_env()) {
@@ -117,6 +131,7 @@ check_ratio_pairs <- function(.list, arg = call_args(.list), call = caller_env()
     cd_abort(c('x' = '{.arg arg} is not a proper ratio pair.'), call = call)
   }
 
+  invisible(TRUE)
 }
 
 
@@ -266,8 +281,8 @@ plot_line_graph <- function(.data, x, y_vars, y_labels, title, y_axis_title, hli
   }
 
   # Choose the scaling factor and y-axis label suffix
-  scale_factor <- if (y_max > 1e6) 1e6 else if (y_max > 1e3) 1e3 else 1
-  y_label_suffix <- if (scale_factor == 1e6) " (Millions)" else if (scale_factor == 1e3) " (Thousands)" else ""
+  scale_factor <- if (y_max > 1e6) 1e6 else 1
+  y_label_suffix <- if (scale_factor == 1e6) " (Millions)" else ""
 
   # Adjust limits based on scale factor and round up/down
   y_max <- ceiling(y_max / scale_factor) * scale_factor
@@ -300,7 +315,7 @@ plot_line_graph <- function(.data, x, y_vars, y_labels, title, y_axis_title, hli
       ) +
       scale_y_continuous(
         limits = c(y_min / scale_factor, y_max / scale_factor),
-        breaks = y_breaks / scale_factor,
+        breaks = scales::pretty_breaks(11),
         labels = scales::label_number(accuracy = 1, big.mark = ",")
         # expand = c(0, 0)
       ) +

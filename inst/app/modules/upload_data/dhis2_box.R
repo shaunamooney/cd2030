@@ -160,7 +160,7 @@ dhis2BoxServer <- function(id) {
         filename = 'master_dataset',
         extension = 'dta',
         content = function(file) {
-          save_data(cache()$get_data(), file)
+          save_data(cache()$countdown_data, file)
         },
         data = cache,
         label = 'Download Master File'

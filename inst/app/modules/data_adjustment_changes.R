@@ -65,14 +65,14 @@ adjustmentChangesServer <- function(id, cache) {
 
       data <- reactive({
         req(cache())
-        cache()$get_data_with_excluded_years()
+        cache()$data_with_excluded_years
       })
 
       k_factors <- reactive({
         req(cache())
 
-        if (cache()$get_adjusted_flag()) {
-          cache()$get_k_factors()
+        if (cache()$adjusted_flag) {
+          cache()$k_factors
         } else {
           c(anc = 0, idelv = 0, vacc = 0)
         }
@@ -86,7 +86,7 @@ adjustmentChangesServer <- function(id, cache) {
 
       vaccines_indicator <- reactive({
         req(cache())
-        cache()$get_vaccine_indicators()
+        cache()$vaccine_indicators
       })
 
       observe({

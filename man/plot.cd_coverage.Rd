@@ -19,6 +19,12 @@
 \item{x}{A data frame of type \code{cd_coverage}, containing year-wise
 national coverage data for the specified country and indicator.}
 
+\item{indicator}{Character. Indicator to plot.}
+
+\item{denominator}{Character. The denominator to use.}
+
+\item{region}{Character. The region to plot. Used for subnational level.}
+
 \item{...}{Additional arguments passed to or from other methods (currently
 unused).}
 }
@@ -50,7 +56,7 @@ contains coverage values for different indicators and estimates.
 }
 \examples{
 \dontrun{
-  plot(combine_coverage(dt_adj, indicator = "bcg", denominator = "anc1"))
+  plot(calculate_coverage(dt_adj, indicator = "bcg", denominator = "anc1"))
 }
 
 }

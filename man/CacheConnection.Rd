@@ -6,6 +6,11 @@
 \description{
 An R6 class for handling RDS caching for data analysis and report generation.
 }
+\keyword{CacheConnection}
+\keyword{Initialize}
+\keyword{class}
+\keyword{internal}
+\keyword{the}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
@@ -15,49 +20,20 @@ An R6 class for handling RDS caching for data analysis and report generation.
 \item \href{#method-CacheConnection-append_page_note}{\code{CacheConnection$append_page_note()}}
 \item \href{#method-CacheConnection-get_notes}{\code{CacheConnection$get_notes()}}
 \item \href{#method-CacheConnection-reactive}{\code{CacheConnection$reactive()}}
-\item \href{#method-CacheConnection-get_cache_path}{\code{CacheConnection$get_cache_path()}}
 \item \href{#method-CacheConnection-set_cache_path}{\code{CacheConnection$set_cache_path()}}
-\item \href{#method-CacheConnection-get_data}{\code{CacheConnection$get_data()}}
-\item \href{#method-CacheConnection-get_country}{\code{CacheConnection$get_country()}}
-\item \href{#method-CacheConnection-get_country_iso}{\code{CacheConnection$get_country_iso()}}
-\item \href{#method-CacheConnection-get_indicator_groups}{\code{CacheConnection$get_indicator_groups()}}
-\item \href{#method-CacheConnection-get_vaccine_indicators}{\code{CacheConnection$get_vaccine_indicators()}}
-\item \href{#method-CacheConnection-get_data_with_excluded_years}{\code{CacheConnection$get_data_with_excluded_years()}}
-\item \href{#method-CacheConnection-get_adjusted_data}{\code{CacheConnection$get_adjusted_data()}}
-\item \href{#method-CacheConnection-get_threshold}{\code{CacheConnection$get_threshold()}}
-\item \href{#method-CacheConnection-get_excluded_years}{\code{CacheConnection$get_excluded_years()}}
-\item \href{#method-CacheConnection-get_k_factors}{\code{CacheConnection$get_k_factors()}}
-\item \href{#method-CacheConnection-get_adjusted_flag}{\code{CacheConnection$get_adjusted_flag()}}
-\item \href{#method-CacheConnection-get_start_survey_year}{\code{CacheConnection$get_start_survey_year()}}
-\item \href{#method-CacheConnection-get_denominator}{\code{CacheConnection$get_denominator()}}
-\item \href{#method-CacheConnection-get_mapping_years}{\code{CacheConnection$get_mapping_years()}}
-\item \href{#method-CacheConnection-get_admin_level_1}{\code{CacheConnection$get_admin_level_1()}}
-\item \href{#method-CacheConnection-get_district}{\code{CacheConnection$get_district()}}
-\item \href{#method-CacheConnection-get_survey_estimates}{\code{CacheConnection$get_survey_estimates()}}
-\item \href{#method-CacheConnection-get_national_estimates}{\code{CacheConnection$get_national_estimates()}}
-\item \href{#method-CacheConnection-get_un_estimates}{\code{CacheConnection$get_un_estimates()}}
-\item \href{#method-CacheConnection-get_wuenic_estimates}{\code{CacheConnection$get_wuenic_estimates()}}
-\item \href{#method-CacheConnection-get_national_survey}{\code{CacheConnection$get_national_survey()}}
-\item \href{#method-CacheConnection-get_regional_survey}{\code{CacheConnection$get_regional_survey()}}
-\item \href{#method-CacheConnection-get_wiq_survey}{\code{CacheConnection$get_wiq_survey()}}
-\item \href{#method-CacheConnection-get_area_survey}{\code{CacheConnection$get_area_survey()}}
-\item \href{#method-CacheConnection-get_education_survey}{\code{CacheConnection$get_education_survey()}}
-\item \href{#method-CacheConnection-get_map_mapping}{\code{CacheConnection$get_map_mapping()}}
-\item \href{#method-CacheConnection-get_survey_mapping}{\code{CacheConnection$get_survey_mapping()}}
-\item \href{#method-CacheConnection-get_page_notes}{\code{CacheConnection$get_page_notes()}}
-\item \href{#method-CacheConnection-set_data}{\code{CacheConnection$set_data()}}
+\item \href{#method-CacheConnection-set_countdown_data}{\code{CacheConnection$set_countdown_data()}}
 \item \href{#method-CacheConnection-set_adjusted_data}{\code{CacheConnection$set_adjusted_data()}}
-\item \href{#method-CacheConnection-set_threshold}{\code{CacheConnection$set_threshold()}}
+\item \href{#method-CacheConnection-set_performance_threshold}{\code{CacheConnection$set_performance_threshold()}}
 \item \href{#method-CacheConnection-set_excluded_years}{\code{CacheConnection$set_excluded_years()}}
 \item \href{#method-CacheConnection-set_k_factors}{\code{CacheConnection$set_k_factors()}}
-\item \href{#method-CacheConnection-toggle_adjusted_flag}{\code{CacheConnection$toggle_adjusted_flag()}}
-\item \href{#method-CacheConnection-set_start_survey_year}{\code{CacheConnection$set_start_survey_year()}}
-\item \href{#method-CacheConnection-set_denominator}{\code{CacheConnection$set_denominator()}}
-\item \href{#method-CacheConnection-set_mapping_years}{\code{CacheConnection$set_mapping_years()}}
-\item \href{#method-CacheConnection-set_admin_level_1}{\code{CacheConnection$set_admin_level_1()}}
-\item \href{#method-CacheConnection-set_district}{\code{CacheConnection$set_district()}}
+\item \href{#method-CacheConnection-set_adjusted_flag}{\code{CacheConnection$set_adjusted_flag()}}
 \item \href{#method-CacheConnection-set_survey_estimates}{\code{CacheConnection$set_survey_estimates()}}
 \item \href{#method-CacheConnection-set_national_estimates}{\code{CacheConnection$set_national_estimates()}}
+\item \href{#method-CacheConnection-set_start_survey_year}{\code{CacheConnection$set_start_survey_year()}}
+\item \href{#method-CacheConnection-set_denominator}{\code{CacheConnection$set_denominator()}}
+\item \href{#method-CacheConnection-set_selected_admin_level_1}{\code{CacheConnection$set_selected_admin_level_1()}}
+\item \href{#method-CacheConnection-set_selected_district}{\code{CacheConnection$set_selected_district()}}
+\item \href{#method-CacheConnection-set_mapping_years}{\code{CacheConnection$set_mapping_years()}}
 \item \href{#method-CacheConnection-set_un_estimates}{\code{CacheConnection$set_un_estimates()}}
 \item \href{#method-CacheConnection-set_wuenic_estimates}{\code{CacheConnection$set_wuenic_estimates()}}
 \item \href{#method-CacheConnection-set_national_survey}{\code{CacheConnection$set_national_survey()}}
@@ -151,17 +127,8 @@ Reactive method for the CacheConnection object
 
 \subsection{Returns}{
 A Shiny reactive expression tracking changes
-Gets for count down data
+Update a field (with change tracking)
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_cache_path"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_cache_path}{}}}
-\subsection{Method \code{get_cache_path()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_cache_path()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_cache_path"></a>}}
@@ -173,372 +140,13 @@ Gets for count down data
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_data"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_data}{}}}
-\subsection{Method \code{get_data()}}{
+\if{html}{\out{<a id="method-CacheConnection-set_countdown_data"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_countdown_data}{}}}
+\subsection{Method \code{set_countdown_data()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_data()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_countdown_data(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-a tibble of class \code{cd_data}.
-Gets for count down data with excluded years
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_country"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_country}{}}}
-\subsection{Method \code{get_country()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_country()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_country_iso"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_country_iso}{}}}
-\subsection{Method \code{get_country_iso()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_country_iso()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_indicator_groups"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_indicator_groups}{}}}
-\subsection{Method \code{get_indicator_groups()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_indicator_groups()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_vaccine_indicators"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_vaccine_indicators}{}}}
-\subsection{Method \code{get_vaccine_indicators()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_vaccine_indicators()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_data_with_excluded_years"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_data_with_excluded_years}{}}}
-\subsection{Method \code{get_data_with_excluded_years()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_data_with_excluded_years()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-a tibble of class \code{cd_data}.
-Gets for count down data
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_adjusted_data"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_adjusted_data}{}}}
-\subsection{Method \code{get_adjusted_data()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_adjusted_data()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-a tibble of class \code{cd_data}.
-Get performance threshold
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_threshold"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_threshold}{}}}
-\subsection{Method \code{get_threshold()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_threshold()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Numeric threshold
-Get excluded years
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_excluded_years"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_excluded_years}{}}}
-\subsection{Method \code{get_excluded_years()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_excluded_years()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Numeric vector of excluded years
-Get k-factors
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_k_factors"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_k_factors}{}}}
-\subsection{Method \code{get_k_factors()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_k_factors()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-List of k-factors
-Get adjusted flag
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_adjusted_flag"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_adjusted_flag}{}}}
-\subsection{Method \code{get_adjusted_flag()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_adjusted_flag()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Factor TRUE or FALSE
-Get excluded years
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_start_survey_year"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_start_survey_year}{}}}
-\subsection{Method \code{get_start_survey_year()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_start_survey_year()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Numeric vector of excluded years
-Get the denominator
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_denominator"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_denominator}{}}}
-\subsection{Method \code{get_denominator()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_denominator()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Numeric vector of excluded years
-Get the denominator
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_mapping_years"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_mapping_years}{}}}
-\subsection{Method \code{get_mapping_years()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_mapping_years()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Numeric vector of excluded years
-Get the selected admin level 1
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_admin_level_1"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_admin_level_1}{}}}
-\subsection{Method \code{get_admin_level_1()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_admin_level_1()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-A string for admin level 1
-Get the selected district/admin level 2
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_district"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_district}{}}}
-\subsection{Method \code{get_district()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_district()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-A string for the selected district
-Get survey estimates
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_survey_estimates"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_survey_estimates}{}}}
-\subsection{Method \code{get_survey_estimates()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_survey_estimates()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-List of survey estimates
-Get national estimates
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_national_estimates"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_national_estimates}{}}}
-\subsection{Method \code{get_national_estimates()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_national_estimates()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-List of national estimates
-Get mapping information
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_un_estimates"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_un_estimates}{}}}
-\subsection{Method \code{get_un_estimates()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_un_estimates()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-List of mapping information
-Get mapping information
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_wuenic_estimates"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_wuenic_estimates}{}}}
-\subsection{Method \code{get_wuenic_estimates()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_wuenic_estimates()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-List of mapping information
-Get mapping information
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_national_survey"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_national_survey}{}}}
-\subsection{Method \code{get_national_survey()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_national_survey()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-List of mapping information
-Get mapping information
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_regional_survey"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_regional_survey}{}}}
-\subsection{Method \code{get_regional_survey()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_regional_survey()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-List of mapping information
-Get mapping information
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_wiq_survey"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_wiq_survey}{}}}
-\subsection{Method \code{get_wiq_survey()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_wiq_survey()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-List of mapping information
-Get mapping information
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_area_survey"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_area_survey}{}}}
-\subsection{Method \code{get_area_survey()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_area_survey()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-List of mapping information
-Get mapping information
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_education_survey"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_education_survey}{}}}
-\subsection{Method \code{get_education_survey()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_education_survey()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-List of mapping information
-Get mapping information
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_map_mapping"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_map_mapping}{}}}
-\subsection{Method \code{get_map_mapping()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_map_mapping()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-List of mapping information
-Get mapping information
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_survey_mapping"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_survey_mapping}{}}}
-\subsection{Method \code{get_survey_mapping()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_survey_mapping()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-List of mapping information
-Get page notes
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_page_notes"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_page_notes}{}}}
-\subsection{Method \code{get_page_notes()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_page_notes()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Tibble of page notes
-Set countdown data
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-set_data"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-set_data}{}}}
-\subsection{Method \code{set_data()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_data(value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Countdown data to set}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set adjusted countdown data
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_adjusted_data"></a>}}
@@ -548,37 +156,15 @@ Set adjusted countdown data
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_adjusted_data(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Countdown data to set}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set performance threshold
-}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-set_threshold"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-set_threshold}{}}}
-\subsection{Method \code{set_threshold()}}{
+\if{html}{\out{<a id="method-CacheConnection-set_performance_threshold"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_performance_threshold}{}}}
+\subsection{Method \code{set_performance_threshold()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_threshold(value)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_performance_threshold(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Numeric threshold to set}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set excluded years
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_excluded_years"></a>}}
@@ -588,17 +174,6 @@ Set excluded years
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_excluded_years(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Numeric vector of years to exclude}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set k-factors
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_k_factors"></a>}}
@@ -608,137 +183,15 @@ Set k-factors
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_k_factors(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{List of k-factors to set}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Toggle adjusted flag
-}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-toggle_adjusted_flag"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-toggle_adjusted_flag}{}}}
-\subsection{Method \code{toggle_adjusted_flag()}}{
+\if{html}{\out{<a id="method-CacheConnection-set_adjusted_flag"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_adjusted_flag}{}}}
+\subsection{Method \code{set_adjusted_flag()}}{
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$toggle_adjusted_flag(adjusted)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_adjusted_flag(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{adjusted}}{Logical value for adjusted flag}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set excluded years
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-set_start_survey_year"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-set_start_survey_year}{}}}
-\subsection{Method \code{set_start_survey_year()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_start_survey_year(value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Numeric vector of years to exclude}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set denominator
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-set_denominator"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-set_denominator}{}}}
-\subsection{Method \code{set_denominator()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_denominator(value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Numeric vector of years to exclude}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set denominator
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-set_mapping_years"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-set_mapping_years}{}}}
-\subsection{Method \code{set_mapping_years()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_mapping_years(value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Numeric vector of years to exclude}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set Admin Level 1
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-set_admin_level_1"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-set_admin_level_1}{}}}
-\subsection{Method \code{set_admin_level_1()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_admin_level_1(value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{String vector of admin level 1}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set District
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-set_district"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-set_district}{}}}
-\subsection{Method \code{set_district()}}{
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_district(value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{String vector of district/admin_level_2}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set survey estimates
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_survey_estimates"></a>}}
@@ -748,17 +201,6 @@ Set survey estimates
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_survey_estimates(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{List of survey estimates}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set national estimates
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_national_estimates"></a>}}
@@ -768,17 +210,51 @@ Set national estimates
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_national_estimates(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{List of national estimates}
 }
-\if{html}{\out{</div>}}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_start_survey_year"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_start_survey_year}{}}}
+\subsection{Method \code{set_start_survey_year()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_start_survey_year(value)}\if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-None
-Set UN estimates information
+
 }
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_denominator"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_denominator}{}}}
+\subsection{Method \code{set_denominator()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_denominator(value)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_selected_admin_level_1"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_selected_admin_level_1}{}}}
+\subsection{Method \code{set_selected_admin_level_1()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_selected_admin_level_1(value)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_selected_district"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_selected_district}{}}}
+\subsection{Method \code{set_selected_district()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_selected_district(value)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_mapping_years"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_mapping_years}{}}}
+\subsection{Method \code{set_mapping_years()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_mapping_years(value)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_un_estimates"></a>}}
@@ -788,17 +264,6 @@ Set UN estimates information
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_un_estimates(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A data frame of mapping information}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set WUENIC information
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_wuenic_estimates"></a>}}
@@ -808,17 +273,6 @@ Set WUENIC information
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_wuenic_estimates(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A data frame of mapping information}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set national survey information
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_national_survey"></a>}}
@@ -828,17 +282,6 @@ Set national survey information
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_national_survey(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A data frame of mapping information}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set subnational survey mapping information
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_regional_survey"></a>}}
@@ -848,17 +291,6 @@ Set subnational survey mapping information
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_regional_survey(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A data frame of mapping information}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set Wealth quintile information
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_wiq_survey"></a>}}
@@ -868,17 +300,6 @@ Set Wealth quintile information
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_wiq_survey(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A data frame of mapping information}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set survey mapping information
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_area_survey"></a>}}
@@ -888,17 +309,6 @@ Set survey mapping information
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_area_survey(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A data frame of mapping information}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set survey mapping information
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_education_survey"></a>}}
@@ -908,17 +318,6 @@ Set survey mapping information
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_education_survey(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A data frame of mapping information}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set survey mapping information
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_survey_mapping"></a>}}
@@ -928,17 +327,6 @@ Set survey mapping information
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_survey_mapping(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A data frame of mapping information}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Set map mapping information
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_map_mapping"></a>}}
@@ -948,17 +336,6 @@ Set map mapping information
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_map_mapping(value)}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{List of mapping information}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-None
-Update a field (with change tracking)
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-clone"></a>}}

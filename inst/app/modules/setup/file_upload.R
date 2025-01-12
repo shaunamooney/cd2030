@@ -80,12 +80,12 @@ fileUploadServer <- function(id, cache) {
 
       data <- reactive({
         req(cache())
-        cache()$get_data()
+        cache()$countdown_data
       })
 
       country_iso <- reactive({
         req(cache())
-        cache()$get_country_iso()
+        cache()$country_iso
       })
 
       shinyDirChoose(input, 'directory', roots = getRoots(), allowDirCreate = FALSE,
@@ -94,7 +94,7 @@ fileUploadServer <- function(id, cache) {
       survey_file_list <- reactive({
         req(cache())
         prefix <- list('all_country.dta', 'gregion_country.dta', 'area_country.wide.dta', 'meduc_country.wide.dta', 'wiq_country.wide.dta')
-        gsub('country', cache()$get_country(), prefix)
+        gsub('country', cache()$country, prefix)
       })
 
       selected_dir <- eventReactive(input$directory, {
@@ -118,8 +118,8 @@ fileUploadServer <- function(id, cache) {
         tryCatch({
           start_year <- min(data()$year)
           end_year <- max(data()$year)
-          dt <- load_un_estimates(input$un_data$datapath, country_iso(), start_year, end_year)
-          cache()$set_un_estimates(dt)
+          un <- load_un_estimates(input$un_data$datapath, country_iso(), start_year, end_year)
+          cache()$set_un_estimates(un)
           un_message_box$update_message(paste("Upload successful: File", file_name, "is ready."), 'success')
         },
         error = function(e) {
@@ -134,7 +134,7 @@ fileUploadServer <- function(id, cache) {
 
       observe({
         req(data(), !state$loaded)
-        if (is.null(input$un_data$name) && !is.null(cache()$get_un_estimates())) {
+        if (is.null(input$un_data$name) && !is.null(cache()$un_estimates)) {
           un_message_box$update_message(paste("Upload successful: File loaded from cache"), 'success')
         } else {
           un_message_box$update_message(paste("Awaiting file upload..."), 'info')
@@ -147,8 +147,8 @@ fileUploadServer <- function(id, cache) {
         file_name <- input$wuenic_data$name
 
         tryCatch({
-          dt <- load_wuenic_data(input$wuenic_data$datapath, country_iso())
-          cache()$set_wuenic_estimates(dt)
+          wuenic <- load_wuenic_data(input$wuenic_data$datapath, country_iso())
+          cache()$set_wuenic_estimates(wuenic)
           wuenic_message_box$update_message(paste("Upload successful: File", file_name, "is ready."), 'success')
         },
         error = function(e) {
@@ -158,7 +158,7 @@ fileUploadServer <- function(id, cache) {
 
       observe({
         req(data(), !state$loaded)
-        if (is.null(input$wuenic_data$name) && !is.null(cache()$get_wuenic_estimates())) {
+        if (is.null(input$wuenic_data$name) && !is.null(cache()$wuenic_estimates)) {
           wuenic_message_box$update_message(paste("Upload successful: File loaded from cache"), 'success')
         } else {
           wuenic_message_box$update_message(paste("Awaiting file upload..."), 'info')
@@ -171,23 +171,23 @@ fileUploadServer <- function(id, cache) {
         state$loaded <- TRUE
 
         log_messages(NULL)
-        if (!is.null(cache()$get_national_survey())) {
+        if (!is.null(cache()$national_survey)) {
           new_log <- paste0('Loaded national survey data from cache.')
           log_messages(paste(log_messages(), new_log, sep = "\n"))
         }
-        if (!is.null(cache()$get_regional_survey())) {
+        if (!is.null(cache()$regional_survey)) {
           new_log <- paste0('Loaded regional survey data from cache.')
           log_messages(paste(log_messages(), new_log, sep = "\n"))
         }
-        if (!is.null(cache()$get_wiq_survey())) {
+        if (!is.null(cache()$wiq_survey)) {
           new_log <- paste0('Loaded wealth index quintile survey data from cache.')
           log_messages(paste(log_messages(), new_log, sep = "\n"))
         }
-        if (!is.null(cache()$get_area_survey())) {
+        if (!is.null(cache()$area_survey)) {
           new_log <- paste0('Loaded area survey data from cache.')
           log_messages(paste(log_messages(), new_log, sep = "\n"))
         }
-        if (!is.null(cache()$get_education_survey())) {
+        if (!is.null(cache()$education_survey)) {
           new_log <- paste0('Loaded maternal education survey data from cache.')
           log_messages(paste(log_messages(), new_log, sep = "\n"))
         }
@@ -215,8 +215,8 @@ fileUploadServer <- function(id, cache) {
             )
 
             if (grepl('^all_', .x)) {
-              nat_survey <- load_survey_data(file_path, country_iso())
-              cache()$set_national_survey(nat_survey)
+              survdata <- load_survey_data(file_path, country_iso())
+              cache()$set_national_survey(survdata)
               new_log <- paste0('Loaded national survey data: "', .x, '".')
             } else if (grepl('^gregion_', .x)) {
               gregion <- load_survey_data(file_path, country_iso(), admin_level = 'adminlevel_1')
@@ -227,8 +227,8 @@ fileUploadServer <- function(id, cache) {
               cache()$set_area_survey(area)
               new_log <- paste0('Loaded area survey data: "', .x, '".')
             } else if (grepl('^meduc_', .x)) {
-              meduc <- load_equity_data(file_path)
-              cache()$set_education_survey(meduc)
+              educ <- load_equity_data(file_path)
+              cache()$set_education_survey(educ)
               new_log <- paste0('Loaded maternal education survey data: "', .x, '".')
             } else if (grepl('^wiq', .x)) {
               wiq <- load_equity_data(file_path)
@@ -250,12 +250,12 @@ fileUploadServer <- function(id, cache) {
 
       survey_data <- reactive({
         req(data())
-        cache()$get_regional_survey()
+        cache()$regional_survey
       })
 
       survey_map <- reactive({
         req(data())
-        cache()$get_survey_mapping()
+        cache()$survey_mapping
       })
 
       observe({
@@ -284,7 +284,7 @@ fileUploadServer <- function(id, cache) {
 
       map_map <- reactive({
         req(data())
-        cache()$get_map_mapping()
+        cache()$map_mapping
       })
 
       observe({

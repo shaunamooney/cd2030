@@ -6,6 +6,9 @@
 #'
 #' @param x A data frame of type `cd_coverage`, containing year-wise
 #'   national coverage data for the specified country and indicator.
+#' @param indicator Character. Indicator to plot.
+#' @param denominator Character. The denominator to use.
+#' @param region Character. The region to plot. Used for subnational level.
 #' @param ... Additional arguments passed to or from other methods (currently
 #'   unused).
 #'
@@ -29,7 +32,7 @@
 #'
 #' @examples
 #' \dontrun{
-#'   plot(combine_coverage(dt_adj, indicator = "bcg", denominator = "anc1"))
+#'   plot(calculate_coverage(dt_adj, indicator = "bcg", denominator = "anc1"))
 #' }
 #'
 #' @export
@@ -46,12 +49,12 @@ plot.cd_coverage <- function(x,
   estimates = year = value = `Survey estimates` = `DHIS2 estimate` = `WUENIC estimates` =
     `95% CI LL` = `95% CI UL` = NULL
 
-  if (ncol(x) <= 1) {
-    cd_abort(c('x' = "The columns data is empty."))
-  }
-
   data_long <- x %>%
     filter_coverage(indicator, denominator, region)
+
+  if (ncol(data_long) <= 1) {
+    cd_abort(c('x' = "The columns data is empty."))
+  }
 
   data_long <- data_long %>%
     pivot_longer(cols = -estimates, names_to = 'year') %>%

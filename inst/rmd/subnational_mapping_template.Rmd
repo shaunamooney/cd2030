@@ -39,29 +39,13 @@ library(gridExtra)
 
 cache <- params$cache
 
-adjusted_data <- cache$get_adjusted_data()
-country <- cache$get_country()
-un_estimates <- cache$get_un_estimates()
-rates <- cache$get_national_estimates()
-denominator <- cache$get_denominator()
-subnational_map <- cache$get_survey_mapping()
-mapping_years <- cache$get_mapping_years()
-
-# Function to print notes for a given page
-print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
-  # Retrieve the notes from the cache
-  page_notes <- cache$get_notes(page_id, object_id, parameters) %>% 
-    filter(include_in_report == TRUE, !is.null(note))
-  
-  # Check if there are any notes
-  if (nrow(page_notes) > 0) {
-    page_notes %>% 
-      pull(note) %>% 
-      walk(~ cat(paste0(,x, '\n\n')))
-  } else {
-    cat(paste0("**--- Enter notes related to ", parameters$level, ' ', object_id, ': ', page_id, '. ---**\n\n'))
-  }
-}
+adjusted_data <- cache$adjusted_data
+country <- cache$country
+un_estimates <- cache$un_estimates
+rates <- cache$national_estimates
+denominator <- cache$denominator
+subnational_map <- cache$map_mapping
+mapping_years <- cache$mapping_years
 ```
 
 ## 5. Admin Level 1 Vaccination Coverage Map
@@ -92,7 +76,7 @@ plot(mapping_data, indicator = 'measles1',
 ---
 
 ```{r, results='asis'}
-print_notes('subnational_mapping', 'Measles 1', list(level = 'adminlevel_1'))
+print_notes(cache, 'subnational_mapping', 'Measles 1', list(level = 'adminlevel_1'))
 ```
 
 ---
@@ -117,7 +101,7 @@ plot(mapping_data, indicator = 'penta3',
 ---
 
 ```{r, results='asis'}
-print_notes('subnational_mapping', 'Penta 3', list(level = 'adminlevel_1'))
+print_notes(cache, 'subnational_mapping', 'Penta 3', list(level = 'adminlevel_1'))
 ```
 
 ---
@@ -142,7 +126,7 @@ plot(mapping_data, indicator = 'dropout_penta13',
 ---
 
 ```{r, results='asis'}
-print_notes('subnational_mapping', 'Penta1 to Penta3 Dropout', list(level = 'adminlevel_1'))
+print_notes(cache, 'subnational_mapping', 'Penta1 to Penta3 Dropout', list(level = 'adminlevel_1'))
 ```
 
 ---
@@ -167,7 +151,7 @@ plot(mapping_data, indicator = 'dropout_penta3mcv1',
 ---
 
 ```{r, results='asis'}
-print_notes('subnational_mapping', 'Penta3 to Measles 1 Dropout', list(level = 'adminlevel_1'))
+print_notes(cache, 'subnational_mapping', 'Penta3 to Measles 1 Dropout', list(level = 'adminlevel_1'))
 ```
 
 ---

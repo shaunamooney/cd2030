@@ -39,17 +39,17 @@ library(gridExtra)
 
 cache <- params$cache
 
-adjusted_data <- cache$get_adjusted_data()
-un_estimates <- cache$get_un_estimates()
-rates <- cache$get_national_estimates()
-denominator <- cache$get_denominator()
-wuenic_estimates <- cache$get_wuenic_estimates()
-survey_start_year <- cache$get_start_survey_year()
-gregion <- cache$get_regional_survey() %>% 
+adjusted_data <- cache$adjusted_data
+un_estimates <- cache$un_estimates
+rates <- cache$national_estimates
+denominator <- cache$denominator
+wuenic_estimates <- cache$wuenic_estimates
+survey_start_year <- cache$start_survey_year
+gregion <- cache$regional_survey %>% 
   filter(if(is.null(survey_start_year)) TRUE else year >= survey_start_year)
-subnational_map <- cache$get_survey_mapping()
-selected_admin_level_1 <- cache$get_admin_level_1()
-selected_district <- cache$get_district()
+subnational_map <- cache$survey_mapping
+selected_admin_level_1 <- cache$selected_admin_level_1
+selected_district <- cache$selected_district
 
 selected_admin_level_1 <- if (is.null(selected_admin_level_1)) {
   sort(unique(adjusted_data$adminlevel_1))[1]
@@ -61,22 +61,6 @@ selected_district <- if (is.null(selected_district)) {
   sort(unique(adjusted_data$adminlevel_1))[1]
 } else {
   selected_district
-}
-
-# Function to print notes for a given page
-print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
-  # Retrieve the notes from the cache
-  page_notes <- cache$get_notes(page_id, object_id, parameters) %>% 
-    filter(include_in_report == TRUE, !is.null(note))
-  
-  # Check if there are any notes
-  if (nrow(page_notes) > 0) {
-    page_notes %>% 
-      pull(note) %>% 
-      walk(~ cat(paste0(,x, '\n\n')))
-  } else {
-    cat(paste0("**--- Enter notes related to ", parameters$admin_level, ' ',  object_id, ': ', page_id, '. ---**\n\n'))
-  }
 }
 ```
 
@@ -91,28 +75,26 @@ facility and survey data need to be used.
 ### Measles 1 Coverage -- Admin Level 1 (`r selected_admin_level_1`)
 
 ```{r}
-subnational_indicator_coverage <- adjusted_data %>%
-          calculate_indicator_coverage(
-            admin_level = 'adminlevel_1',
-            sbr = rates$sbr,
-            nmr = rates$nmr,
-            pnmr = rates$pnmr,
-            twin = rates$twin_rate,
-            preg_loss = rates$preg_loss,
-            anc1survey = rates$anc1,
-            dpt1survey = rates$penta1)
+subnational_coverage <- adjusted_data %>%
+  calculate_coverage(
+    admin_level = 'adminlevel_1',
+    survey_data = gregion,
+    wuenic_data = wuenic_estimates,
+    sbr = rates$sbr,
+    nmr = rates$nmr,
+    pnmr = rates$pnmr,
+    twin = rates$twin_rate,
+    preg_loss = rates$preg_loss,
+    anc1survey = rates$anc1,
+    dpt1survey = rates$penta1,
+    subnational_map = subnational_map
+  )
 
-measles1_coverage <- analyze_coverage(subnational_indicator_coverage,
-                         admin_level = 'adminlevel_1',
-                         region = selected_admin_level_1,
-                         indicator = 'measles1',
-                         subnational_map = subnational_map,
-                         denominator = denominator,
-                         survey_data = gregion,
-                         wuenic_data = wuenic_estimates)
-
-
-plot(measles1_coverage) + cd_report_theme()
+plot(subnational_coverage, 
+     indicator = 'measles1', 
+     denominator = denominator, 
+     region = selected_admin_level_1) +
+  cd_report_theme()
 ```
 
 #### 📝 Notes 
@@ -122,7 +104,7 @@ plot(measles1_coverage) + cd_report_theme()
 ---
 
 ```{r, results='asis'}
-print_notes('subnational_coverage', 'Measles 1', list(admin_level = 'adminlevel_1'))
+print_notes(cache, 'subnational_coverage', 'Measles 1', list(admin_level = 'adminlevel_1'))
 ```
 
 ---
@@ -132,16 +114,11 @@ print_notes('subnational_coverage', 'Measles 1', list(admin_level = 'adminlevel_
 ### Penta 3 Coverage -- Admin Level 1 (`r selected_admin_level_1`)
 
 ```{r}
-penta3_coverage <- analyze_coverage(subnational_indicator_coverage,
-                         admin_level = 'adminlevel_1',
-                         region = selected_admin_level_1,
-                         indicator = 'penta3',
-                         subnational_map = subnational_map,
-                         denominator = denominator,
-                         survey_data = gregion,
-                         wuenic_data = wuenic_estimates)
-
-plot(penta3_coverage) + cd_report_theme()
+plot(subnational_coverage, 
+     indicator = 'penta3', 
+     denominator = denominator, 
+     region = selected_admin_level_1) +
+  cd_report_theme()
 ```
 
 #### 📝 Notes 
@@ -151,7 +128,7 @@ plot(penta3_coverage) + cd_report_theme()
 ---
 
 ```{r, results='asis'}
-print_notes('subnational_coverage', 'Penta 3', list(admin_level = 'adminlevel_1'))
+print_notes(cache, 'subnational_coverage', 'Penta 3', list(admin_level = 'adminlevel_1'))
 ```
 
 ---
@@ -161,16 +138,11 @@ print_notes('subnational_coverage', 'Penta 3', list(admin_level = 'adminlevel_1'
 ### Penta1 to Penta3 Dropout -- Admin Level 1 (`r selected_admin_level_1`)
 
 ```{r}
-dropout_penta13_coverage <- analyze_coverage(subnational_indicator_coverage,
-                         admin_level = 'adminlevel_1',
-                         region = selected_admin_level_1,
-                         indicator = 'dropout_penta13',
-                         subnational_map = subnational_map,
-                         denominator = denominator,
-                         survey_data = gregion,
-                         wuenic_data = wuenic_estimates)
-
-plot(dropout_penta13_coverage) + cd_report_theme()
+plot(subnational_coverage, 
+     indicator = 'dropout_penta13', 
+     denominator = denominator, 
+     region = selected_admin_level_1) +
+  cd_report_theme()
 ```
 
 #### 📝 Notes 
@@ -180,7 +152,7 @@ plot(dropout_penta13_coverage) + cd_report_theme()
 ---
 
 ```{r, results='asis'}
-print_notes('subnational_coverage', 'Penta1 to Penta3 Dropout', list(admin_level = 'adminlevel_1'))
+print_notes(cache, 'subnational_coverage', 'Penta1 to Penta3 Dropout', list(admin_level = 'adminlevel_1'))
 ```
 
 ---
@@ -190,16 +162,11 @@ print_notes('subnational_coverage', 'Penta1 to Penta3 Dropout', list(admin_level
 ### Penta3 to Measles 1 Dropout -- Admin Level 1 (`r selected_admin_level_1`)
 
 ```{r}
-dropout_penta3mcv1_coverage <- analyze_coverage(subnational_indicator_coverage,
-                         admin_level = 'adminlevel_1',
-                         region = selected_admin_level_1,
-                         indicator = 'dropout_penta3mcv1',
-                         subnational_map = subnational_map,
-                         denominator = denominator,
-                         survey_data = gregion,
-                         wuenic_data = wuenic_estimates)
-
-plot(dropout_penta3mcv1_coverage) + cd_report_theme()
+plot(subnational_coverage, 
+     indicator = 'dropout_penta3mcv1', 
+     denominator = denominator, 
+     region = selected_admin_level_1) +
+  cd_report_theme()
 ```
 
 #### 📝 Notes 
@@ -209,7 +176,7 @@ plot(dropout_penta3mcv1_coverage) + cd_report_theme()
 ---
 
 ```{r, results='asis'}
-print_notes('subnational_coverage', 'Penta3 to Measles 1 Dropout', list(admin_level = 'adminlevel_1'))
+print_notes(cache, 'subnational_coverage', 'Penta3 to Measles 1 Dropout', list(admin_level = 'adminlevel_1'))
 ```
 
 ---
@@ -228,28 +195,26 @@ facility and survey data need to be used.
 ### Measles 1 Coverage -- District (`r selected_district`)
 
 ```{r}
-subnational_indicator_coverage <- adjusted_data %>%
-          calculate_indicator_coverage(
-            admin_level = 'district',
-            sbr = rates$sbr,
-            nmr = rates$nmr,
-            pnmr = rates$pnmr,
-            twin = rates$twin_rate,
-            preg_loss = rates$preg_loss,
-            anc1survey = rates$anc1,
-            dpt1survey = rates$penta1)
+district_coverage <- adjusted_data %>%
+  calculate_coverage(
+    admin_level = 'district',
+    survey_data = gregion,
+    wuenic_data = wuenic_estimates,
+    sbr = rates$sbr,
+    nmr = rates$nmr,
+    pnmr = rates$pnmr,
+    twin = rates$twin_rate,
+    preg_loss = rates$preg_loss,
+    anc1survey = rates$anc1,
+    dpt1survey = rates$penta1,
+    subnational_map = subnational_map
+  )
 
-measles1_coverage <- analyze_coverage(subnational_indicator_coverage,
-                         admin_level = 'district',
-                         region = selected_district,
-                         indicator = 'measles1',
-                         subnational_map = subnational_map,
-                         denominator = denominator,
-                         survey_data = gregion,
-                         wuenic_data = wuenic_estimates)
-
-
-plot(measles1_coverage) + cd_report_theme()
+plot(district_coverage, 
+     indicator = 'measles1', 
+     denominator = denominator, 
+     region = selected_district) +
+  cd_report_theme()
 ```
 
 #### 📝 Notes 
@@ -259,7 +224,7 @@ plot(measles1_coverage) + cd_report_theme()
 ---
 
 ```{r, results='asis'}
-print_notes('subnational_coverage', 'Measles 1', list(admin_level = 'district'))
+print_notes(cache, 'subnational_coverage', 'Measles 1', list(admin_level = 'district'))
 ```
 
 ---
@@ -269,16 +234,11 @@ print_notes('subnational_coverage', 'Measles 1', list(admin_level = 'district'))
 ### Penta 3 Coverage -- District (`r selected_district`)
 
 ```{r}
-penta3_coverage <- analyze_coverage(subnational_indicator_coverage,
-                         admin_level = 'district',
-                         region = selected_district,
-                         indicator = 'penta3',
-                         subnational_map = subnational_map,
-                         denominator = denominator,
-                         survey_data = gregion,
-                         wuenic_data = wuenic_estimates)
-
-plot(penta3_coverage) + cd_report_theme()
+plot(district_coverage, 
+     indicator = 'penta3', 
+     denominator = denominator, 
+     region = selected_district) +
+  cd_report_theme()
 ```
 
 #### 📝 Notes 
@@ -288,7 +248,7 @@ plot(penta3_coverage) + cd_report_theme()
 ---
 
 ```{r, results='asis'}
-print_notes('subnational_coverage', 'Penta 3', list(admin_level = 'district'))
+print_notes(cache, 'subnational_coverage', 'Penta 3', list(admin_level = 'district'))
 ```
 
 ---
@@ -298,16 +258,11 @@ print_notes('subnational_coverage', 'Penta 3', list(admin_level = 'district'))
 ### Penta1 to Penta3 Dropout -- District (`r selected_district`)
 
 ```{r}
-dropout_penta13_coverage <- analyze_coverage(subnational_indicator_coverage,
-                         admin_level = 'district',
-                         region = selected_district,
-                         indicator = 'dropout_penta13',
-                         subnational_map = subnational_map,
-                         denominator = denominator,
-                         survey_data = gregion,
-                         wuenic_data = wuenic_estimates)
-
-plot(dropout_penta13_coverage) + cd_report_theme()
+plot(district_coverage, 
+     indicator = 'dropout_penta13', 
+     denominator = denominator, 
+     region = selected_district) +
+  cd_report_theme()
 ```
 
 #### 📝 Notes 
@@ -317,7 +272,7 @@ plot(dropout_penta13_coverage) + cd_report_theme()
 ---
 
 ```{r, results='asis'}
-print_notes('subnational_coverage', 'Penta1 to Penta3 Dropout', list(admin_level = 'district'))
+print_notes(cache, 'subnational_coverage', 'Penta1 to Penta3 Dropout', list(admin_level = 'district'))
 ```
 
 ---
@@ -327,16 +282,11 @@ print_notes('subnational_coverage', 'Penta1 to Penta3 Dropout', list(admin_level
 ### Penta3 to Measles 1 Dropout -- District (`r selected_district`)
 
 ```{r}
-dropout_penta3mcv1_coverage <- analyze_coverage(subnational_indicator_coverage,
-                         admin_level = 'district',
-                         region = selected_district,
-                         indicator = 'dropout_penta3mcv1',
-                         subnational_map = subnational_map,
-                         denominator = denominator,
-                         survey_data = gregion,
-                         wuenic_data = wuenic_estimates)
-
-plot(dropout_penta3mcv1_coverage) + cd_report_theme()
+plot(district_coverage, 
+     indicator = 'dropout_penta3mcv1', 
+     denominator = denominator, 
+     region = selected_district) +
+  cd_report_theme()
 ```
 
 #### 📝 Notes 
@@ -346,7 +296,7 @@ plot(dropout_penta3mcv1_coverage) + cd_report_theme()
 ---
 
 ```{r, results='asis'}
-print_notes('subnational_coverage', 'Penta3 to Measles 1 Dropout', list(admin_level = 'district'))
+print_notes(cache, 'subnational_coverage', 'Penta3 to Measles 1 Dropout', list(admin_level = 'district'))
 ```
 
 ---

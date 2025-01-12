@@ -6,7 +6,7 @@ downloadPlot <- function(id, filename, data, plot_function, label = 'Download Pl
     extension = 'png',
     content = function(file) {
       plot_function()
-      ggsave(file, width = 1920, height = 1080, dpi = 150, units = 'px')
+      ggsave(file, width = 3840, height = 2160, dpi = 300, units = 'px')
     },
     data = data,
     label = label

@@ -1,13 +1,24 @@
 #' Combine Immunization Coverage Data
 #'
-#' `combine_coverage` integrates immunization coverage data from three sources:
+#' `calculate_coverage` integrates immunization coverage data from three sources:
 #' DHIS2 (District Health Information Software), survey-based estimates, and
 #' WUENIC (WHO-UNICEF estimates). The combined dataset is prepared for analysis
 #' at various administrative levels.
 #'
-#' @param .data A `cd_indicator_coverage` data frame with DHIS2 coverage metrics.
+#' @param .data A `cd_data` data frame with DHIS2 coverage metrics.
+#' @param admin_level Character. Specifies the administrative level for calculations.
+#'   Options include:`"national", "adminlevel_1"`, and `"district"`.
 #' @param survey_data A data frame containing survey-based immunization estimates.
 #' @param wuenic_data A data frame containing WHO-UNICEF (WUENIC) coverage estimates.
+#' @param un_estimates Optional. A tibble containing UN population estimates. Required
+#'   for national-level calculations.
+#' @param sbr Numeric. The stillbirth rate. Default is `0.02`.
+#' @param nmr Numeric. Neonatal mortality rate. Default is `0.025`.
+#' @param pnmr Numeric. Post-neonatal mortality rate. Default is `0.024`.
+#' @param anc1survey Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first visit). Default is `0.98`.
+#' @param dpt1survey Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination). Default is `0.97`.
+#' @param preg_loss Numeric. Pregnancy loss rate
+#' @param twin Numeric. Twin birth rate. Default is `0.015`.
 #' @param subnational_map (Optional) A data frame mapping subnational regions to
 #'   parent regions, required for subnational-level analyses. Default is `NULL`.
 #'
@@ -17,25 +28,40 @@
 #'
 #' @examples
 #' \dontrun{
-#'   combine_coverage(precomputed_data, survey_df, wuenic_df)
+#'   calculate_coverage(precomputed_data, survey_df, wuenic_df)
 #' }
 #' @export
-combine_coverage  <- function(.data,
-                              survey_data,
-                              wuenic_data,
-                              subnational_map = NULL) {
+calculate_coverage  <- function(.data,
+                                admin_level = c('national', 'adminlevel_1', 'district'),
+                                survey_data,
+                                wuenic_data,
+                                un_estimates = NULL,
+                                sbr = 0.02,
+                                nmr = 0.025,
+                                pnmr = 0.024,
+                                anc1survey = 0.98,
+                                dpt1survey = 0.97,
+                                twin = 0.015,
+                                preg_loss = 0.03,
+                                subnational_map = NULL) {
 
   year = NULL
 
-  admin_level <- attr(.data, 'admin_level')
+  admin_level <- arg_match(admin_level)
 
   # Validate inputs
-  check_cd_indicator_coverage(.data)
+  check_cd_data(.data)
   check_wuenic_data(wuenic_data)
   check_survey_data(survey_data, admin_level)
 
+  coverage <- calculate_indicator_coverage(.data, admin_level = admin_level,
+                                           un_estimates = un_estimates, sbr = sbr,
+                                           nmr = nmr, pnmr = pnmr, anc1survey = anc1survey,
+                                           dpt1survey = dpt1survey, twin = twin,
+                                           preg_loss = preg_loss)
+
   # Prepare DHIS2 data
-  dhis2_data <- .data %>%
+  dhis2_data <- coverage %>%
     select(year, any_of(c('adminlevel_1', 'district')), matches('^cov_'))
 
   # Prepare survey data
@@ -98,6 +124,8 @@ filter_coverage <- function(.data,
                             denominator = c('dhis2', 'anc1', 'penta1'),
                             region = NULL) {
 
+  . = value = estimates = NULL
+
   admin_level <- attr(.data, 'admin_level')
 
   # check_cd_coverage(,data)
@@ -150,13 +178,15 @@ validate_column_existence <- function(.data, column) {
 }
 
 join_subnational_map <- function(.data, admin_level, map) {
+  # admin_level_argument will be used once the district column is introduce in survey
 
   adminlevel_1 = admin_level_1 = NULL
 
   if (admin_level != 'national') {
     if (!is.null(map)) {
       .data <- .data %>%
-        left_join(map, by = admin_level) %>%
+        # left_join(map, by = admin_level) %>%
+        left_join(map, join_by(adminlevel_1)) %>%
         select(-adminlevel_1) %>%
         rename(adminlevel_1 = admin_level_1)
     }

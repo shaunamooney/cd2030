@@ -1,6 +1,8 @@
 # increase the uploading file size limit to 2000M, now our upload is not just about hfd file, it also include the saved data.
 options(shiny.maxRequestSize = 2000*1024^2)
 options(future.globals.maxSize = 1 * 1024 * 1024^2) # 1 GB
+options(shiny.fullstacktrace = TRUE)
+# options(shiny.error = browser)
 
 # options(shiny.trace = TRUE)
 # options(shiny.trace = FALSE)
@@ -173,8 +175,7 @@ server <- function(input, output, session) {
     req(cache())
 
     shinyjs::delay(500, {
-      country <- cache()$get_country()
-      updateHeader(country)
+      updateHeader(cache()$country)
       shinyjs::addClass(selector = 'body', class = 'fixed')
     })
   })

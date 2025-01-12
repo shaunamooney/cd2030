@@ -107,7 +107,7 @@ calculate_populations <- function(.data,
   admin_level <- arg_match(admin_level)
 
   group_vars <- switch(admin_level,
-                       national = c('year'),
+                       national = 'year',
                        adminlevel_1 = c('adminlevel_1', 'year'),
                        district = c('adminlevel_1', 'district', 'year')
   )

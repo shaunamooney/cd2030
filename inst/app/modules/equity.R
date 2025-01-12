@@ -62,17 +62,17 @@ equityServer <- function(id, cache) {
 
       wiq <- reactive({
         req(cache())
-        cache()$get_wiq_survey()
+        cache()$wiq_survey
       })
 
       meduc <- reactive({
         req(cache())
-        cache()$get_education_survey()
+        cache()$education_survey
       })
 
       area <- reactive({
         req(cache())
-        cache()$get_area_survey()
+        cache()$area_survey
       })
 
       observe({

@@ -44,18 +44,18 @@ denominatorSelectionServer <- function(id, cache) {
 
       data <- reactive({
         req(cache())
-        cache()$get_adjusted_data()
+        cache()$adjusted_data
       })
 
       un_estimates <- reactive({
         req(cache())
-        cache()$get_un_estimates()
+        cache()$un_estimates
       })
 
       indicator_coverage <- reactive({
         req(data(), un_estimates())
 
-        rates <- cache()$get_national_estimates()
+        rates <- cache()$national_estimates
         data() %>%
           calculate_indicator_coverage(un_estimates = un_estimates(),
                                        sbr = rates$sbr,

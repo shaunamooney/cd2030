@@ -42,12 +42,12 @@ calculateRatiosServer <- function(id, cache) {
 
       data <- reactive({
         req(cache())
-        cache()$get_data()
+        cache()$countdown_data
       })
 
       survey_estimates <- reactive({
         req(cache())
-        cache()$get_survey_estimates()
+        cache()$survey_estimates
       })
 
       observe({
@@ -67,12 +67,12 @@ calculateRatiosServer <- function(id, cache) {
       observeEvent(c(debounced_anc1(), debounced_penta1(), debounced_penta3()), {
         req(cache())
 
-          estimates <- c(
-            anc1 = as.numeric(input$anc1_coverage),
-            penta1 = as.numeric(input$penta1_coverage),
-            penta3 = as.numeric(input$penta3_coverage)
-          )
-          cache()$set_survey_estimates(estimates)
+        estimates <- c(
+          anc1 = as.numeric(input$anc1_coverage),
+          penta1 = as.numeric(input$penta1_coverage),
+          penta3 = as.numeric(input$penta3_coverage)
+        )
+        cache()$set_survey_estimates(estimates)
       })
 
       output$ratios_plot <- renderCustomPlot({

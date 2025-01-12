@@ -86,40 +86,38 @@ subnationalMappingServer <- function(id, cache) {
 
       data <- reactive({
         req(cache())
-        cache()$get_adjusted_data()
+        cache()$adjusted_data
       })
 
       country <- reactive({
         req(cache())
-        cache()$get_country()
+        cache()$country
       })
 
       un_estimates <- reactive({
         req(cache())
-        cache()$get_un_estimates()
+        cache()$un_estimates
       })
 
       dt <- reactive({
         req(data(), un_estimates(), input$denominator, input$palette)
 
         data() %>%
-          get_mapping_data(un_estimates(), cache()$get_national_estimates(), cache()$get_map_mapping())
+          get_mapping_data(un_estimates(), cache()$national_estimates, cache()$map_mapping)
       })
 
       years <- reactive({
         req(cache())
-        cache()$get_mapping_years()
+        cache()$mapping_years
       })
 
       observe({
         req(cache())
-
-        selected_denoninator <- cache()$get_denominator()
-        updateSelectInput(session, 'denominator', selected = selected_denoninator)
+        updateSelectInput(session, 'denominator', selected = cache()$denominator)
       })
 
       observeEvent(input$denominator, {
-        req(cache())
+        req(cache(), input$denominator)
         cache()$set_denominator(input$denominator)
       })
 

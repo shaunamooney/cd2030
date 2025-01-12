@@ -6,6 +6,7 @@
 #'
 #' @param .data A data frame of type `cd_data` containing facility data
 #'   including annual reporting rates, completeness, and consistency indicators.
+#' @param threshold The data reporting rate threshold.
 #' @param ratio_pairs description
 #'
 #' @details

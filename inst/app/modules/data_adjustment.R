@@ -72,22 +72,22 @@ dataAdjustmentServer <- function(id, cache) {
 
       data <- reactive({
         req(cache())
-        cache()$get_data_with_excluded_years()
+        cache()$data_with_excluded_years
       })
 
       modified_data <- reactive({
         req(cache())
-        cache()$get_adjusted_data()
+        cache()$adjusted_data
       })
 
       adjusted_flag <- reactive({
         req(cache())
-        cache()$get_adjusted_flag()
+        cache()$adjusted_flag
       })
 
       k_factors <- reactive({
         req(cache())
-        cache()$get_k_factors()
+        cache()$k_factors
       })
 
       observeEvent(data(), {
@@ -120,17 +120,17 @@ dataAdjustmentServer <- function(id, cache) {
       observeEvent(input$adjust_data, {
         req(cache())
         messageBox$update_message('Adjusting ...', 'info')
-        cache()$toggle_adjusted_flag(FALSE)
-        cache()$toggle_adjusted_flag(TRUE)
+        cache()$set_adjusted_flag(FALSE)
+        cache()$set_adjusted_flag(TRUE)
       })
 
       observeEvent(adjusted_flag(), {
         req(data())
         if (adjusted_flag()) {
-          new_data <- data() %>%
-            adjust_service_data(adjustment = 'custom',
-                                k_factors = k_factors())
-          cache()$set_adjusted_data(new_data)
+          dt <- data() %>%
+            adjust_service_data(adjustment = 'custom', k_factors = k_factors())
+
+          cache()$set_adjusted_data(dt)
 
           messageBox$update_message('Data Adjusted', 'success')
         } else {

@@ -1,11 +1,12 @@
 #' Generate and Export Checks Report
 #'
-#' The `generate_final_report` function generates the final report based on a
+#' The `generate_report` function generates the final report based on a
 #' specified dataset and parameters. The report is rendered using an RMarkdown
 #' template and can be output in either Word, pdf of html formats.
 #'
-#' @param .data A data frame or list object containing the dataset to be analyzed.
+#' @param cache A data of class `CacheConnection`.
 #' @param output_file A character string specifying the name and path of the output file.
+#' @param report_name The name of report to generate
 #' @param output_format A character vector specifying the output format, either
 #'   `'html_document'` or `'word_document'`.
 #'
@@ -18,10 +19,10 @@
 #'     output_format = 'word_document', threshold = 85)
 #' }
 #' @export
-generate_final_report <- function(cache,
-                          output_file,
-                          report_name,
-                          output_format = c('word_document', 'pdf_document', 'html_document')) {
+generate_report <- function(cache,
+                            output_file,
+                            report_name,
+                            output_format = c('word_document', 'pdf_document', 'html_document')) {
 
   # check_cd_data(.data)
   check_required(cache)
@@ -45,7 +46,7 @@ generate_final_report <- function(cache,
     input = file.path(system.file(package = 'cd2030'), 'rmd', paste0(report_name, '_template.Rmd')),
     output_format = format,
     output_file = output_path,
-    params = list(cache = cache, country = cache$get_country()),
+    params = list(cache = cache, country = cache$country),
     encoding = 'UTF-8',
     runtime = 'auto',
     intermediates_dir = temp_dir,    # Set unique temp directory

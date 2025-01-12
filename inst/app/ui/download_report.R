@@ -22,14 +22,14 @@ downloadReportServer <- function(id, cache) {
 
       data <- reactive({
         req(cache())
-        cache()$get_adjusted_data()
+        cache()$adjusted_data
       })
 
       observeEvent(input$download, {
         req(cache())
 
-        if (is.null(cache()$get_un_estimates()) || is.null(cache()$get_wuenic_estimates()) ||
-            is.null(cache()$get_national_survey()) || is.null(cache()$get_regional_survey())) {
+        if (is.null(cache()$un_estimates) || is.null(cache()$wuenic_estimates) ||
+            is.null(cache()$national_survey) || is.null(cache()$regional_survey)) {
           # Show an error dialog if data is not available
           showModal(
             modalDialog(

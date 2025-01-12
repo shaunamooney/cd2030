@@ -14,6 +14,8 @@ calculate_overall_score(
 \item{.data}{A data frame of type \code{cd_data} containing facility data
 including annual reporting rates, completeness, and consistency indicators.}
 
+\item{threshold}{The data reporting rate threshold.}
+
 \item{ratio_pairs}{description}
 }
 \value{

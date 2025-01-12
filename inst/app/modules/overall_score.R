@@ -25,14 +25,14 @@ overallScoreServer <- function(id, cache) {
 
       data <- reactive({
         req(cache())
-        cache()$get_data()
+        cache()$countdown_data
       })
 
       output$overall_score <- renderUI({
         req(data())
 
         years <- unique(data()$year)
-        threshold <- cache()$get_threshold()
+        threshold <- cache()$threshold
 
         data() %>%
           calculate_overall_score(threshold) %>%

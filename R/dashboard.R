@@ -30,13 +30,6 @@ dashboard <- function() {
 
   ui = server = NULL
 
-  # Ensure `shinydashboard` is recognized as used
-  if (!requireNamespace('shinydashboard', quietly = TRUE)) {
-    cd_abort(
-      c('x' = 'Package {.pkg shinydashboard} is required but not available.')
-    )
-  }
-
   shiny_dir <- system.file('app', package = 'cd2030')
   if (shiny_dir == '') {
     cd_abort(

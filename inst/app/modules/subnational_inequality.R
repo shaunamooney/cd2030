@@ -10,7 +10,7 @@ subnationalInequalityUI <- function(id) {
         width = 12,
         solidHeader = TRUE,
         fluidRow(
-          column(3, selectizeInput(ns('level'), label = 'Subnational Level',
+          column(3, selectizeInput(ns('admin_level'), label = 'Subnational Level',
                                    choices = c('Admin Level 1' = 'adminlevel_1',
                                                'District' = 'district'))),
           column(3, selectizeInput(ns('denominator'), label = 'Denominator',
@@ -41,11 +41,33 @@ subnationalInequalityUI <- function(id) {
         ),
 
         tabPanel(
+          title = 'Penta 1 to Penta 3 Dropout',
+          fluidRow(
+            column(12, plotCustomOutput(ns('dropout_penta13'))),
+            downloadCoverageUI(ns('dropout_penta13_download'))
+          )
+        ),
+
+        tabPanel(
+          title = 'Penta 3 to Measles 1 Dropout',
+          fluidRow(
+            column(12, plotCustomOutput(ns('dropout_penta3mcv1'))),
+            downloadCoverageUI(ns('dropout_penta3mcv1_download'))
+          )
+        ),
+
+        tabPanel(
           'Custom Check',
           fluidRow(
             column(3, selectizeInput(ns('indicator'), label = 'Indicator',
-                                     choices = c('Select' = '', "anc1", "bcg",  "opv1", "opv2", "opv3", "pcv1", "pcv2", "pcv3",
-                                                 "penta1", "penta2", "rota1", "rota2", "measles2", "ipv1", "ipv2")))
+                                     choices = c(
+                                       'Select' = '', "bcg", "anc1", "opv1", "opv2", "opv3", "pcv1",
+                                       "pcv2", "pcv3", "penta1", "penta2", "rota1", "rota2",
+                                       "instdeliveries", "measles2", "ipv1", "ipv2", "undervax",
+                                       "zerodose", "dropout_measles12"
+                                     )
+            )
+            )
           ),
           fluidRow(
             column(12, plotCustomOutput(ns('custom_check'))),
@@ -64,97 +86,33 @@ subnationalInequalityServer <- function(id, cache) {
     id = id,
     module = function(input, output, session) {
 
-      data <- reactive({
+      denominator <- reactive({
         req(cache())
-        cache()$get_adjusted_data()
+        cache()$denominator
       })
 
-      un_estimates <- reactive({
-        req(cache())
-        cache()$get_un_estimates()
-      })
+      inequalities <- reactive({
+        req(cache(), cache()$un_estimates, input$admin_level)
 
-      national_data <- reactive({
-        national_values()$data
-      })
+        rates <- cache()$national_estimates
 
-      measles1_coverage <- reactive({
-        req(input$level, input$denominator, un_estimates())
-
-        rates <- cache()$get_national_estimates()
-
-        analyze_inequality(data(),
-                           admin_level = input$level,
-                           indicator = 'measles1',
-                           denominator =  input$denominator,
-                           un_estimates =  un_estimates(),
-                           sbr = rates$sbr,
-                           nmr = rates$nmr,
-                           pnmr = rates$pnmr,
-                           anc1survey = rates$anc1,
-                           dpt1survey = rates$penta1,
-                           twin = rates$twin_rate,
-                           preg_loss = rates$preg_loss)
-      })
-
-      penta3_coverage <- reactive({
-        req(input$level, input$denominator, un_estimates())
-
-        rates <- cache()$get_national_estimates()
-
-        analyze_inequality(data(),
-                           admin_level = input$level,
-                           indicator = 'penta3',
-                           denominator =  input$denominator,
-                           un_estimates = un_estimates(),
-                           sbr = rates$sbr,
-                           nmr = rates$nmr,
-                           pnmr = rates$pnmr,
-                           anc1survey = rates$anc1,
-                           dpt1survey = rates$penta1,
-                           twin = rates$twin_rate,
-                           preg_loss = rates$preg_loss)
-      })
-
-      custom_coverage <- reactive({
-        req(input$level, input$denominator, un_estimates(), input$indicator)
-
-        rates <- cache()$get_national_estimates()
-
-        analyze_inequality(data(),
-                           admin_level = input$level,
-                           indicator = input$indicator,
-                           denominator =  input$denominator,
-                           un_estimates = un_estimates(),
-                           sbr = rates$sbr,
-                           nmr = rates$nmr,
-                           pnmr = rates$pnmr,
-                           anc1survey = rates$anc1,
-                           dpt1survey = rates$penta1,
-                           twin = rates$twin_rate,
-                           preg_loss = rates$preg_loss)
-      })
-
-      output$measles1 <- renderCustomPlot({
-        req(measles1_coverage())
-        plot(measles1_coverage())
-      })
-
-      output$penta3 <- renderCustomPlot({
-        req(penta3_coverage())
-        plot(penta3_coverage())
-      })
-
-      output$custom_check <- renderCustomPlot({
-        req(custom_coverage())
-        plot(custom_coverage())
+        calculate_inequality(
+          .data = cache()$adjusted_data,
+          admin_level = input$admin_level,
+          un_estimates = cache()$un_estimates,
+          sbr = rates$sbr,
+          nmr = rates$nmr,
+          pnmr = rates$pnmr,
+          anc1survey = rates$anc1,
+          dpt1survey = rates$penta1,
+          twin = rates$twin_rate,
+          preg_loss = rates$preg_loss
+        )
       })
 
       observe({
         req(cache())
-
-        selected_denoninator <- cache()$get_denominator()
-        updateSelectInput(session, 'denominator', selected = selected_denoninator)
+        updateSelectInput(session, 'denominator', selected = cache()$denominator)
       })
 
       observeEvent(input$denominator, {
@@ -162,24 +120,78 @@ subnationalInequalityServer <- function(id, cache) {
         cache()$set_denominator(input$denominator)
       })
 
+      output$measles1 <- renderCustomPlot({
+        req(inequalities(), denominator())
+        plot(inequalities(), indicator = 'measles1', denominator = denominator())
+      })
+
+      output$penta3 <- renderCustomPlot({
+        req(inequalities(), denominator())
+        plot(inequalities(), indicator = 'penta3', denominator = denominator())
+      })
+
+      output$dropout_penta13 <- renderCustomPlot({
+        req(inequalities(), denominator())
+        plot(inequalities(), indicator = 'dropout_penta13', denominator = denominator())
+      })
+
+      output$dropout_penta3mcv1 <- renderCustomPlot({
+        req(inequalities(), denominator())
+        plot(inequalities(), indicator = 'dropout_penta3mcv1', denominator = denominator())
+      })
+
+      output$custom_check <- renderCustomPlot({
+        req(inequalities(), denominator(), input$indicator)
+        plot(inequalities(), indicator = input$indicator, denominator = denominator())
+      })
+
       downloadCoverageServer(
         id = 'measles1_download',
-        data_fn = measles1_coverage,
-        filename = paste0('measles1_', input$level, '_inequality_', input$denominator),
+        data = inequalities,
+        filename = paste0('measles1_', input$level, '_inequality_', denominator()),
+        indicator = reactive('measles1'),
+        denominator = denominator,
+        data_fn = filter_inequality,
         sheet_name = 'Measles 1 Inequality'
       )
 
       downloadCoverageServer(
         id = 'penta3_download',
-        data_fn = penta3_coverage,
-        filename = paste0('penta3_', input$level, '_inequality_', input$denominator),
+        data = inequalities,
+        filename = paste0('penta3_', input$level, '_inequality_', denominator()),
+        indicator = reactive('penta3'),
+        denominator =denominator,
+        data_fn = filter_inequality,
         sheet_name = 'Penta 3 Inequality'
       )
 
       downloadCoverageServer(
+        id = 'dropout_penta13_download',
+        data = inequalities,
+        filename = paste0('dropout_penta13_', input$level, '_inequality_', denominator()),
+        indicator = reactive('dropout_penta13'),
+        denominator = denominator,
+        data_fn = filter_inequality,
+        sheet_name = 'Penta 1 to Penta 3 Dropout Inequality'
+      )
+
+      downloadCoverageServer(
+        id = 'dropout_penta3mcv1_download',
+        data = inequalities,
+        filename = paste0('dropout_penta3mcv1_', input$level, '_inequality_', denominator()),
+        indicator = reactive('dropout_penta3mcv1'),
+        denominator = denominator,
+        data_fn = filter_inequality,
+        sheet_name = 'Penta 3 to Measles 1 Dropout Inequality'
+      )
+
+      downloadCoverageServer(
         id = 'custom_download',
-        data_fn = custom_coverage,
-        filename = paste0(input$indicator, '_', input$level, '_inequality_', input$denominator),
+        data = inequalities,
+        filename = paste0(input$indicator, '_', input$level, '_inequality_', denominator()),
+        indicator = reactive(input$indicator),
+        denominator = denominator,
+        data_fn = filter_inequality,
         sheet_name = paste0(input$indicator, ' Inequality')
       )
 

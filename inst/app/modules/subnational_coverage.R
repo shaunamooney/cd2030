@@ -90,44 +90,42 @@ subnationalCoverageServer <- function(id, cache) {
 
     survey_data <- reactive({
       req(cache())
-      cache()$get_regional_survey()
+      cache()$regional_survey
     })
 
     coverage <- reactive({
-      req(cache(), cache()$get_un_estimates(), cache()$get_wuenic_estimates(),
+      req(cache(), cache()$un_estimates, cache()$wuenic_estimates,
         survey_data())
 
-      rates <- cache()$get_national_estimates()
+      rates <- cache()$national_estimates
       filtered_survey_data <- survey_data() %>%
         filter(year >= as.numeric(input$year))
 
-      cache()$get_adjusted_data() %>%
-        calculate_indicator_coverage(
+      cache()$adjusted_data %>%
+        calculate_coverage(
           admin_level = input$admin_level,
+          survey_data = filtered_survey_data,
+          wuenic_data = cache()$wuenic_estimates,
           sbr = rates$sbr,
           nmr = rates$nmr,
           pnmr = rates$pnmr,
           twin = rates$twin_rate,
           preg_loss = rates$preg_loss,
           anc1survey = rates$anc1,
-          dpt1survey = rates$penta1
-        ) %>%
-        combine_coverage(
-            survey_data = filtered_survey_data,
-            wuenic_data = cache()$get_wuenic_estimates(),
-            subnational_map = cache()$get_survey_mapping()
-          )
+          dpt1survey = rates$penta1,
+          subnational_map = cache()$survey_mapping
+        )
       })
 
       denominator <- reactive({
         req(cache())
-        cache()$get_denominator()
+        cache()$denominator
       })
 
       observe({
         req(cache())
 
-        data <- cache()$get_data()
+        data <- cache()$countdown_data
 
         # Extract distinct values if column_name is valid
         admin_level <- data %>%
@@ -136,14 +134,14 @@ subnationalCoverageServer <- function(id, cache) {
           pull(!!sym(input$admin_level))
 
         selected_region <- if (input$admin_level == 'adminlevel_1') {
-          admin_level_1 <- cache()$get_admin_level_1()
+          admin_level_1 <- cache()$selected_admin_level_1
           if (is.null(admin_level_1)) {
             admin_level[1]
           } else {
             admin_level_1
           }
         } else {
-          district <- cache()$get_district()
+          district <- cache()$selected_district
           if (is.null(district)) {
             admin_level[1]
           } else {
@@ -164,9 +162,9 @@ subnationalCoverageServer <- function(id, cache) {
       observeEvent(input$region, {
         req(cache())
         if (input$admin_level == 'adminlevel_1') {
-          cache()$set_admin_level_1(input$region)
+          cache()$set_selected_admin_level_1(input$region)
         } else {
-          cache()$set_district(input$region)
+          cache()$set_selected_district(input$region)
         }
       })
 
@@ -177,7 +175,7 @@ subnationalCoverageServer <- function(id, cache) {
           distinct(year) %>%
           pull(year)
 
-        selected_year <- cache()$get_start_survey_year()
+        selected_year <- cache()$start_survey_year
 
         updateSelectInput(session, 'year', choices = years, selected = selected_year)
       })
@@ -218,42 +216,62 @@ subnationalCoverageServer <- function(id, cache) {
       })
 
       output$custom_check <- renderCustomPlot({
-        req(coverage(), denominator(), input$region)
+        req(coverage(), denominator(), input$region, input$indicator)
         plot(coverage(), indicator = input$indicator, denominator = denominator(), region = input$region)
       })
 
       downloadCoverageServer(
         id = 'measles1_download',
-        data_fn = coverage,
+        data = coverage,
         filename = paste0('measles1_', input$region, '_survey_', denominator()),
+        indicator = reactive('measles1'),
+        denominator = denominator,
+        data_fn = filter_coverage,
+        region = input$region,
         sheet_name = 'Measles 1 Coverage'
       )
 
       downloadCoverageServer(
         id = 'penta3_download',
-        data_fn = coverage,
+        data = coverage,
         filename = paste0('penta3_', input$region, '_survey_', denominator()),
+        indicator = reactive('penta3'),
+        denominator = denominator,
+        data_fn = filter_coverage,
+        region = input$region,
         sheet_name = 'Penta 3 Coverage'
       )
 
       downloadCoverageServer(
         id = 'dropout_penta13_download',
-        data_fn = coverage,
+        data = coverage,
         filename = paste0('dropout_penta13_', input$region, '_survey_', denominator()),
+        indicator = reactive('dropout_penta13'),
+        denominator = denominator,
+        data_fn = filter_coverage,
+        region = input$region,
         sheet_name = 'Penta 1 to Penta 3 Dropout'
       )
 
       downloadCoverageServer(
         id = 'dropout_penta3mcv1_download',
-        data_fn = coverage,
+        data = coverage,
         filename = paste0('dropout_penta3mcv1_', input$region, '_survey_', denominator()),
+        indicator = reactive('dropout_penta3mcv1'),
+        denominator = denominator,
+        data_fn = filter_coverage,
+        region = input$region,
         sheet_name = 'Penta 3 to Measles 1 Dropout'
       )
 
       downloadCoverageServer(
         id = 'custom_download',
-        data_fn = coverage,
+        data = coverage,
         filename = paste0(input$indicator, '_', input$region, '_survey_', denominator()),
+        indicator = reactive(input$indicator),
+        denominator = denominator,
+        data_fn = filter_coverage,
+        region = input$region,
         sheet_name = paste0(input$indicator, ' Coverage')
       )
 

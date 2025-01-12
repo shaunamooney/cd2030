@@ -39,25 +39,9 @@ library(gridExtra)
 
 cache <- params$cache
 
-adjusted_data <- cache$get_adjusted_data()
-un_estimates <- cache$get_un_estimates()
-rates <- cache$get_national_estimates()
-
-# Function to print notes for a given page
-print_notes <- function(page_id, object_id = NULL, parameters = NULL) {
-  # Retrieve the notes from the cache
-  page_notes <- cache$get_notes(page_id, object_id, parameters) %>% 
-    filter(include_in_report == TRUE, !is.null(note))
-  
-  # Check if there are any notes
-  if (nrow(page_notes) > 0) {
-    page_notes %>% 
-      pull(note) %>% 
-      walk(~ cat(paste0(,x, '\n\n')))
-  } else {
-    cat(paste0("**--- Enter notes related to ", page_id, ' ', object_id, '. ---**\n\n'))
-  }
-}
+adjusted_data <- cache$adjusted_data
+un_estimates <- cache$un_estimates
+rates <- cache$national_estimates
 ```
 
 ## 4. Selection of the best denominator {-}
@@ -93,7 +77,7 @@ plot_absolute_differences(indicator_coverage, 'penta3') +
 ---
 
 ```{r, results='asis'}
-print_notes('denominator_selection', 'Penta 3')
+print_notes(cache, 'denominator_selection', 'Penta 3')
 ```
 
 ---
@@ -115,7 +99,7 @@ plot_absolute_differences(indicator_coverage, 'measles1') +
 ---
 
 ```{r, results='asis'}
-print_notes('denominator_selection', 'Measles 1')
+print_notes(cache, 'denominator_selection', 'Measles 1')
 ```
 
 ---
@@ -137,7 +121,7 @@ plot_absolute_differences(indicator_coverage, 'bcg') +
 ---
 
 ```{r, results='asis'}
-print_notes('denominator_selection', 'BCG')
+print_notes(cache, 'denominator_selection', 'BCG')
 ```
 
 ---

@@ -49,12 +49,12 @@ nationalRatesServer <- function(id, cache) {
         req(cache())
 
         # Retrieve the national estimates from the cache
-        national_estimates <- cache()$get_national_estimates()
+        national_estimates <- cache()$national_estimates
 
         # Check if any value in national_estimates is NA
         if (any(is.na(national_estimates))) {
           # Use input values (defaults already set in inputs) and save to cache
-          national_estimates <- list(
+         estimates <- list(
             nmr = as.numeric(input$neonatal_mortality_rate),
             pnmr = as.numeric(input$post_neonatal_mortality_rate),
             twin_rate = as.numeric(input$twin_rate),
@@ -63,8 +63,7 @@ nationalRatesServer <- function(id, cache) {
             penta1_mort_rate = as.numeric(input$penta1_mortality_rate)
           )
 
-          # Save the updated estimates to the cache
-          cache()$set_national_estimates(national_estimates)
+         cache()$set_national_estimates(estimates)
         }
 
         # Update numeric inputs with the current national estimates
@@ -82,7 +81,7 @@ nationalRatesServer <- function(id, cache) {
       observe({
         req(cache())
 
-        estimates <- cache()$get_survey_estimates()
+        estimates <- cache()$survey_estimates
         updateNumericInput(session, 'anc1_prop', value = unname(estimates['anc1']))
         updateNumericInput(session, 'penta1_prop', value = unname(estimates['penta1']))
       })

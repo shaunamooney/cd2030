@@ -101,9 +101,11 @@ reference:
     desc: >
       To determine the coverage of various indicators
     contents:
-    - analyze_coverage
+    - calculate_coverage
+    - filter_coverage
     - plot.cd_coverage
-    - analyze_inequality
+    - calculate_inequality
+    - filter_inequality
     - plot.cd_inequality
     - get_mapping_data
     - get_country_shapefile
@@ -118,7 +120,7 @@ reference:
       To document findings, generate summaries, and create exportable formats for sharing and presentation
     contents:
     - dashboard
-    - generate_final_report
+    - generate_report
 
   - title: "Other Functions"
     contents:

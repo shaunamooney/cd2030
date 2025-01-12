@@ -92,7 +92,7 @@ uploadBoxServer <- function(id) {
         filename = 'master_dataset',
         extension = 'dta',
         content = function(file) {
-          haven::write_dta(cache()$get_data(), file)
+          haven::write_dta(cache()$countdown_data, file)
         },
         data = cache,
         label = "Download Master Dataset"

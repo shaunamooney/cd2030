@@ -40,12 +40,12 @@ dataCompletenessServer <- function(id, cache) {
 
       data <- reactive({
         req(cache())
-        cache()$get_data()
+        cache()$countdown_data
       })
 
       vaccines_indicator <- reactive({
         req(cache())
-        cache()$get_vaccine_indicators()
+        cache()$vaccine_indicators
       })
 
       completeness_summary <- reactive({
