@@ -206,7 +206,7 @@ CacheConnection <- R6::R6Class(
     set_un_estimates = function(value) private$setter('un_estimates', value, check_un_estimates_data),
     set_wuenic_estimates = function(value) private$setter('wuenic_estimates', value, check_wuenic_data),
     set_national_survey = function(value) private$setter('national_survey', value, check_survey_data),
-    set_regional_survey = function(value) private$setter('regional_survey', value, check_survey_data),
+    set_regional_survey = function(value) private$setter('regional_survey', value, ~ check_survey_data(.x, 'adminlevel_1')),
     set_wiq_survey = function(value) private$setter('wiq_survey', value, check_equity_data),
     set_area_survey = function(value) private$setter('area_survey', value, check_equity_data),
     set_education_survey = function(value) private$setter('education_survey', value, check_equity_data),
