@@ -32,7 +32,7 @@ overallScoreServer <- function(id, cache) {
         req(data())
 
         years <- unique(data()$year)
-        threshold <- cache()$threshold
+        threshold <- cache()$performance_threshold
 
         data() %>%
           calculate_overall_score(threshold) %>%
@@ -53,19 +53,14 @@ overallScoreServer <- function(id, cache) {
             i = ~ is.na(type) & !no %in% c("3a", "3b"),
             j = as.character(years),
             bg = function(x) {
-              # Use map to apply function to each cell
               result <- map_chr(as.list(x), ~ {
-                if (is.na(.x) || is.null(.x)) {
-                  return("transparent")
-                } else if (.x >= threshold) {
-                  return("seagreen")
-                } else if (.x >= 41 && .x < threshold) {
-                  return("yellow")
-                } else if (.x <= 40) {
-                  return("red")
-                } else {
-                  return("transparent")
-                }
+                case_when(
+                  is.na(.x) || is.null(.x) || !is.numeric(.x) ~ 'white',
+                  .x >= threshold ~ 'seagreen',
+                  .x > 40 & .x < threshold ~ 'yellow',
+                  .x <= 40 ~ 'red',
+                  .default = 'white'
+                )
               })
               return(result)
             },

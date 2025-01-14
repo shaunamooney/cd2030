@@ -206,7 +206,7 @@ fileUploadServer <- function(id, cache) {
             file_path <- file.path(selected_dir(), .x)
 
             tryCatch(
-              check_file_path(file_path),
+              cd2030:::check_file_path(file_path),
               error = function(e) {
                 new_log <- clean_error_message(e)
                 log_messages(paste(log_messages(), new_log, sep = "\n"))
