@@ -607,7 +607,7 @@ plot(admin_level_1_inequality, 'dropout_penta13', denominator) +
 ```
 
 ```{r}
-mapping_data <- get_mapping_data(adjusted_data, un_estimates, rates, subnational_map)
+mapping_data <- get_mapping_data(adjusted_data, un_estimates, rates, map_mapping)
 
 plot(mapping_data, 
      indicator = 'dropout_penta13',
