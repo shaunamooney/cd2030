@@ -11,8 +11,15 @@ downloadButtonServer <- function(id, filename, extension, content, data, label =
     module = function(input, output, session) {
       ns <- session$ns
 
+      check_data <- reactive({
+        tryCatch(
+          data(),
+          error = function(e) NULL
+        )
+      })
+
       output$download_ui <- renderUI({
-        req(data())
+        req(check_data())
 
         downloadButton(ns('download_button'),
                        label = label,

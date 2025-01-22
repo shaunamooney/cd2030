@@ -44,7 +44,7 @@ equiplot <- function(.data, variables, group_by, x_title = NULL, legend_title = 
   }
   if (!all(variables %in% names(.data))) {
     cd_abort(
-      c('x' = 'Not all {.arg variables} are found in data.')
+      c('x' = 'The following variables are not found in the data provided: {.arg {variables}}.')
     )
   }
 

@@ -135,7 +135,10 @@ equityServer <- function(id, cache) {
         filename = paste0('penta3_', input$type, '_equity'),
         data = penta3_equiplot,
         plot_function = function() {
-          plot(penta3_equiplot())
+          tryCatch(
+            plot(penta3_equiplot()),
+            error = function(e) NULL
+          )
         }
       )
 
@@ -144,7 +147,10 @@ equityServer <- function(id, cache) {
         filename = paste0('measles1_', input$type, '_equity'),
         data = measles1_equiplot,
         plot_function = function() {
-          plot(measles1_equiplot())
+          tryCatch(
+            plot(measles1_equiplot()),
+            error = function(e) NULL
+          )
         }
       )
 
@@ -153,7 +159,10 @@ equityServer <- function(id, cache) {
         filename = paste0(input$indicator, '_', input$type, '_equity'),
         data = custom_equiplot,
         plot_function = function() {
-          plot(custom_equiplot())
+          tryCatch(
+            plot(custom_equiplot()),
+            error = function(e) NULL
+          )
         }
       )
 

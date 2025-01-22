@@ -18,6 +18,7 @@ pacman::p_load(
   future,
   kableExtra,
   flextable,
+  htmltools,
   openxlsx,
   khisr,
   plotly,

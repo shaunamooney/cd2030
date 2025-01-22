@@ -46,7 +46,8 @@ get_mapping_data <- function(.data, un_estimates, rates, subnational_map = NULL,
       mutate(adminlevel_1 = NAME_1)
   } else {
     shapefile %>%
-      left_join(subnational_map, by = 'NAME_1')
+      left_join(subnational_map, by = 'NAME_1') %>%
+      rename(adminlevel_1 = admin_level_1)
   }
 
   merged_data <- if (iso == 'KEN') {

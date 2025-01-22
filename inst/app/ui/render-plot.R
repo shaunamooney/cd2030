@@ -20,16 +20,22 @@ renderCustomPlot <- function(expr) {
     # Evaluate the data from func
     check_data <- tryCatch(
       rlang::eval_tidy(rlang::enquo(expr)),
-      error = function(e) {
-        return(NULL)
-    })
+      error = function(e) e
+    )
 
     # Check if data is empty or invalid
-    if (is.null(check_data) ||
+    if (inherits(check_data, "error") ||
         (is.data.frame(check_data) && nrow(check_data) == 0) ||
         (is.vector(check_data) && length(check_data) == 0) ||
         (is.matrix(check_data) && nrow(check_data) == 0)) { #Added matrix check
-      generate_error_plot('No data available', 'gray')
+
+      message <- clean_error_message(check_data)
+
+      if (length(message) == 0 || message == '') {
+        generate_error_plot('No data available', 'gray')
+      } else {
+        generate_error_plot(message, 'red')
+      }
       return() # Return early, no progress or further processing
     }
     tryCatch({

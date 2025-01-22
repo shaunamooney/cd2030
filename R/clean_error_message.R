@@ -36,8 +36,8 @@ clean_error_message <- function(error_message) {
 
   # Remove specific CLI bullets (✖, ✔, ℹ, ⚠, !)
   # clean_message <- gsub("[✖✔ℹ⚠!]", "", clean_message)
-  clean_message <- gsub("[\\u2716\\u2714\\u2139\\u26A0!]", "", clean_message)
-
+  # clean_message <- gsub("[\\u2716\\u2714\\u2139\\u26A0!]", "", clean_message)
+  clean_message <- gsub("[✖✔ℹ⚠!]", "", clean_message, useBytes = TRUE)
 
   # Remove "In index: ..." patterns
   clean_message <- gsub("In index: \\d+\\.?", "", clean_message)

@@ -85,17 +85,16 @@ load_survey_data <- function(path, country_iso, admin_level = c('national', 'adm
     select(-ends_with("r"), -ends_with("24_35"), year)
 
   if (admin_level == 'adminlevel_1') {
-
     survdata <- survdata %>%
       # mutate(across(matches('^r_|^se_|^ll_|^ul_'), ~ .)) %>%
-      separate_wider_delim(cols = 'level', delim = ' ', names = c('admin1_code', 'adminlevel_1'), too_many = 'merge') %>%
+      separate_wider_delim(cols = 'level', delim = ' ', names = c('admin1_code', 'adminlevel_1'), too_many = 'merge', too_few = 'align_end') %>%
       filter(!(iso == 'TZA' & adminlevel_1 %in% c("Kaskazini Unguja","Pemba North",
                                                  "Kusini Pemba","Pemba South","Pemba",
                                                  "Kusini Unguja","Zanzibar North",
                                                  "Mjini Magharibi","Zanzibar South",
                                                  "Rest Zanzibar","Town West"))) %>%
       mutate(
-        admin1_code = as.integer(admin1_code),
+        # admin1_code = as.integer(admin1_code),
         adminlevel_1 = if_else(iso == 'KEN', str_replace(adminlevel_1, '/', ''), adminlevel_1),
         adminlevel_1 = if_else(iso == 'KEN', str_replace(adminlevel_1,  '-', ' '), adminlevel_1),
         adminlevel_1 = if_else(iso == 'KEN', str_replace(adminlevel_1,  ' City', ''), adminlevel_1)

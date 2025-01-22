@@ -1,5 +1,6 @@
 source('modules/setup/file_upload_helpers.R')
 source('modules/setup/modal_helpers.R')
+source('ui/directory-input.R')
 
 fileUploadUI <- function(id) {
   ns <- NS(id)
@@ -39,19 +40,18 @@ fileUploadUI <- function(id) {
     fluidRow(
       column(
         6,
-        tags$label("Survey Folder", style = 'font-weight: bold; margin-top: 10px; margin-bottom: 5px; display: block;'),
-        shinyDirButton(
-          id = ns('directory'),
-          label = 'Browse or Select...',
-          title = 'Choose a survey folder'
+        directoryInput(
+          ns('directory_select'),
+          label = 'Upload Survey Data',
+          buttonLabel = 'Browse or Drop...',
+          accept = '.dta'
         ),
-
         verbatimTextOutput(ns('selected_dir')) %>%
           tagAppendAttributes(style = "border: 1px solid #ddd; padding: 5px; border-radius: 4px; margin-top: 10px")
       ),
       column(
         6,
-        tags$label("Subnational Manual Data Mapping", style = 'font-weight: bold; margin-top: 10px; margin-bottom: 5px; display: block;'),
+        tags$label("Subnational Manual Data Mapping (Optional)", style = 'font-weight: bold; margin-top: 10px; margin-bottom: 5px; display: block;'),
         fluidRow(
           column(6, mappingModalUI(ns('survey_data'), 'Map Survey Data')),
           column(6, mappingModalUI(ns('map_data'), 'Map Mapping Data')),
@@ -83,32 +83,14 @@ fileUploadServer <- function(id, cache) {
         cache()$countdown_data
       })
 
+      country <- reactive({
+        req(cache())
+        cache()$country
+      })
+
       country_iso <- reactive({
         req(cache())
         cache()$country_iso
-      })
-
-      shinyDirChoose(input, 'directory', roots = getRoots(), allowDirCreate = FALSE,
-                     filetypes = c('', 'dta'))
-
-      survey_file_list <- reactive({
-        req(cache())
-        prefix <- list('all_country.dta', 'gregion_country.dta', 'area_country.wide.dta', 'meduc_country.wide.dta', 'wiq_country.wide.dta')
-        gsub('country', cache()$country, prefix)
-      })
-
-      selected_dir <- eventReactive(input$directory, {
-        req(input$directory, cache())
-
-        path <- parseDirPath(getRoots(), input$directory)
-
-        if (!is.null(path) && length(path) > 0 && nchar(path) > 0) {
-          log_messages(paste0('Survey Folder: ', path))
-          return(path)
-        } else {
-          log_messages('Survey folder not set')
-          return(NULL)
-        }
       })
 
       observeEvent(input$un_data, {
@@ -197,13 +179,42 @@ fileUploadServer <- function(id, cache) {
         }
       })
 
-      observeEvent(selected_dir(), {
-        req(cache())
+      observeEvent(input$directory_select, {
+        req(cache(), input$directory_select)
 
-        walk(isolate(survey_file_list()), ~ {
+        required_files <- c(
+          "all_data.dta",               # National data
+          "gregion_data.dta",           # Regional data
+          "area_data.wide.dta",         # Area data
+          "meduc_data.wide.dta",        # Maternal education data
+          "wiq_data.wide.dta"           # Wealth index quintile data
+        )
+        country <- gsub(' ', '_', country())
+        required_files <- gsub('data', country, required_files)
+
+        uploaded_files <- input$directory_select %>%
+          filter(name %in% required_files)
+
+        missing_files <- setdiff(required_files, uploaded_files$name)
+
+        log_messages('Files uploaded')
+
+        # Log missing files and exit if any are not found
+        if (length(missing_files) > 0) {
+          log_messages(paste(
+            log_messages(),
+            paste("Missing required files:", paste(missing_files, collapse = ", ")),
+            sep = "\n"
+          ))
+          return()  # Exit early if required files are missing
+        }
+
+        uploaded_files %>%
+          split(seq_len(nrow(.))) %>%
+          walk(~ {
 
           tryCatch({
-            file_path <- file.path(selected_dir(), .x)
+            file_path <- .x$datapath
 
             tryCatch(
               cd2030:::check_file_path(file_path),
@@ -214,35 +225,35 @@ fileUploadServer <- function(id, cache) {
               }
             )
 
-            if (grepl('^all_', .x)) {
+            if (grepl('^all_', .x$name)) {
               survdata <- load_survey_data(file_path, country_iso())
               cache()$set_national_survey(survdata)
-              new_log <- paste0('Loaded national survey data: "', .x, '".')
-            } else if (grepl('^gregion_', .x)) {
+              new_log <- paste0('Loaded national survey data: "', .x$name, '".')
+            } else if (grepl('^gregion_', .x$name)) {
               gregion <- load_survey_data(file_path, country_iso(), admin_level = 'adminlevel_1')
               cache()$set_regional_survey(gregion)
-              new_log <- paste0('Loaded regional survey data: "', .x, '".')
-            } else if (grepl('^area_', .x)) {
+              new_log <- paste0('Loaded regional survey data: "', .x$name, '".')
+            } else if (grepl('^area_', .x$name)) {
               area <- load_equity_data(file_path)
               cache()$set_area_survey(area)
-              new_log <- paste0('Loaded area survey data: "', .x, '".')
-            } else if (grepl('^meduc_', .x)) {
+              new_log <- paste0('Loaded area survey data: "', .x$name, '".')
+            } else if (grepl('^meduc_', .x$name)) {
               educ <- load_equity_data(file_path)
               cache()$set_education_survey(educ)
-              new_log <- paste0('Loaded maternal education survey data: "', .x, '".')
-            } else if (grepl('^wiq', .x)) {
+              new_log <- paste0('Loaded maternal education survey data: "', .x$name, '".')
+            } else if (grepl('^wiq_', .x$name)) {
               wiq <- load_equity_data(file_path)
               cache()$set_wiq_survey(wiq)
-              new_log <- paste0('Loaded wealth index quintile survey data: "', .x, '".')
+              new_log <- paste0('Loaded wealth index quintile survey data: "', .x$name, '".')
             } else {
-              new_log <- paste0('File "', .x, '" does not match any known pattern.')
+              new_log <- paste0('File "', .x$name, '" does not match any known pattern.')
             }
 
             log_messages(paste(log_messages(), new_log, sep = "\n"))
           },
           error = function(e) {
             clean_message <- clean_error_message(e)
-            new_log <- paste0('Error processing file "', .x, '": ', clean_message)
+            new_log <- paste0('Error processing file "', .x$name, '": ', clean_message)
             log_messages(paste(log_messages(), new_log, sep = "\n"))
           })
         })
@@ -261,7 +272,7 @@ fileUploadServer <- function(id, cache) {
       observe({
         req(data())
         if (is.null(survey_map())) {
-          survey_message_box$update_message('Survey mapping data is not uploaded', 'info')
+          survey_message_box$update_message('Survey mapping has not been done', 'info')
         } else {
           survey_message_box$update_message('Survey mapping data is uploaded', 'success')
         }
@@ -290,7 +301,7 @@ fileUploadServer <- function(id, cache) {
       observe({
         req(data())
         if (is.null(map_map())) {
-          map_message_box$update_message('Map mapping data is not uploaded', 'info')
+          map_message_box$update_message('Map mapping has not been done', 'info')
         } else {
           map_message_box$update_message('Map mapping data is uploaded', 'success')
         }
