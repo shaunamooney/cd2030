@@ -1,6 +1,6 @@
 Package: cd2030
 Title: Data Loading, Validation, and Reporting for Countdown 2030
-Version: 0.0.0.9000
+Version: 1.0.0.9000
 Authors@R: c(
       person("David", "Kariuki", , "hello@damurka.com", role = c("aut", "cre"), 
              comment = c(ORCID = "0009-0003-6159-1107")),
@@ -18,7 +18,7 @@ Description: cd2030 is an R package for managing and validating data formatted
     guidelines and generates standardized data quality reports, enabling users to 
     focus on analysis and interpretation.
 License: AGPL (>= 3)
-URL: https://damurka.github.io/cd2030/
+URL: https://damurka.github.io/cd2030/, https://github.com/damurka/cd2030
 Imports: 
     cli,
     dplyr,
@@ -51,3 +51,4 @@ RoxygenNote: 7.3.2
 Depends: 
     R (>= 3.5)
 LazyData: true
+BugReports: https://github.com/damurka/cd2030/issues
