@@ -582,22 +582,34 @@ match_country <- function(country_name, call = caller_call()) {
   # Calculate string distances for both 'country' and 'alternate' columns
   distances <- countries %>%
     mutate(
-      country_dist = stringdist::stringdist(tolower(country_name), tolower(country), method = "jw"),
-      alternate_dist = stringdist::stringdist(tolower(country_name), tolower(alternate), method = "jw")
+      country_dist = map2_dbl(
+        tolower(country_name),
+        tolower(country),
+        ~ {
+          # Split the compound country name on the pipe
+          parts <- str_split(.y, "\\|")[[1]] %>% trimws()
+          # Compute the distance from the candidate to each variant and take the minimum
+          min(stringdist::stringdist(.x, parts, method = "jw"))
+        }
+      )
     )
+    # mutate(
+    #   country_dist = stringdist::stringdist(tolower(country_name), tolower(country), method = "jw"),
+    #   alternate_dist = stringdist::stringdist(tolower(country_name), tolower(alternate), method = "jw")
+    # )
 
   # Select the single closest match based on combined distance
   closest_match <- distances %>%
-    mutate(total_dist = country_dist + alternate_dist) %>%
-    arrange(total_dist) %>%
+    # mutate(total_dist = country_dist + alternate_dist) %>%
+    arrange(country_dist) %>%
     slice(1) # Always take the first row after sorting by total distance
 
   # Get the minimum distance values for 'country' and 'alternate' columns
   min_country_dist <- min(closest_match$country_dist, na.rm = TRUE)
-  min_alternate_dist <- min(closest_match$alternate_dist, na.rm = TRUE)
+  # min_alternate_dist <- min(closest_match$alternate_dist, na.rm = TRUE)
 
   # Check if the closest match is within acceptable thresholds
-  if (min_country_dist < 0.25 | min_alternate_dist < 0.25) {
+  if (min_country_dist < 0.25) {
     return(closest_match %>% select(alternate, countrycode, iso3, iso2))
   } else {
     suggestion <- closest_match$alternate[1]

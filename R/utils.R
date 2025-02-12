@@ -23,6 +23,17 @@ check_cd_indicator_coverage <- function(.data, arg = caller_arg(.data), call = c
   invisible(TRUE)
 }
 
+check_cd_reporting_rate <- function(.data, arg = caller_arg(.data), call = caller_env()) {
+
+  check_required(.data, arg = arg, call = call)
+
+  if (!inherits(.data, 'cd_reporting_rate')) {
+    cd_abort(c('x' = 'The data object must be of class {.field cd_reporting_rate}.'), call = call)
+  }
+
+  invisible(TRUE)
+}
+
 check_cd_data <- function(.data, arg = caller_arg(.data), call = caller_env()) {
 
   check_required(.data, arg = arg, call = call)
@@ -134,6 +145,19 @@ check_ratio_pairs <- function(.list, arg = call_args(.list), call = caller_env()
   invisible(TRUE)
 }
 
+check_scalar_integerish <- function(vec, arg = caller_arg(vec), call = caller_env()) {
+  check_required(vec, arg = arg, call = call)
+
+  if (!is_scalar_integerish(vec)) {
+    cd_abort(
+      message = c(
+        "x" = "{.arg {arg}} is not an integer",
+        "!" = "Provide a scalar integer value"
+      ),
+      call = call
+    )
+  }
+}
 
 cd_plot_theme <- function() {
   theme(

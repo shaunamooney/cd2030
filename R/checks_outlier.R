@@ -133,3 +133,92 @@ calculate_district_outlier_summary <- function(.data) {
     class = 'cd_district_outliers_summary'
   )
 }
+
+#' @export
+outliers_summary <- function(.data, indicator, admin_level = c('adminlevel_1', 'district')) {
+
+  check_cd_data(.data)
+  admin_level <- arg_match(admin_level)
+  admin_level_cols <- switch(
+    admin_level,
+    adminlevel_1 = 'adminlevel_1',
+    district = c('adminlevel_1', 'district')
+  )
+
+  indicator_groups <- attr(.data, 'indicator_groups')
+  allindicators <- list_c(indicator_groups)
+
+  indicator <- arg_match(indicator, allindicators)
+  indicator <- paste0(indicator, '_outlier5std')
+
+  outlier_data <- .data %>%
+    add_outlier5std_column(allindicators) %>%
+    summarise(
+      across(ends_with('_outlier5std'), ~ (1 - mean(., na.rm = TRUE)) * 100),
+      .by = c(admin_level_cols, year)
+    )
+
+  new_tibble(
+    outlier_data,
+    class = 'cd_outlier',
+    admin_level = admin_level,
+    indicator = indicator
+  )
+}
+
+#' @export
+plot.cd_outlier <- function(x,
+                            selection_type = c('region', 'vaccine'),
+                            ...) {
+
+  check_required(indicator)
+  admin_level <- attr(x, 'admin_level')
+  indicator <- attr(x, 'indicator')
+
+  selection_type <- arg_match(selection_type)
+
+  min_rr <- min(x[[indicator]], na.rm = TRUE)
+  low_threshold <- ifelse(min_rr < 80, min_rr, 70)
+
+  breaks_vals <- if (selection_type == 'region') {
+    c(low_threshold, 95, 97, 99, 100)
+  } else {
+    c(low_threshold, 70, 80, 90, 100)
+  }
+
+  data_prepared <- if (selection_type == 'region') {
+    x %>%
+      mutate(
+        category = admin_level,
+        value = !!sym(indicator)
+      )
+  } else {
+    x %>%
+      pivot_longer(cols = ends_with('_outlier5std'),
+                   names_to = 'category',
+                   names_pattern = '^(.*)_outlier5std') %>%
+        summarise(
+          value = mean(value, na.rm = TRUE),
+          .by = c(year, category)
+        )
+  }
+
+  ggplot(data_prepared, aes(year, value, fill = value)) +
+    geom_col() +
+    facet_wrap(~category) +
+    labs(title = paste0('Percent non-outliers by year and by ', selection_type), x = 'Year', y = '% Non Outliers', fill = '% Non Outliers') +
+    scale_fill_gradientn(
+      colors = c('red', "red", "orange", "yellowgreen", "forestgreen"),
+      values = scales::rescale(breaks_vals, to = c(0, 1)),
+      breaks = scales::pretty_breaks(5),
+      labels = scales::pretty_breaks(5),
+      limits = c(low_threshold, 100)
+    ) +
+    theme(
+      panel.background = element_blank(),
+      strip.background = element_blank(),
+      # strip.text = element_text(size = 12)
+      panel.grid.major = element_line(colour = 'gray95'),
+      axis.ticks = element_blank()
+    )
+}

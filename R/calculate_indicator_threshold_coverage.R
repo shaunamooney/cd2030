@@ -68,33 +68,15 @@ calculate_indicator_threshold_coverage <- function(.data) {
 #' regions where the coverage for a specified indicator falls below a 10% threshold for a given year.
 #' If no regions meet the criteria (i.e., all values are below the threshold), a default output is returned.
 #'
-#' @param .data A data frame or tibble containing health indicator data, with coverage columns
-#'   named in the format `cov_<indicator>_<source>`.
+#' @param .data A tibble of class `cd_data`.
+#' @param admin_level The level of analysis.
 #' @param indicator Character. The specific health indicator to evaluate. Options are:
-#'   - `"zerodose"`: Zero-dose vaccination rate.
-#'   - `"undervax"`: Under-vaccination rate.
-#'   - `"dropout_penta13"`: Dropout rate from Penta-1 to Penta-3.
-#'   - `"dropout_measles12"`: Dropout rate from Measles-1 to Measles-2.
-#'   - `"dropout_penta3mcv1"`: Dropout rate from Penta-3 to MCV-1.
-#'   - `"dropout_penta1mcv1"`: Dropout rate from Penta-1 to MCV-1.
-#' @param source Character. The data source for the indicator. Options are:
-#'   - `"dhis2"`: Data from DHIS-2.
-#'   - `"anc1"`: Data from ANC-1 surveys.
-#'   - `"penta1"`: Data from Penta-1 surveys.
+#'   - `"coverage"`:coverage indicators.
+#'   - `"dropout"`: dropout indicators.
 #'
 #' @return A tibble with the selected administrative level and coverage value for regions
 #'   that do not meet the below-10% threshold for the specified indicator and year. If no regions
 #'   meet the criteria, a default row is returned with "None" and 0 as values.
-#'
-#' @details
-#' The function performs the following steps:
-#' 1. **Validate Inputs**: Ensures that `filter_year`, `indicator`, and `source` are specified correctly.
-#' 2. **Determine Admin Level**: Uses the attribute `admin_level` of `.data` to identify the appropriate
-#'    administrative level for filtering (`adminlevel_1` or `district`).
-#' 3. **Filter Data Below Threshold**: Creates a binary variable `below10` to indicate whether the
-#'    coverage is below 10%. It then filters to keep only rows with `below10 == 0` and for the specified `filter_year`.
-#' 4. **Handle No-Data Case**: If no rows meet the filtering criteria, the function returns a default row with
-#'    "None" in the admin level column and 0 in the indicator column.
 #'
 #' @examples
 #' \dontrun{
@@ -104,38 +86,76 @@ calculate_indicator_threshold_coverage <- function(.data) {
 #' }
 #'
 #' @export
-calculate_dropout <- function(.data,
-                              indicator = c("zerodose", "undervax", "dropout_penta13", "dropout_measles12", "dropout_penta3mcv1", "dropout_penta1mcv1"),
-                              source = c('dhis2', 'anc1', 'penta1')) {
+calculate_threshold <- function(.data,
+                                admin_level = c('adminlevel_1', 'district'),
+                                indicator = c('coverage', 'dropout')) {
 
-  below10 = year = NULL
-
-  check_cd_indicator_coverage(.data)
-  # check_required(filter_year)
+  check_cd_data(.data)
   indicator <- arg_match(indicator)
-  source <- arg_match(source)
+  admin_level <- arg_match(admin_level)
 
-  admin_level <- attr(.data, 'admin_level')
+  indicators <- if (indicator == 'dropout') {
+    'zerodose|undervax|dropout_penta13|dropout_measles12|dropout_penta3mcv1|dropout_penta1mcv1'
+  } else {
+    'bcg|penta3|measles1|opv1|opv3'
+  }
+  threshold_func <- if (indicator == "coverage") {
+    function(x) x > 90
+  } else {
+    function(x) x < 10
+  }
 
-  column_name <- paste0('cov_', indicator, '_', source)
-
-  data_below <- .data %>%
-    mutate(
-      below10 = if_else(!is.na(!!sym(column_name)) & !!sym(column_name) < 10, 1, 0)
+  threshold <- calculate_indicator_coverage(.data, admin_level = admin_level) %>%
+    select(year, adminlevel_1, matches(paste0('cov_(', indicators, ')'))) %>%
+    mutate(across(starts_with('cov_'), ~ threshold_func(.), .names = 'below10_{.col}')) %>%
+    summarise(across(starts_with('below10'), ~ mean(., na.rm = TRUE)) * 100, .by = year) %>%
+    pivot_longer(cols = starts_with('below10'),
+                 names_prefix = 'below10_cov_',
+                 names_sep = '_(?=[^_]+$)',
+                 names_to = c('indicator', 'denominator')
     ) %>%
-    # filter(below10 == 0, year == filter_year)
-    filter(below10 == 0)
-
-  if (NROW(data_below) == 0) {
-    data_below <- tibble(
-        !!admin_level := "None",
-        !!column_name := 0
+    mutate(
+      indicator = case_match(
+        indicator,
+        'zerodose' ~ 'Penta-zero dose',
+        'undervax' ~ 'BCG to Penta1 dropout',
+        'dropout_penta13' ~ 'Penta1 to Penta3 dropout',
+        'dropout_measles12' ~ 'MCV1 to MCV2 dropout',
+        'dropout_penta1mcv1' ~ 'Penta1 to MCV1 dropout',
+        'dropout_penta3mcv1' ~ 'Penta3 to MCV1 dropout',
+        .default = indicator
       )
-    } else {
+    )
 
-      data_below <- data_below %>%
-        select(all_of(c(admin_level, column_name)))
-    }
+  new_tibble(
+    threshold,
+    class = 'cd_threshold',
+    indicator = indicator
+  )
+}
 
-  return(data_below)
+#' @export
+plot.cd_threshold <- function(x,
+                              denominator = c('dhis2', 'anc1', 'penta1'),
+                              ...) {
+
+  denom = arg_match(denominator)
+  indicator = attr(x, 'indicator')
+
+  title = if (indicator == 'coverage') {
+    'Regions with vaccination coverage > 90%'
+  } else {
+    'Districts with dropout rate of < 10%'
+  }
+
+  x %>%
+    filter(denominator == denom) %>%
+    ggplot(aes(indicator, value, fill = factor(year))) +
+    scale_y_continuous(breaks = scales::pretty_breaks(6), expand = c(0, 0)) +
+    geom_col(position = 'dodge') +
+    labs(title = title,
+        x = '',
+         y = '') +
+    scale_fill_manual(values = c('darkgreen', 'darkgoldenrod3', 'firebrick4', 'springgreen3', 'darkolivegreen3', 'steelblue2')) +
+    cd_plot_theme()
 }

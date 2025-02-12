@@ -5,16 +5,31 @@ outlierDetectionUI <- function(id) {
     contentHeader(ns('outlier_detection'), 'Outlier Detection'),
     contentBody(
       box(
-        title = tags$span(icon('chart-line'), 'Indicators with Outliers'),
+        title = 'Outlier Options',
         status = 'success',
-        collapsible = TRUE,
+        solidHeader = TRUE,
         width = 12,
         fluidRow(
           column(3, selectizeInput(ns('year'), label = 'Year', choice = NULL)),
-          column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
+          column(3, selectizeInput(ns('admin_level'), label = 'Admin Level',
+                                   choice = c('Admin Level 1' = 'adminlevel_1',
+                                              'District' = 'district'))),
+          column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL))
+        )
+      ),
+      tabBox(
+        title = tags$span(icon('chart-line'), 'Indicators with Outliers'),
+        width = 12,
+
+        tabPanel(title = 'Heat Map', fluidRow(
           column(12, withSpinner(plotlyOutput(ns('district_outlier_heatmap')))),
           column(4, downloadButtonUI(ns('download_data')))
-        )
+        )),
+
+        tabPanel(title = 'Bar Graph', fluidRow(
+          # column(12, plotCustomOutput(ns('district_missing_bar')))
+          fluidRow()
+        ))
       ),
       box(
         title = 'Districts with Outliers',

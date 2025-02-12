@@ -7,19 +7,33 @@ reportingRateUI <- function(id) {
     contentHeader(ns('reporting_rate'), 'Reporting Rate'),
     contentBody(
       box(
-        title = 'District Reporting Rate',
+        title = 'Reporting Rate Options',
         status = 'success',
-        collapsible = TRUE,
+        solidHeader = TRUE,
         width = 12,
         fluidRow(
           column(3, numericInput(ns('threshold'), label = 'Performance Threshold', value = 90)),
+          column(3, selectizeInput(ns('admin_level'), label = 'Admin Level',
+                                   choices = c('Admin Level 1' = 'adminlevel_1',
+                                               'District' = 'district'))),
           column(3, selectizeInput(ns('indicator'),
                                    label = 'Indicator',
                                    choices = c('ANC' = 'anc_rr',
                                                'Institutional Delivery' = 'idelv_rr',
-                                               'Vaccination' = 'vacc_rr'))),
-          column(12, withSpinner(plotlyOutput(ns('district_missing_heatmap'))))
+                                               'Vaccination' = 'vacc_rr')))
         )
+      ),
+      tabBox(
+        title = 'Sub-National Reporting Rate',
+        width = 12,
+
+        tabPanel(title = 'Heat Map', fluidRow(
+          column(12, withSpinner(plotlyOutput(ns('district_missing_heatmap'))))
+        )),
+
+        tabPanel(title = 'Bar Graph', fluidRow(
+          column(12, plotCustomOutput(ns('district_missing_bar')))
+        ))
       ),
       box(
         title = 'Average Reporting Rate',
@@ -33,7 +47,7 @@ reportingRateUI <- function(id) {
         )
       ),
       box(
-        title = 'Districts with low reporting rate',
+        title = 'Subnational Units with Low Reporting',
         width = 6,
         status = 'success',
         fluidRow(
@@ -67,6 +81,13 @@ reportingRateServer <- function(id, cache) {
         cache()$performance_threshold
       })
 
+      reporting_rate <- reactive({
+        req(data(), input$indicator, input$admin_level, threshold())
+
+        data() %>%
+          calculate_reporting_rate(input$indicator, input$admin_level, threshold())
+      })
+
       district_rr <- reactive({
         req(data(), threshold())
 
@@ -82,11 +103,9 @@ reportingRateServer <- function(id, cache) {
       })
 
       district_low_rr <- reactive({
-        req(data(), input$indicator, threshold(), input$year)
-
-        data() %>%
-          district_low_reporting(threshold()) %>%
-          filter(year == input$year)
+        req(reporting_rate(), input$year)
+        reporting_rate() %>%
+          subnational_low_reporting(as.integer(input$year))
       })
 
       observeEvent(data(), {
@@ -117,45 +136,13 @@ reportingRateServer <- function(id, cache) {
       })
 
       output$district_missing_heatmap <- renderPlotly({
-        req(data())
+        req(reporting_rate())
+        ggplotly(plot(reporting_rate()))
+      })
 
-        indicator_groups <- attr(data(), 'indicator_groups')
-        indicator_groups <- paste0(names(indicator_groups), '_rr')
-
-        greater <- paste0('>= ', threshold())
-        mid <- paste0(' >= 40 and < ', threshold())
-        low <- '< 40'
-
-        dt <- data() %>%
-          select(district, year, any_of(input$indicator)) %>%
-          summarise(
-            value = mean(.data[[input$indicator]], na.rm = TRUE),
-            .by = c(district, year)
-          ) %>%
-          mutate(
-            color_category = case_when(
-              round(value, 0) >= threshold() ~ greater,
-              round(value, 0) >= 40 & round(value, 0) < threshold() ~ mid,
-              round(value, 0) < 40 ~ low,
-              .ptype = factor(levels = c(low, mid, greater))
-            )
-          )
-
-        ggplotly(
-          ggplot(dt, aes(x = district, y = year, fill = color_category)) +
-            geom_tile(color = 'white') +
-            scale_fill_manual(
-              values = set_names(
-                c("forestgreen", "orange", "red"),
-                c(greater, mid, low)
-              ),
-              name = "Value Category",
-              drop = FALSE
-            ) +
-            labs(title = NULL, x = 'District', y = 'Year', fill = 'Value') +
-            theme_minimal() +
-            theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
-        )
+      output$district_missing_bar <- renderCustomPlot({
+        req(reporting_rate())
+        plot(reporting_rate(), plot_type = 'bar')
       })
 
       output$district_report_plot <- renderCustomPlot({
@@ -174,7 +161,7 @@ reportingRateServer <- function(id, cache) {
           reactable(
             filterable = FALSE,
             minRows = 10,
-            groupBy = c('district'),
+            # groupBy = input$admin_level,
             columns = list(
               year = colDef(
                 aggregate = 'unique'

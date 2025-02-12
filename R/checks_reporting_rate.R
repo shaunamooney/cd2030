@@ -96,38 +96,155 @@ calculate_district_reporting_rate <- function(.data, threshold = 90) {
   )
 }
 
-#' Identify Districts with Low Reporting Rates
+#' Identify Administrative Units with Low Reporting Rates
 #'
-#' `district_low_reporting` identifies districts that have reporting rates below
-#' a specified threshold.
+#' `subnational_low_reporting` identifies administrative regions where reporting
+#' rates fall below a specified threshold.
 #'
-#' @param .data A data frame of class `cd_data` that contains reporting rate
-#'   information by year.
-#' @param threshold Numeric. The reporting rate threshold below which districts
-#'   will be flagged. Defaults to 90.
+#' @param .data A tibble of class `cd_reporting_rate` containing reporting rates.
+#' @param year Integer. The year for which to filter the data.
 #'
-#' @return A data frame or tibble containing the districts and years where
-#'   reporting rates for any indicator group fall below the specified threshold.
+#' @return A tibble containing administrative units and years where reporting rates for any
+#'   indicator group fall below the specified threshold.
 #'
 #' @examples
 #' \dontrun{
 #'   # Calculate district-level reporting rates with a threshold of 90%
-#'   district_summary <- district_low_reporting(data, threshold = 90)
+#'   district_summary <- subnational_low_reporting(data, year = 2024, threshold = 90)
 #' }
 #'
 #' @export
-district_low_reporting <- function(.data, threshold = 90) {
+subnational_low_reporting <- function(.data, year) {
 
-  district = year = NULL
+  # Input validation
+  check_cd_reporting_rate(.data)
+  check_scalar_integerish(year)
 
+  indicator <- attr(.data, 'indicator')
+  admin_level <- attr(.data, 'admin_level')
+  threshold <- attr(.data, 'threshold')
+
+  reporting_rate <- .data %>%
+    filter(year == !!year, !!sym(indicator) < threshold) %>%
+    arrange(desc(!!sym(indicator)), desc(total_pop)) %>%
+    select(-total_pop)
+
+  return(reporting_rate)
+}
+
+#' `calculate_reporting_rate` calculates reporting rate by administrative region
+#' for a specified indicator
+#'
+#' @param .data A tibble of class `cd_data` containing reporting rates.
+#' @param indicator Character. The indicator to be evaluated, Must be one of
+#'   `"anc_rr"`, `"idelv_rr"`, or `"vacc_rr"`
+#' @param admin_level Character. The administrative level at which to assess reporting rates.
+#'   Must be one of `"adminlevel_1"` or `"district"`.
+#' @param threshold Numeric. The reporting rate threshold below which administrative units
+#'   will be flagged. Defaults to 90.
+#'
+#' @return A tibble containing administrative units and years where reporting rates for any
+#'   indicator group fall below the specified threshold.
+#'
+#' @export
+calculate_reporting_rate <- function(.data,
+                                  indicator,
+                                  admin_level = c('adminlevel_1', 'district'),
+                                  threshold = 90) {
   check_cd_data(.data)
+  check_scalar_integerish(threshold)
+  admin_level <- arg_match(admin_level)
+  admin_level_cols <- switch(
+    admin_level,
+    adminlevel_1 = 'adminlevel_1',
+    district = c('adminlevel_1', 'district')
+  )
 
   indicator_groups <- attr(.data, 'indicator_groups')
   indicator_groups <- paste0(names(indicator_groups), '_rr')
 
-  reporting_rate <- .data %>%
-    summarise(across(all_of(indicator_groups), mean, na.rm = TRUE), .by = c(district, year)) %>%
-    filter(if_any(ends_with("rr"), ~ round(.x, 0) < threshold))
+  indicator <- arg_match(indicator, indicator_groups)
 
-  return(reporting_rate)
+  reporting_rate <- .data %>%
+    mutate(
+      total_pop = total_pop / 12,
+      total_pop = sum(total_pop, na.rm = TRUE),
+      .by = c(admin_level_cols, year)
+    ) %>%
+    summarise(across(all_of(indicator), ~ round(mean(.x, na.rm = TRUE), 0)), .by = c(admin_level_cols, year, total_pop))
+
+  new_tibble(
+    reporting_rate,
+    class = 'cd_reporting_rate',
+    indicator = indicator,
+    admin_level = admin_level,
+    threshold = threshold
+  )
+}
+
+#' @export
+plot.cd_reporting_rate <- function(x,
+                                   plot_type = c('heat_map', 'bar'),
+                                   ...) {
+
+  plot_type = arg_match(plot_type)
+  indicator <- attr(x, 'indicator')
+  threshold <- attr(x, 'threshold')
+  admin_level <- attr(x, 'admin_level')
+
+  if (plot_type == 'heat_map') {
+
+  greater <- paste0('>= ', threshold)
+  mid <- paste0(' >= 40 and < ', threshold)
+  low <- '< 40'
+
+  dt <- x %>%
+    mutate(
+      color_category = case_when(
+        !!sym(indicator) >= threshold ~ greater,
+        !!sym(indicator) >= 40 & !!sym(indicator) < threshold ~ mid,
+        !!sym(indicator) < 40 ~ low,
+        .ptype = factor(levels = c(low, mid, greater))
+      )
+    )
+
+  ggplot(dt, aes(x = !!sym(admin_level), y = year, fill = color_category)) +
+    geom_tile(color = 'white') +
+    scale_fill_manual(
+      values = set_names(
+        c("forestgreen", "orange", "red"),
+        c(greater, mid, low)
+      ),
+      name = "Value Category",
+      drop = FALSE
+    ) +
+    geom_text(aes(label = !!sym(indicator)), color = 'black', size = 3, vjust = 0.5) +
+    labs(title = NULL, x = if (admin_level == 'district') 'District' else 'Admin Level 1', y = 'Year', fill = 'Value') +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
+  } else {
+    min_rr <- min(x[[indicator]], na.rm = TRUE)
+    low_threshold <- ifelse(min_rr < 80, min_rr, 70)
+
+    breaks_vals <- c(low_threshold, 80, 90, 100)
+
+    ggplot(x, aes(year, !!sym(indicator), fill = !!sym(indicator))) +
+      geom_col() +
+      facet_wrap(as.formula(paste0('~', admin_level))) +
+      labs(title = paste0('Reporting rates by years and ', admin_level), x = 'Year', y = 'Reporting Rate') +
+      scale_fill_gradientn(
+        colors = c("red", "orange", "yellowgreen", "forestgreen"),
+        values = scales::rescale(breaks_vals, to = c(0, 1)),
+        breaks = breaks_vals,
+        labels = breaks_vals,
+        limits = c(low_threshold, 100)
+      ) +
+      theme(
+        panel.background = element_blank(),
+        strip.background = element_blank(),
+        # strip.text = element_text(size = 12)
+        panel.grid.major = element_line(colour = 'gray95'),
+        axis.ticks = element_blank()
+      )
+  }
 }

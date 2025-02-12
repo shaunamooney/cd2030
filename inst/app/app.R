@@ -30,7 +30,8 @@ pacman::p_load(
   reactable,
   tidyr,
   # sf,
-  stringr
+  stringr #,
+  # update = TRUE
 )
 
 source('modules/page_objects_config.R')
@@ -67,6 +68,7 @@ source('modules/subnational_coverage.R')
 source('modules/subnational_inequality.R')
 source('modules/subnational_mapping.R')
 source('modules/upload_data.R')
+source('modules/low_reporting.R')
 
 ui <- dashboardPage(
   skin = 'green',
@@ -129,6 +131,9 @@ ui <- dashboardPage(
                menuSubItem('Sub-National Inequality',
                            tabName = 'subnational_inequality',
                            icon = icon('balance-scale-right')),
+               menuSubItem('Low Reportin Rate',
+                           tabName = 'low_reporting',
+                           icon = icon('user-slash')),
                menuSubItem('Sub-National Mapping',
                            tabName = 'subnational_mapping',
                            icon = icon('map'))
@@ -161,6 +166,7 @@ ui <- dashboardPage(
       tabItem(tabName = 'national_coverage', nationalCoverageUI('national_coverage')),
       tabItem(tabName = 'subnational_coverage', subnationalCoverageUI('subnational_coverage')),
       tabItem(tabName = 'subnational_inequality', subnationalInequalityUI('subnational_inequality')),
+      tabItem(tabName = 'low_reporting', lowReportingUI('low_reporting')),
       tabItem(tabName = 'subnational_mapping', subnationalMappingUI('subnational_mapping')),
       tabItem(tabName = 'equity_assessment', equityUI('equity_assessment'))
     ),
@@ -196,6 +202,7 @@ server <- function(input, output, session) {
   nationalCoverageServer('national_coverage', cache)
   subnationalCoverageServer('subnational_coverage', cache)
   subnationalInequalityServer('subnational_inequality', cache)
+  lowReportingServer('low_reporting', cache)
   subnationalMappingServer('subnational_mapping', cache)
   equityServer('equity_assessment', cache)
   downloadReportServer('download_report', cache)
