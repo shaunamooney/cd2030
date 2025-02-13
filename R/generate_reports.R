@@ -8,7 +8,7 @@
 #' @param output_file A character string specifying the name and path of the output file.
 #' @param report_name The name of report to generate
 #' @param output_format A character vector specifying the output format, either
-#'   `'html_document'` or `'word_document'`.
+#'   `'html_document'` or `'officedown::rdocx_document'`.
 #'
 #' @return The function renders the report to the specified file in the chosen format.
 #'
@@ -30,6 +30,11 @@ generate_report <- function(cache,
   check_required(report_name)
 
   format <- arg_match(output_format)
+  format <- switch(
+    output_format,
+    word_document = 'officedown::rdocx_document',
+    output_format
+  )
 
   # If output_file is just a file name, save it in the working directory
   if (!dirname(output_file) %in% c('.', '')) {

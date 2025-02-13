@@ -31,7 +31,9 @@ pacman::p_load(
   tidyr,
   markdown,
   # sf,
-  stringr #,
+  stringr ,
+  officer,
+  officedown
   # update = TRUE
 )
 

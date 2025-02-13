@@ -250,7 +250,7 @@ cd_report_theme <- function(base_size = 10, base_family = "",
       legend.background = element_rect(fill = alpha("white", 0)), # Transparent background
       legend.position = "bottom", # or "bottom"
       legend.text = element_text(size = small_size),
-      legend.title.text = element_text(size = small_size),
+      legend.title = element_text(size = small_size),
 
       panel.background = element_blank(),
       panel.border = element_rect(color = "black", fill = NA, size = 0.8),

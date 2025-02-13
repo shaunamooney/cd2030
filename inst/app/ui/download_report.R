@@ -45,8 +45,8 @@ downloadReportServer <- function(id, cache) {
             modalDialog(
               title = 'Download Options',
               selectizeInput(
-                ns('format'), 'Select Format:',
-                choices = c('Word' = 'word_document', 'PDF' = 'pdf_document')
+                ns('type'), 'Report Type:',
+                choices = c('Full Report' = 'final_report', 'One Pager' = 'one_pager')
               ),
               footer = tagList(
                 modalButton('Cancel'),
@@ -57,7 +57,7 @@ downloadReportServer <- function(id, cache) {
         }
       })
 
-      reportButtonServer('report', cache, 'final_report')
+      reportButtonServer('report', cache, input$type)
 
     }
   )

@@ -1,0 +1,269 @@
+---
+title: " `r params$country` - Countdown Analysis"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  officedown::rdocx_document:
+    reference_docx: one-pager-template.docx
+    page_size:
+      width: 8.3
+      height: 11.7
+      orient: "portrait"
+    page_margins:
+      bottom: 0.5
+      top: 1
+      right: 0.5
+      left: 0.5
+      gutter: 0
+  pdf_document:
+    toc: false
+    latex_engine: lualatex
+params:
+  cache: NULL
+  country: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  dpi=300
+)
+
+library(cd2030)
+library(dplyr)
+library(purrr)
+library(gt)
+library(reactable)
+library(gridExtra)
+library(officedown)
+library(officer)
+
+cache <- params$cache
+
+data <- cache$countdown_data
+adjusted_data <- cache$adjusted_data
+country <- cache$country
+threshold <- cache$performance_threshold
+k_factors <- cache$k_factors
+rates <- cache$national_estimates
+denominator <- cache$denominator
+mapping_years <- cache$mapping_years
+un_estimates <- cache$un_estimates
+wuenic_estimates <- cache$wuenic_estimates
+survey_start_year <- cache$start_survey_year
+survdata <- cache$national_survey %>% 
+  filter(if(is.null(survey_start_year)) TRUE else year >= survey_start_year)
+gregion <- cache$regional_survey %>% 
+  filter(if(is.null(survey_start_year)) TRUE else year >= survey_start_year)
+subnational_map <- cache$survey_mapping
+map_mapping <- cache$map_mapping
+meduc <- cache$education_survey
+wiq <- cache$wiq_survey
+area <- cache$area_survey
+selected_admin_level_1 <- cache$selected_admin_level_1
+selected_district <- cache$selected_district
+```
+
+<!---BLOCK_MULTICOL_START--->
+
+## Health Facility Data Quality
+
+### Summary reported immunization health facility data DHIS2
+
+```{r}
+
+years <- unique(data$year)
+
+data %>%
+          calculate_overall_score(threshold) %>%
+          mutate(
+            type = case_when(
+              no %in% c("1a", "1b", "1c") ~ '1. Completeness of monthly facility reporting (Immunization)',
+              no %in% c("2a", "2b") ~ '2. Extreme outliers (Common Vaccine antigens)',
+              no %in% c("3a", "3b",'3f', '3g') ~ '3. Consistency of annual reporting'
+            )
+          ) %>%
+          as_grouped_data(groups = 'type') %>%
+          as_flextable() %>%
+          bold(j = 1, i = ~ !is.na(type), bold = TRUE, part = "body") %>%
+          bold(part = "header", bold = TRUE) %>%
+          colformat_double(i = ~ is.na(type) & !no %in% c("3a", "3b"), j = as.character(years), digits = 0, big.mark = ",") %>%
+          colformat_double(i = ~ is.na(type) & no %in% c("3a", "3b"), j = as.character(years), digits = 2) %>%
+          bg(
+            i = ~ is.na(type) & !no %in% c("3a", "3b"),
+            j = as.character(years),
+            bg = function(x) {
+              # Use map to apply function to each cell
+              result <- map_chr(as.list(x), ~ {
+                if (is.na(.x) || is.null(.x)) {
+                  return("transparent")
+                } else if (.x >= threshold) {
+                  return("seagreen")
+                } else if (.x >= 70 && .x < threshold) {
+                  return("yellow")
+                } else if (.x < 70) {
+                  return("red")
+                } else {
+                  return("transparent")
+                }
+              })
+              return(result)
+            },
+            part = "body"
+          ) %>%
+          bg(
+            i = ~ !is.na(type), part = "body",
+            bg = 'lightgoldenrodyellow'
+          ) %>%
+   fontsize(size = 7) %>% 
+          theme_vanilla() %>%
+  set_table_properties(layout = "autofit")
+```
+
+`r officer::run_columnbreak()`
+
+## Equity Analysis
+
+### Wealth an urban-rural inequity for Penta 3 Coverage
+
+#### Wealth
+
+```{r, fig.width=3, fig.height=2.5}
+equiplot_wealth(wiq, 'penta3') +
+  cd_report_theme(base_size = 7)
+```
+
+#### Residence
+
+```{r, fig.width=3, fig.height=2.5}
+equiplot_area(area, 'penta3') +
+  cd_report_theme(base_size = 7)
+```
+
+<!---BLOCK_MULTICOL_STOP{widths: [4,4], space: 0.2, sep: true}--->
+
+DQA scores greater or equal to 90% are highlighted in green indicating good data quality, scores of 80-90% in yellow and less than 70% in red indicator poor data quality
+
+<!---BLOCK_MULTICOL_START--->
+
+## National immunization Coverage trends
+
+### 2019 – 2023 trend in immunization coverage, first dose of measles, third dose of pentavalent vaccine's and pentavalent dropout rates
+
+#### Measles 1
+
+```{r, fig.width=3, fig.height=2.5}
+national_coverage <- adjusted_data %>% 
+  calculate_coverage(
+    survey_data = survdata,
+    wuenic_data = wuenic_estimates,
+    un_estimates = un_estimates,
+    sbr = rates$sbr,
+    nmr = rates$nmr,
+    pnmr = rates$pnmr,
+    twin = rates$twin_rate,
+    preg_loss = rates$preg_loss,
+    anc1survey = rates$anc1,
+    dpt1survey = rates$penta1
+  )
+
+plot(national_coverage, indicator = 'measles1', denominator = denominator) +
+  cd_report_theme(base_size = 7)
+```
+
+#### Penta 3
+
+```{r, fig.width=3, fig.height=2.5}
+plot(national_coverage, indicator = 'penta3', denominator = denominator) +
+  cd_report_theme(base_size = 7)
+```
+
+#### Penta1 to Penta3 Dropout
+
+```{r, fig.width=3, fig.height=2.5}
+plot(national_coverage, indicator = 'dropout_penta13', denominator = denominator) +
+  cd_report_theme(base_size = 7)
+```
+
+`r officer::run_columnbreak()`
+
+## Admin Level 1 Vaccination Coverage Map
+
+### Subnational vaccination coverage 2019 & 2023 (measles1, penta3, dropout penta1_3)
+
+#### Measles 1
+
+```{r, fig.width=3, fig.height=2.5}
+mapping_data <- get_mapping_data(adjusted_data, un_estimates, rates, map_mapping)
+
+plot(mapping_data, 
+     indicator = 'measles1',
+     denominator = denominator,
+     palette = 'Blues',
+     plot_year = mapping_years) +
+  cd_report_theme(base_size = 7) +
+  theme(
+    legend.text = element_text(size = 6),  
+    legend.title = element_text(size = 7), 
+    panel.border = element_blank(),     
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    axis.line = element_blank(),
+    panel.grid = element_blank(),
+    aspect.ratio = 1
+  )
+```
+
+#### Penta 3
+
+```{r, fig.width=3, fig.height=2.5}
+plot(mapping_data, 
+     indicator = 'penta3',
+     denominator = denominator,
+     palette = 'Greens',
+     plot_year = mapping_years) +
+  cd_report_theme(base_size = 7) +
+  theme(
+    legend.text = element_text(size = 6),  
+    legend.title = element_text(size = 7), 
+    panel.border = element_blank(),     
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    axis.line = element_blank(),
+    panel.grid = element_blank(),
+    aspect.ratio = 1
+  )
+```
+
+#### Penta1 to Penta3 Dropout
+
+```{r, fig.width=3, fig.height=2.5}
+plot(mapping_data, 
+     indicator = 'dropout_penta13',
+     denominator = denominator,
+     palette = 'Reds',
+     plot_year = mapping_years) +
+  cd_report_theme(base_size = 7) +
+  theme(
+    legend.text = element_text(size = 6),  
+    legend.title = element_text(size = 7), 
+    panel.border = element_blank(),     
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    axis.line = element_blank(),
+    panel.grid = element_blank(),
+    aspect.ratio = 1
+  )
+```
+
+<!---BLOCK_MULTICOL_STOP{widths: [4,4], space: 0.2, sep: true}--->
