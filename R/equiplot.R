@@ -146,7 +146,7 @@ equiplot_area <- function(.data,
   }
 
   .data %>%
-    select(year, contains(paste0('r_', indicator))) %>%
+    select(year, contains( paste0('r_', 'penta2', c('2rural', '1urban')))) %>%
     rename_with(~ gsub('.*rural$', 'Rural', .x), .cols = contains('rural')) %>%
     rename_with(~ gsub('.*urban$', 'Urban', .x), .cols = contains('urban')) %>%
     equiplot(variables = c('Rural', 'Urban'),
@@ -192,7 +192,7 @@ equiplot_education <- function(.data,
   }
 
   .data %>%
-    select(year, contains(paste0('r_', indicator))) %>%
+    select(year, contains(paste0('r_', indicator, c('1none', '2primary', '3secondary')))) %>%
     rename_with(~ gsub('.*none$', 'No education', .x), .cols = contains('none')) %>%
     rename_with(~ gsub('.*primary$', 'Primary', .x), .cols = contains('primary')) %>%
     rename_with(~ gsub('.*secondary$', 'Secondary or higher', .x), .cols = contains('secondary')) %>%

@@ -29,6 +29,7 @@ pacman::p_load(
   RColorBrewer,
   reactable,
   tidyr,
+  markdown,
   # sf,
   stringr #,
   # update = TRUE

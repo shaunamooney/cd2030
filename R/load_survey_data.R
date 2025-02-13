@@ -68,21 +68,8 @@ load_survey_data <- function(path, country_iso, admin_level = c('national', 'adm
   )
 
   survdata <- survdata %>%
-    select(-ends_with("_penta1")) %>%
     mutate(iso = country_iso) %>%
-    rename_with(~ gsub("dpt", "penta", .x)) %>%
-    rename_with(~ gsub("polio", "opv", .x)) %>%
-    rename_with(~ gsub("msl", "measles", .x)) %>%
-    rename_with(~ gsub("pneumo", "pcv", .x)) %>%
-    rename_with(~ gsub("full", "fic", .x)) %>%
-    rename_with(~ gsub("zero", "realzerodose", .x)) %>%
-    rename_with(~ gsub("zpenta", "zerodose", .x)) %>%
-    rename_with(~ gsub("invac", "undervax", .x)) %>%
-    rename_with(~ gsub("dppenta", "dropout_penta13", .x)) %>%
-    rename_with(~ gsub("dpopv", "dropout_opv13", .x)) %>%
-    # rename_with(~ gsub("measles22.*", "measles2", .x)) %>%
-    # rename_with(~ gsub("measles12.*", "measles1", .x)) %>%
-    select(-ends_with("r"), -ends_with("24_35"), year)
+    select(-contains('24_35'))
 
   if (admin_level == 'adminlevel_1') {
     survdata <- survdata %>%
@@ -133,17 +120,7 @@ load_equity_data <- function(path) {
   )
 
   survdata <- survdata %>%
-    select(-contains('_penta1'), -contains('24_35'), -matches('r1|r2|r3')) %>%
-    rename_with(~ gsub("dpt", "penta", .x)) %>%
-    rename_with(~ gsub("polio", "opv", .x)) %>%
-    rename_with(~ gsub("msl", "measles", .x)) %>%
-    rename_with(~ gsub("pneumo", "pcv", .x)) %>%
-    rename_with(~ gsub("full", "fic", .x)) %>%
-    rename_with(~ gsub("zero", "realzerodose", .x)) %>%
-    rename_with(~ gsub("zpenta", "zerodose", .x)) %>%
-    rename_with(~ gsub("invac", "undervax", .x)) %>%
-    rename_with(~ gsub("dppenta", "dropout_penta13", .x)) %>%
-    select(year, starts_with('r_'))
+    select(-contains("24_35"))
 
   new_tibble(
     survdata,
