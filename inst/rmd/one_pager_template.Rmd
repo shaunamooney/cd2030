@@ -39,7 +39,6 @@ knitr::opts_chunk$set(
 library(cd2030)
 library(dplyr)
 library(purrr)
-library(gt)
 library(reactable)
 library(gridExtra)
 library(officedown)

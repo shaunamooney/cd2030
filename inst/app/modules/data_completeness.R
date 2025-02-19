@@ -5,15 +5,43 @@ dataCompletenessUI <- function(id) {
     contentHeader(ns('data_completeness'), 'Data Completeness'),
     contentBody(
       box(
-        title = tags$span(icon('chart-line'), 'Indicators with Missing Data'),
+        title = 'Completeness Options',
         status = 'success',
-        collapsible = TRUE,
+        solidHeader = TRUE,
         width = 12,
         fluidRow(
           column(3, selectizeInput(ns('year'), label = 'Year', choice = NULL)),
-          column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL)),
-          column(12, withSpinner(plotlyOutput(ns('district_missing_heatmap')))),
-          column(4, align = 'right', downloadButtonUI(ns('download_data')))
+          column(3, selectizeInput(ns('admin_level'), label = 'Admin Level',
+                                   choice = c('Admin Level 1' = 'adminlevel_1',
+                                              'District' = 'district'))),
+          column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL))
+        )
+      ),
+      tabBox(
+        title = tags$span(icon('chart-line'), 'Indicators with Missing Data'),
+        width = 12,
+
+        tabPanel(
+          title = 'Heat Map',
+          fluidRow(
+            column(12, withSpinner(plotlyOutput(ns('district_missing_heatmap')))),
+            column(4, align = 'right', downloadButtonUI(ns('download_data')))
+          )
+        ),
+
+        tabPanel(
+          title = 'Complete Vaccines',
+          fluidRow(
+            column(12, h5('Percent of districts with complete data by vaccine')),
+            column(12, reactableOutput(ns('complete_vaccines')))
+          )
+        ),
+
+        tabPanel(
+          title = 'Incomplete Vaccines by Region',
+          fluidRow(
+            column(12, plotCustomOutput(ns('incomplete_region')))
+          )
         )
       ),
       box(
@@ -153,6 +181,49 @@ dataCompletenessServer <- function(id, cache) {
               theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
           )
         }
+      })
+
+      output$complete_vaccines <- renderReactable({
+        req(data())
+
+        data() %>%
+          calculate_district_completeness_summary() %>%
+          reactable(
+            filterable = FALSE,
+            minRows = 10
+          )
+      })
+
+      output$incomplete_region <- renderCustomPlot({
+
+        req(data())
+
+        indicator_groups <- attr(data(), 'indicator_groups')
+        vaccine_only <- indicator_groups[['vacc']]
+
+        data() %>%
+          add_missing_column(vaccine_only) %>%
+          summarise(across(starts_with('mis_'), ~ (1 - mean(.x, na.rm = TRUE))) * 100, .by = c(year, input$admin_level)) %>%
+          group_by(!!sym(input$admin_level)) %>%
+          select(year, any_of(input$admin_level), where(~ any(.x < 100, na.rm = TRUE))) %>%
+          pivot_longer(cols = starts_with('mis_'),
+                       names_prefix = 'mis_',
+                       names_to = 'indicator') %>%
+          mutate(facet_label = paste0(!!sym(input$admin_level), ": ", indicator)) %>%
+          ggplot(aes(y = value, x = year, colour = indicator)) +
+          geom_line() +
+          geom_point() +
+          facet_wrap(~ facet_label) +
+          scale_y_continuous(NULL, expand = c(0,0)) +
+          theme(
+            panel.background = element_blank(),
+            strip.background = element_blank(),
+            # strip.text = element_text(size = 12)
+            panel.grid.major = element_line(colour = 'gray95'),
+            axis.ticks = element_blank(),
+            legend.position = "none"
+          )
+
       })
 
       downloadExcel(

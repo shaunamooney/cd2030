@@ -135,65 +135,59 @@ calculate_district_outlier_summary <- function(.data) {
 }
 
 #' @export
-outliers_summary <- function(.data, indicator, admin_level = c('adminlevel_1', 'district')) {
+outliers_summary <- function(.data, admin_level = c('adminlevel_1', 'district')) {
 
   check_cd_data(.data)
   admin_level <- arg_match(admin_level)
-  admin_level_cols <- switch(
-    admin_level,
-    adminlevel_1 = 'adminlevel_1',
-    district = c('adminlevel_1', 'district')
-  )
 
   indicator_groups <- attr(.data, 'indicator_groups')
   allindicators <- list_c(indicator_groups)
 
-  indicator <- arg_match(indicator, allindicators)
-  indicator <- paste0(indicator, '_outlier5std')
-
   outlier_data <- .data %>%
-    add_outlier5std_column(allindicators) %>%
-    summarise(
-      across(ends_with('_outlier5std'), ~ (1 - mean(., na.rm = TRUE)) * 100),
-      .by = c(admin_level_cols, year)
-    )
+    add_outlier5std_column(allindicators)
 
   new_tibble(
     outlier_data,
     class = 'cd_outlier',
-    admin_level = admin_level,
-    indicator = indicator
+    admin_level = admin_level
   )
 }
 
 #' @export
 plot.cd_outlier <- function(x,
                             selection_type = c('region', 'vaccine'),
+                            indicator = c('anc1', 'bcg', 'dropout_measles12', 'dropout_penta13',
+                                          'dropout_penta3mcv1', 'instdeliveries', 'ipv1', 'ipv2',
+                                          'measles1', 'measles2', 'opv1', 'opv2', 'opv3', 'pcv1',
+                                          'pcv2', 'pcv3', 'penta1', 'penta2', 'penta3', 'rota1',
+                                          'rota2', 'undervax', 'zerodose'),
                             ...) {
 
-  check_required(indicator)
   admin_level <- attr(x, 'admin_level')
-  indicator <- attr(x, 'indicator')
 
+  admin_level_cols <- switch(
+    admin_level,
+    adminlevel_1 = 'adminlevel_1',
+    district = c('adminlevel_1', 'district')
+  )
+
+  indicator <- arg_match(indicator)
   selection_type <- arg_match(selection_type)
 
-  min_rr <- min(x[[indicator]], na.rm = TRUE)
-  low_threshold <- ifelse(min_rr < 80, min_rr, 70)
-
-  breaks_vals <- if (selection_type == 'region') {
-    c(low_threshold, 95, 97, 99, 100)
-  } else {
-    c(low_threshold, 70, 80, 90, 100)
-  }
+  data_prepared <- x %>%
+    summarise(
+      across(ends_with('_outlier5std'), ~ (1 - mean(., na.rm = TRUE)) * 100),
+      .by = c(admin_level_cols, year)
+    )
 
   data_prepared <- if (selection_type == 'region') {
-    x %>%
+    data_prepared %>%
       mutate(
-        category = admin_level,
-        value = !!sym(indicator)
+        category = !!sym(admin_level),
+        value = !!sym(paste0(indicator, '_outlier5std'))
       )
   } else {
-    x %>%
+    data_prepared %>%
       pivot_longer(cols = ends_with('_outlier5std'),
                    names_to = 'category',
                    names_pattern = '^(.*)_outlier5std') %>%
@@ -203,6 +197,17 @@ plot.cd_outlier <- function(x,
         )
   }
 
+  min_rr <- min(data_prepared$value, na.rm = TRUE)
+  low_threshold <- ifelse(min_rr < 80, min_rr, 70)
+
+  # breaks_vals <- if (selection_type == 'region') {
+  #   c(low_threshold, 95, 97, 99, 100)
+  # } else {
+  #   c(low_threshold, 70, 80, 90, 100)
+  # }
+
+  breaks_vals <- c(low_threshold, 70, 80, 90, 100)
+
   ggplot(data_prepared, aes(year, value, fill = value)) +
     geom_col() +
     facet_wrap(~category) +
@@ -210,8 +215,8 @@ plot.cd_outlier <- function(x,
     scale_fill_gradientn(
       colors = c('red', "red", "orange", "yellowgreen", "forestgreen"),
       values = scales::rescale(breaks_vals, to = c(0, 1)),
-      breaks = scales::pretty_breaks(5),
-      labels = scales::pretty_breaks(5),
+      breaks = scales::pretty_breaks(5)(c(low_threshold, 100)),
+      labels = scales::pretty_breaks(5)(c(low_threshold, 100)),
       limits = c(low_threshold, 100)
     ) +
     theme(

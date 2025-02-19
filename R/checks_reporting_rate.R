@@ -195,15 +195,15 @@ plot.cd_reporting_rate <- function(x,
   if (plot_type == 'heat_map') {
 
   greater <- paste0('>= ', threshold)
-  mid <- paste0(' >= 40 and < ', threshold)
-  low <- '< 40'
+  mid <- paste0(' >= 70 and < ', threshold)
+  low <- '< 70'
 
   dt <- x %>%
     mutate(
       color_category = case_when(
         !!sym(indicator) >= threshold ~ greater,
-        !!sym(indicator) >= 40 & !!sym(indicator) < threshold ~ mid,
-        !!sym(indicator) < 40 ~ low,
+        !!sym(indicator) >= 70 & !!sym(indicator) < threshold ~ mid,
+        !!sym(indicator) < 70 ~ low,
         .ptype = factor(levels = c(low, mid, greater))
       )
     )
@@ -223,21 +223,29 @@ plot.cd_reporting_rate <- function(x,
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
   } else {
-    min_rr <- min(x[[indicator]], na.rm = TRUE)
-    low_threshold <- ifelse(min_rr < 80, min_rr, 70)
+    low_value <- min(x[[indicator]], na.rm = TRUE)
+    high_value <- max(x[[indicator]], na.rm = TRUE)
 
-    breaks_vals <- c(low_threshold, 80, 90, 100)
+    color_vals <- c("red", "orange", "forestgreen")
+
+    # Define breakpoints dynamically
+    breaks_vals <- if (threshold >= 70) {
+      c(low_value, 70, threshold, 100)
+    } else {
+      c(low_value, mean(low_value, threshold, na.rm = TRUE), threshold, 100)
+    }
 
     ggplot(x, aes(year, !!sym(indicator), fill = !!sym(indicator))) +
       geom_col() +
       facet_wrap(as.formula(paste0('~', admin_level))) +
       labs(title = paste0('Reporting rates by years and ', admin_level), x = 'Year', y = 'Reporting Rate') +
       scale_fill_gradientn(
-        colors = c("red", "orange", "yellowgreen", "forestgreen"),
-        values = scales::rescale(breaks_vals, to = c(0, 1)),
-        breaks = breaks_vals,
-        labels = breaks_vals,
-        limits = c(low_threshold, 100)
+        colors = color_vals,
+        values = scales::rescale(breaks_vals, to = c(0, 1)),  # Ensures precise cutoffs
+        breaks = scales::pretty_breaks(n = 5)(c(low_value, 100)),  # Uniformly spread breaks
+        labels = scales::pretty_breaks(n = 5)(c(low_value, 100)),
+        limits = c(low_value, 100),  # Ensure full scale is covered
+        name = "Reporting Rate"
       ) +
       theme(
         panel.background = element_blank(),

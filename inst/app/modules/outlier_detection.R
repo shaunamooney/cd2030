@@ -26,9 +26,12 @@ outlierDetectionUI <- function(id) {
           column(4, downloadButtonUI(ns('download_data')))
         )),
 
-        tabPanel(title = 'Bar Graph', fluidRow(
-          # column(12, plotCustomOutput(ns('district_missing_bar')))
-          fluidRow()
+        tabPanel(title = 'Vaccine Bar Graph', fluidRow(
+          column(12, plotCustomOutput(ns('vaccine_bar_graph')))
+        )),
+
+        tabPanel(title = 'Region Bar Graph', fluidRow(
+          column(12, plotCustomOutput(ns('region_bar_graph')))
         ))
       ),
       box(
@@ -73,22 +76,41 @@ outlierDetectionServer <- function(id, cache) {
       })
 
       outlier_summary <- reactive({
-        req(data())
+        req(data(), input$admin_level)
 
         data() %>%
-          select(district, year, month, vaccines_indicator()) %>%
-          add_outlier5std_column(vaccines_indicator())
+          outliers_summary(input$admin_level)
+      })
+
+      region_cols <- reactive({
+        req(input$admin_level)
+
+        switch (
+          input$admin_level,
+          adminlevel_1 = 'adminlevel_1',
+          district = c('adminlevel_1', 'district')
+        )
+      })
+
+      outlier_summary_filtered <- reactive({
+        req(outlier_summary(), region_cols)
+
+        outlier_summary() %>%
+          summarise(
+            across(starts_with(input$indicator), ~ mean(.x, na.rm = TRUE)),
+            .by = c(region_cols(), year, month)
+          )
       })
 
       outlier_districts <- reactive({
-        req(outlier_summary(), input$indicator, input$year)
+        req(outlier_summary(), input$indicator, region_cols(), input$year)
 
         outlier_column <- paste0(input$indicator, '_outlier5std')
         selected_year <- as.numeric(input$year)
 
-        outlier_summary() %>%
+        outlier_summary_filtered() %>%
           filter(if (selected_year == 0) TRUE else year == selected_year, !!sym(outlier_column) == 1) %>%
-          select(district, year, month, any_of(c(input$indicator, paste0(input$indicator, '_med'), paste0(input$indicator, '_mad'))))
+          select(any_of(region_cols()), year, month, any_of(c(input$indicator, paste0(input$indicator, '_med'), paste0(input$indicator, '_mad'))))
       })
 
       observe({
@@ -110,14 +132,15 @@ outlierDetectionServer <- function(id, cache) {
       })
 
       observe({
-        req(data())
+        req(data(), input$admin_level)
 
-        years <- data() %>%
-          distinct(district) %>%
-          arrange(district) %>%
-          pull(district)
 
-        updateSelectizeInput(session, 'district', choices = c('Select' = '', years))
+        region <- data() %>%
+          distinct(!!sym(input$admin_level)) %>%
+          arrange(!!sym(input$admin_level)) %>%
+          pull(!!sym(input$admin_level))
+
+        updateSelectizeInput(session, 'district', choices = c('Select' = '', region))
       })
 
 
@@ -130,7 +153,7 @@ outlierDetectionServer <- function(id, cache) {
           reactable(
             filterable = FALSE,
             minRows = 10,
-            groupBy = c('district'),
+            groupBy = 'adminlevel_1',
             columns = list(
               year = colDef(
                 aggregate = 'unique'
@@ -154,36 +177,36 @@ outlierDetectionServer <- function(id, cache) {
       })
 
       output$district_outlier_heatmap <- renderPlotly({
-        req(outlier_summary())
+        req(outlier_summary(), region_cols())
 
         if (input$indicator == '' || is.null(input$indicator) || length(input$indicator) == 0) {
           selected_year <- as.numeric(input$year)
 
           dt <- outlier_summary() %>%
             filter(if (selected_year == 0) TRUE else year == selected_year) %>%
-            summarise(across(ends_with('_outlier5std'), ~ sum(.x, na.rm = TRUE)), .by = district) %>%
+            summarise(across(ends_with('_outlier5std'), ~ sum(.x, na.rm = TRUE)), .by = region_cols()) %>%
             pivot_longer(col = ends_with('_outlier5std'), names_to = 'indicator') %>%
             mutate(indicator = str_remove(indicator, '_outlier5std'))
 
           ggplotly(
-            ggplot(dt, aes(x = district, y = indicator, fill = value)) +
+            ggplot(dt, aes(x = !!sym(input$admin_level), y = indicator, fill = value)) +
               geom_tile(color = 'white') +
               scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
-              labs(title = NULL, y = 'Indicator', x = 'District', fill = 'Value') +
+              labs(title = NULL, x = 'Indicator', y = 'District', fill = 'Value') +
               theme_minimal() +
               theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
           )
         } else {
           dt <- outlier_summary() %>%
-            select(district, year, any_of(paste0(input$indicator, '_outlier5std'))) %>%
+            select(any_of(region_cols()), year, any_of(paste0(input$indicator, '_outlier5std'))) %>%
             summarise(
               value = sum(.data[[paste0(input$indicator, '_outlier5std')]], na.rm = TRUE),
-              .by = c(district, year)
+              .by = c(region_cols(), year)
             ) %>%
             arrange(year)
 
           ggplotly(
-            ggplot(dt, aes(x = district, y = year, fill = value)) +
+            ggplot(dt, aes(x = !!sym(input$admin_level), y = year, fill = value)) +
               geom_tile(color = 'white') +
               scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
               labs(title = NULL, x = 'Indicator', y = 'District', fill = 'Value') +
@@ -191,6 +214,16 @@ outlierDetectionServer <- function(id, cache) {
               theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
           )
         }
+      })
+
+      output$region_bar_graph <- renderCustomPlot({
+        req(outlier_summary(), input$indicator)
+        plot(outlier_summary(), 'region', input$indicator)
+      })
+
+      output$vaccine_bar_graph <- renderCustomPlot({
+        req(outlier_summary(), input$indicator)
+        plot(outlier_summary(), 'vaccine', input$indicator)
       })
 
       output$district_trend <- renderPlotly({

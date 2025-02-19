@@ -94,7 +94,7 @@ calculate_district_completeness_summary <- function(.data) {
   allindicators <- list_c(indicator_groups)
 
   data <- .data %>%
-    add_missing_column(allindicators) %>%
+    add_missing_column(vaccine_only) %>%
     summarise(across(starts_with('mis_'), mean, na.rm = TRUE), .by = c(year, district)) %>%
     summarise(across(starts_with('mis_'), ~ mean(.x != 0, na.rm = TRUE)), .by = year) %>%
     mutate(
