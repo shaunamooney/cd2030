@@ -33,7 +33,6 @@ library(cd2030)
 library(dplyr)
 library(purrr)
 library(reactable)
-library(gridExtra)
 library(officedown)
 library(officer)
 

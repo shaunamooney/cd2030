@@ -13,11 +13,13 @@ output:
       height: 11.7
       orient: "portrait"
     page_margins:
-      bottom: 0.5
-      top: 1
-      right: 0.5
-      left: 0.5
+      bottom: 0.25
+      top: 0
+      right: 0.25
+      left: 0.25
       gutter: 0
+      header: 0
+      footer: 0
   pdf_document:
     toc: false
     latex_engine: lualatex
@@ -33,14 +35,13 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = FALSE,
   error = TRUE,
-  dpi=300
+  dpi=1200
 )
 
 library(cd2030)
 library(dplyr)
 library(purrr)
 library(reactable)
-library(gridExtra)
 library(officedown)
 library(officer)
 
@@ -76,79 +77,111 @@ selected_district <- cache$selected_district
 
 ### Summary reported immunization health facility data DHIS2
 
-```{r}
+```{r, fig.width=4, fig.height=2.5}
 
 years <- unique(data$year)
 
-data %>%
-          calculate_overall_score(threshold) %>%
-          mutate(
-            type = case_when(
-              no %in% c("1a", "1b", "1c") ~ '1. Completeness of monthly facility reporting (Immunization)',
-              no %in% c("2a", "2b") ~ '2. Extreme outliers (Common Vaccine antigens)',
-              no %in% c("3a", "3b",'3f', '3g') ~ '3. Consistency of annual reporting'
-            )
-          ) %>%
-          as_grouped_data(groups = 'type') %>%
-          as_flextable() %>%
-          bold(j = 1, i = ~ !is.na(type), bold = TRUE, part = "body") %>%
-          bold(part = "header", bold = TRUE) %>%
-          colformat_double(i = ~ is.na(type) & !no %in% c("3a", "3b"), j = as.character(years), digits = 0, big.mark = ",") %>%
-          colformat_double(i = ~ is.na(type) & no %in% c("3a", "3b"), j = as.character(years), digits = 2) %>%
-          bg(
-            i = ~ is.na(type) & !no %in% c("3a", "3b"),
-            j = as.character(years),
-            bg = function(x) {
-              # Use map to apply function to each cell
-              result <- map_chr(as.list(x), ~ {
-                if (is.na(.x) || is.null(.x)) {
-                  return("transparent")
-                } else if (.x >= threshold) {
-                  return("seagreen")
-                } else if (.x >= 70 && .x < threshold) {
-                  return("yellow")
-                } else if (.x < 70) {
-                  return("red")
-                } else {
-                  return("transparent")
-                }
-              })
-              return(result)
-            },
-            part = "body"
-          ) %>%
-          bg(
-            i = ~ !is.na(type), part = "body",
-            bg = 'lightgoldenrodyellow'
-          ) %>%
-   fontsize(size = 7) %>% 
-          theme_vanilla() %>%
+dat %>%
+  calculate_overall_score(threshold) %>%
+  filter(!no %in% c('3a', '3b')) %>%
+  mutate(
+    type = case_when(
+      no %in% c("1a", "1b", "1c") ~ '1. Completeness of monthly facility reporting (Immunization)',
+      no %in% c("2a", "2b") ~ '2. Extreme outliers (Common Vaccine antigens)',
+      no %in% c("3a", "3b",'3f', '3g', '4') ~ '3. Consistency of annual reporting'
+    ),
+    `Data Quality Metrics` = case_when(
+      str_detect(`Data Quality Metrics`, 'facility reports') ~ '% of expected monthly reports',
+      str_detect(`Data Quality Metrics`, 'completeness') ~ '% of districts with complete report >= 90%',
+      str_detect(`Data Quality Metrics`, 'missing') ~ '% of districts with no missing values',
+      str_detect(`Data Quality Metrics`, 'outliers \\(national\\)') ~ '% of values not extreme outliers',
+      str_detect(`Data Quality Metrics`, 'outliers in') ~ '% of districts with no extreme outliers',
+      str_detect(`Data Quality Metrics`, 'anc1/penta1') ~ '% district with anc1/penta1 in expected',
+      str_detect(`Data Quality Metrics`, 'penta1/penta3') ~ '% district with penta1/penta3 in expected',
+      .default = `Data Quality Metrics`
+    )
+  ) %>%
+  as_grouped_data(groups = 'type') %>%
+  as_flextable() %>%
+  bold(part = "header", bold = TRUE) %>%
+  fontsize(part = 'header', size = 7) %>%
+  bold(j = 1, i = ~ !is.na(type), bold = TRUE, part = "body") %>%
+  bold(i = ~ is.na(type) & no =='4', bold = TRUE, part = "body") %>%
+  fontsize(size = 7, part = 'body') %>% 
+  colformat_double(i = ~ is.na(type) & !no %in% c("3a", "3b"), j = as.character(years), digits = 0, big.mark = ",") %>%
+  colformat_double(i = ~ is.na(type) & no %in% c("3a", "3b"), j = as.character(years), digits = 2) %>%
+  bg(
+    i = ~ is.na(type) & !no %in% c("3a", "3b"),
+    j = as.character(years),
+    bg = function(x) {
+      # Use map to apply function to each cell
+      result <- map_chr(as.list(x), ~ {
+        if (is.na(.x) || is.null(.x)) {
+          return("transparent")
+        } else if (.x >= threshold) {
+          return("seagreen")
+        } else if (.x >= 70 && .x < threshold) {
+          return("yellow")
+        } else if (.x < 70) {
+          return("red")
+        } else {
+          return("transparent")
+        }
+      })
+      return(result)
+    },
+    part = "body"
+  ) %>%
+  bg(
+    i = ~ !is.na(type), part = "body",
+    bg = 'lightgoldenrodyellow'
+  ) %>%
+  theme_vanilla() %>%
   set_table_properties(layout = "autofit")
 ```
 
+##### DQA scores greater or equal to 90% are highlighted in green indicating good data quality, scores of 80-90% in yellow and less than 70% in red indicator poor data quality
+
 `r officer::run_columnbreak()`
 
-## Equity Analysis
+## Equity Analysis 
 
 ### Wealth an urban-rural inequity for Penta 3 Coverage
 
-#### Wealth
+#### Wealth Status
 
-```{r, fig.width=3, fig.height=2.5}
-equiplot_wealth(wiq, 'penta3') +
-  cd_report_theme(base_size = 7)
+```{r, fig.width=3.5, fig.height=1.5}
+equiplot_wealth(wiq, 'penta3', dot_size = 1.5) +
+  cd_report_theme(base_size = 7) +
+  theme(
+    legend.position = 'top',
+    legend.title = element_blank(),
+    legend.text = element_text(size = 7),
+    legend.margin = margin(0, 0, -10, 0),
+    
+    plot.margin = margin(0, 30, 0, -10)
+  )
+  
 ```
 
 #### Residence
 
-```{r, fig.width=3, fig.height=2.5}
-equiplot_area(area, 'penta3') +
-  cd_report_theme(base_size = 7)
+```{r, fig.width=3.5, fig.height=1.5}
+equiplot_area(area, 'penta3', dot_size = 1.5) +
+  cd_report_theme(base_size = 7) +
+  theme(
+    legend.position = 'top',
+    legend.title = element_blank(),
+    legend.text = element_text(size = 7),
+    legend.margin = margin(0, 0, -10, 0),
+    legend.spacing.x = unit(0.2, 'cm'),
+    
+    plot.margin = margin(0, 30, 0, -10)
+  )
 ```
 
 <!---BLOCK_MULTICOL_STOP{widths: [4,4], space: 0.2, sep: true}--->
 
-DQA scores greater or equal to 90% are highlighted in green indicating good data quality, scores of 80-90% in yellow and less than 70% in red indicator poor data quality
 
 <!---BLOCK_MULTICOL_START--->
 
@@ -158,7 +191,7 @@ DQA scores greater or equal to 90% are highlighted in green indicating good data
 
 #### Measles 1
 
-```{r, fig.width=3, fig.height=2.5}
+```{r, fig.width=4, fig.height=1.5}
 national_coverage <- adjusted_data %>% 
   calculate_coverage(
     survey_data = survdata,
@@ -174,21 +207,48 @@ national_coverage <- adjusted_data %>%
   )
 
 plot(national_coverage, indicator = 'measles1', denominator = denominator) +
-  cd_report_theme(base_size = 7)
+  cd_report_theme(base_size = 7) +
+  theme(
+    legend.position = 'right',
+    legend.key.size = unit(0.05, 'cm'),
+    legend.title = element_blank(),
+    legend.background = element_blank(),
+    legend.key = element_blank(),
+    
+    plot.margin = margin(0, 0, 0, 0)
+  )
 ```
 
 #### Penta 3
 
-```{r, fig.width=3, fig.height=2.5}
+```{r, fig.width=4, fig.height=1.5}
 plot(national_coverage, indicator = 'penta3', denominator = denominator) +
-  cd_report_theme(base_size = 7)
+  cd_report_theme(base_size = 7) +
+  theme(
+    legend.position = 'right',
+    legend.key.size = unit(0.05, 'cm'),
+    legend.title = element_blank(),
+    legend.background = element_blank(),
+    legend.key = element_blank(),
+    
+    plot.margin = margin(0, 0, 0, 0)
+  )
 ```
 
 #### Penta1 to Penta3 Dropout
 
-```{r, fig.width=3, fig.height=2.5}
+```{r, fig.width=4, fig.height=1.5}
 plot(national_coverage, indicator = 'dropout_penta13', denominator = denominator) +
-  cd_report_theme(base_size = 7)
+  cd_report_theme(base_size = 7) +
+  theme(
+    legend.position = 'right',
+    legend.key.size = unit(0.05, 'cm'),
+    legend.title = element_blank(),
+    legend.background = element_blank(),
+    legend.key = element_blank(),
+    
+    plot.margin = margin(0, 0, 0, 0)
+  )
 ```
 
 `r officer::run_columnbreak()`
@@ -199,7 +259,7 @@ plot(national_coverage, indicator = 'dropout_penta13', denominator = denominator
 
 #### Measles 1
 
-```{r, fig.width=3, fig.height=2.5}
+```{r, fig.width=3.5, fig.height=1.5}
 mapping_data <- get_mapping_data(adjusted_data, un_estimates, rates, map_mapping)
 
 plot(mapping_data, 
@@ -207,60 +267,60 @@ plot(mapping_data,
      denominator = denominator,
      palette = 'Blues',
      plot_year = mapping_years) +
-  cd_report_theme(base_size = 7) +
+  theme_void() +
   theme(
     legend.text = element_text(size = 6),  
     legend.title = element_text(size = 7), 
-    panel.border = element_blank(),     
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    axis.title = element_blank(),
-    axis.line = element_blank(),
-    panel.grid = element_blank(),
+    legend.key.size = unit(0.3, 'cm'),
+    
+    plot.title = element_text(size = 7, hjust = 0.5, face = "bold"),
+    plot.caption = element_text(size = 6, hjust = 0),
+    
+    strip.text = element_text(size = 7), 
     aspect.ratio = 1
   )
 ```
 
 #### Penta 3
 
-```{r, fig.width=3, fig.height=2.5}
+```{r, fig.width=3.5, fig.height=1.5}
 plot(mapping_data, 
      indicator = 'penta3',
      denominator = denominator,
      palette = 'Greens',
      plot_year = mapping_years) +
-  cd_report_theme(base_size = 7) +
+  theme_void() +
   theme(
     legend.text = element_text(size = 6),  
     legend.title = element_text(size = 7), 
-    panel.border = element_blank(),     
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    axis.title = element_blank(),
-    axis.line = element_blank(),
-    panel.grid = element_blank(),
+    legend.key.size = unit(0.3, 'cm'),
+    
+    plot.title = element_text(size = 7, hjust = 0.5, face = "bold"),
+    plot.caption = element_text(size = 6, hjust = 0),
+    
+    strip.text = element_text(size = 7), 
     aspect.ratio = 1
   )
 ```
 
 #### Penta1 to Penta3 Dropout
 
-```{r, fig.width=3, fig.height=2.5}
+```{r, fig.width=3.5, fig.height=1.5}
 plot(mapping_data, 
      indicator = 'dropout_penta13',
      denominator = denominator,
      palette = 'Reds',
      plot_year = mapping_years) +
-  cd_report_theme(base_size = 7) +
+  theme_void() +
   theme(
     legend.text = element_text(size = 6),  
     legend.title = element_text(size = 7), 
-    panel.border = element_blank(),     
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    axis.title = element_blank(),
-    axis.line = element_blank(),
-    panel.grid = element_blank(),
+    legend.key.size = unit(0.3, 'cm'),
+    
+    plot.title = element_text(size = 7, hjust = 0.5, face = "bold"),
+    plot.caption = element_text(size = 6, hjust = 0),
+    
+    strip.text = element_text(size = 7), 
     aspect.ratio = 1
   )
 ```

@@ -16,8 +16,6 @@ pacman::p_load(
   cd2030,
   dplyr,
   future,
-  kableExtra,
-  flextable,
   htmltools,
   openxlsx,
   khisr,
