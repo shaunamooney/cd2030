@@ -41,6 +41,7 @@ knitr::opts_chunk$set(
 library(cd2030)
 library(dplyr)
 library(purrr)
+library(flextable)
 library(reactable)
 library(officedown)
 library(officer)
@@ -136,7 +137,8 @@ data %>%
     i = ~ !is.na(type), part = "body",
     bg = 'lightgoldenrodyellow'
   ) %>%
-  theme_vanilla()
+  theme_vanilla() %>%
+  set_table_properties(layout = "autofit")
 ```
 
 ##### DQA scores greater or equal to 90% are highlighted in green indicating good data quality, scores of 80-90% in yellow and less than 70% in red indicator poor data quality.`r officer::run_columnbreak()`
