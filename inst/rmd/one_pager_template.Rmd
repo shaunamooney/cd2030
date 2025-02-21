@@ -81,7 +81,7 @@ selected_district <- cache$selected_district
 
 years <- unique(data$year)
 
-dat %>%
+data %>%
   calculate_overall_score(threshold) %>%
   filter(!no %in% c('3a', '3b')) %>%
   mutate(
@@ -136,8 +136,7 @@ dat %>%
     i = ~ !is.na(type), part = "body",
     bg = 'lightgoldenrodyellow'
   ) %>%
-  theme_vanilla() %>%
-  set_table_properties(layout = "autofit")
+  theme_vanilla()
 ```
 
 ##### DQA scores greater or equal to 90% are highlighted in green indicating good data quality, scores of 80-90% in yellow and less than 70% in red indicator poor data quality.`r officer::run_columnbreak()`

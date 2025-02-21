@@ -94,11 +94,13 @@ get_mapping_data <- function(.data, un_estimates, rates, subnational_map = NULL,
 #'
 #' @export
 get_country_shapefile <- function(country_iso, level = c('admin_level_1', 'district')) {
+  # print(country_iso)
 
   check_required(country_iso)
   level <- arg_match(level)
 
   shapefile_path <- system.file(file.path('shapefiles', country_iso, paste0(country_iso, '_', level, '.shp')), package = 'cd2030')
+  # print(shapefile_path)
   check_file_path(shapefile_path)
 
   st_read(shapefile_path, quiet = TRUE)
