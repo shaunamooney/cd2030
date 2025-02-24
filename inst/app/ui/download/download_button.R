@@ -5,6 +5,8 @@ downloadButtonUI <- function(id, label = 'Download') {
 
 downloadButtonServer <- function(id, filename, extension, content, data, label = 'Download', message = 'Downloading...') {
   stopifnot(is.reactive(data))
+  stopifnot(is.reactive(filename))
+  stopifnot(is.reactive(extension))
 
   moduleServer(
     id = id,
@@ -30,7 +32,7 @@ downloadButtonServer <- function(id, filename, extension, content, data, label =
 
       output$download_button <- downloadHandler(
         filename = function() {
-          paste0(filename, '_', format(Sys.time(), '%Y%m%d%H%M'), '.', extension)
+          paste0(filename(), '_', format(Sys.time(), '%Y%m%d%H%M'), '.', extension())
         },
         content = function(file) {
           session$sendCustomMessage(

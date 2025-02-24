@@ -2,8 +2,8 @@ downloadPlot <- function(id, filename, data, plot_function, label = 'Download Pl
 
   downloadButtonServer(
     id = id,
-    filename = filename,
-    extension = 'png',
+    filename = reactive(filename),
+    extension = reactive('png'),
     content = function(file) {
       plot_function()
       ggsave(file, width = 3840, height = 2160, dpi = 300, units = 'px')
@@ -16,8 +16,8 @@ downloadPlot <- function(id, filename, data, plot_function, label = 'Download Pl
 downloadExcel <- function(id, filename, data, excel_write_function, label = 'Download Data') {
   downloadButtonServer(
     id = id,
-    filename = filename,
-    extension = 'xlsx',
+    filename = reactive(filename),
+    extension = reactive('xlsx'),
     content = function(file) {
       wb <- createWorkbook()
 

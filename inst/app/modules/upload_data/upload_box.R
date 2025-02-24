@@ -89,8 +89,8 @@ uploadBoxServer <- function(id) {
 
       downloadButtonServer(
         id = 'download_data',
-        filename = 'master_dataset',
-        extension = 'dta',
+        filename = reactive('master_dataset'),
+        extension = reactive('dta'),
         content = function(file) {
           haven::write_dta(cache()$countdown_data, file)
         },

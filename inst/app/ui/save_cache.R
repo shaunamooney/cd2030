@@ -44,6 +44,7 @@ saveCacheServe <- function(id, cache) {
         req(cache())
 
         path <- selected_dir()
+        print(path)
         if (is.null(path) || length(path) == 0 || nchar(path) == 0) {
           showNotification("Invalid directory selected. Try again.", type = "error")
           return()
@@ -51,6 +52,7 @@ saveCacheServe <- function(id, cache) {
 
         # Set the cache path
         cache()$set_cache_path(file.path(path, paste0(cache()$country, '_', format(Sys.time(), '%Y%m%d%H%M'), ".rds")))
+        print(cache()$cache_path)
         showNotification("Directory set successfully!", type = "message")
       })
 

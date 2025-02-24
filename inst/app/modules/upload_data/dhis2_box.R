@@ -157,8 +157,8 @@ dhis2BoxServer <- function(id) {
 
       downloadButtonServer(
         id = 'master_file',
-        filename = 'master_dataset',
-        extension = 'dta',
+        filename = reactive('master_dataset'),
+        extension = reactive('dta'),
         content = function(file) {
           save_data(cache()$countdown_data, file)
         },
@@ -168,8 +168,8 @@ dhis2BoxServer <- function(id) {
 
       downloadButtonServer(
         id = 'excel_file',
-        filename = 'master_dataset',
-        extension = 'xlsx',
+        filename = reactive('master_dataset'),
+        extension = reactive('xlsx'),
         content = function(file) {
           save_dhis2_excel(dhis2_data(), file)
         },

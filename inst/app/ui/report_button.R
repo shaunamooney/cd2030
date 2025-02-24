@@ -22,6 +22,11 @@ reportButtonServer <- function(id, cache, report_name) {
         cache()$country
       })
 
+      report_file_name <- reactive({
+        req(country(), report_name)
+        paste0(country(), '_', report_name, '_countdown_report')
+      })
+
       extension <- reactive({
         req(input$format)
 
@@ -131,8 +136,8 @@ reportButtonServer <- function(id, cache, report_name) {
 
       downloadButtonServer(
         id = 'download_data',
-        filename = paste0(country(), '_', report_name, '_countdown_report'),
-        extension = extension(),
+        filename = report_file_name,
+        extension = extension,
         content = function(file) {
           req(rv$file_path)
           file.copy(rv$file_path, file)

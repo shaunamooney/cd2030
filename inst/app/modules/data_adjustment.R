@@ -140,8 +140,8 @@ dataAdjustmentServer <- function(id, cache) {
 
       downloadButtonServer(
         id = 'download_data',
-        filename = 'master_adj_dataset',
-        extension = 'dta',
+        filename = reactive('master_adj_dataset'),
+        extension = reactive('dta'),
         content = function(file) {
           haven::write_dta(modified_data(), file)
         },
