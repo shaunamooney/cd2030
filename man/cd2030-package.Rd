@@ -12,6 +12,8 @@ cd2030 is an R package for managing and validating data formatted according to C
 Useful links:
 \itemize{
   \item \url{https://damurka.github.io/cd2030/}
+  \item \url{https://github.com/damurka/cd2030}
+  \item Report bugs at \url{https://github.com/damurka/cd2030/issues}
 }
 
 }

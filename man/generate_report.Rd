@@ -19,7 +19,7 @@ generate_report(
 \item{report_name}{The name of report to generate}
 
 \item{output_format}{A character vector specifying the output format, either
-\code{'html_document'} or \code{'word_document'}.}
+\code{'html_document'} or \code{'officedown::rdocx_document'}.}
 }
 \value{
 The function renders the report to the specified file in the chosen format.

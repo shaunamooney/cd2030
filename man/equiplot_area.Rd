@@ -10,7 +10,8 @@ equiplot_area(
     "penta1", "penta3", "measles1", "rota1", "rota2", "instdeliveries", "measles2",
     "ipv1", "ipv2", "undervax", "dropout_penta13", "zerodose", "dropout_measles12",
     "dropout_penta3mcv1"),
-  x_title = NULL
+  x_title = NULL,
+  dot_size = NULL
 )
 }
 \arguments{

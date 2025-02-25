@@ -28,6 +28,7 @@ output:
     includes:
       in_header: |
         \usepackage[a4paper, margin=0.2in, bottom=0.1in, top=0in, right=0.2in, left=0.2in, includehead, includefoot]
+        
 params:
   cache: NULL
   country: NULL

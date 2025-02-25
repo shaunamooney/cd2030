@@ -252,7 +252,8 @@ read_and_clean_sheet <- function(path, sheet_name, sheet_ids, start_year, call =
   check_required(start_year, call = call)
 
   # Columns that are required to have data
-  required_columns <- c('district', 'year', 'month', 'first_admin_level', 'total_number_health_facilities')
+  # required_columns <- c('district', 'year', 'month', 'first_admin_level', 'total_number_health_facilities')
+  required_columns <- c('district', 'year', 'month', 'first_admin_level')
 
   data <- tryCatch(
     read_excel(path, sheet = sheet_name, .name_repair = 'unique') %>%  # Read sheet
@@ -568,7 +569,7 @@ match_country <- function(country_name, call = caller_call()) {
   check_required(country_name)
   if (!is_scalar_character(country_name)) {
     cd_abort(
-      c('x' = 'Country should be a single string')
+      c('x' = 'Country contains multiple names. Please clean the data')
     )
   }
 
