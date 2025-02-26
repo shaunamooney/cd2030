@@ -93,6 +93,7 @@ plot.cd_mapping <- function(x,
   x %>%
     filter(if(is.null(plot_year)) TRUE else year %in% plot_year) %>%
     st_as_sf() %>%
+    st_set_crs(4326) %>%
     st_transform(crs = 4326) %>%
     ggplot() +
       geom_sf(aes(fill = !!sym(column))) +
