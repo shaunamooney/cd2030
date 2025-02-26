@@ -20,12 +20,22 @@ directly.
 
 ## Installation
 
-You can install the development version of cd2030 from
+You can install a stable version of cd2030 from
 [GitHub](https://github.com/) with:
 
 ``` r
-if (!require('pak')) install.packages("pak")
-pak::pak("damurka/cd2030")
+install.packages("devtools")
+devtools::install_github("aphrcwaro/cd2030@1.0.0")
+```
+
+## Development version
+
+To get a bug fix or to use a feature from the development version, you
+can install the development version of cd2030.
+
+``` r
+install.packages("devtools")
+devtools::install_github("aphrcwaro/cd2030")
 ```
 
 ## Running the App
@@ -55,6 +65,12 @@ Here is a preview of the dashboard:
 <img src="man/figures/dashboard.jpeg" alt="Dashboard Screenshot" />
 <figcaption aria-hidden="true">Dashboard Screenshot</figcaption>
 </figure>
+
+## Getting help
+
+If you encounter a clear bug, please file an issue with a minimal
+reproducible example on
+![Github](https://github.com/aphrcwaro/cd2030/issues).
 
 ## Contributing
 
