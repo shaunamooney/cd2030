@@ -49,6 +49,7 @@
 #' @importFrom rmarkdown render
 #' @importFrom sf st_as_sf
 #' @importFrom sf st_read
+#' @importFrom sf st_set_crs
 #' @importFrom sf st_transform
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_ends
