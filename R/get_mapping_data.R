@@ -68,8 +68,6 @@ get_mapping_data <- function(.data, un_estimates, rates, subnational_map = NULL,
                                    preg_loss = rates$preg_loss)
   }
 
-  print(glimpse(shapefile))
-
   merged_data <- merged_data %>%
     left_join(shapefile, by = 'adminlevel_1')
 

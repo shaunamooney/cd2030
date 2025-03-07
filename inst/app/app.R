@@ -22,6 +22,7 @@ pacman::p_load(
   plotly,
   purrr,
   promises,
+  flextable,
   # forcats,
   lubridate,
   RColorBrewer,
