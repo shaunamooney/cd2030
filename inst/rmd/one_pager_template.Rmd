@@ -156,7 +156,9 @@ data %>%
 #### Wealth Status
 
 ```{r, fig.width=3.5, fig.height=1.5}
-equiplot_wealth(wiq, 'penta3', dot_size = 1.5) +
+wiq %>% 
+  filter(if (is.null(survey_start_year)) TRUE else year >= survey_start_year) %>% 
+  equiplot_wealth('penta3', dot_size = 1.5) +
   cd_report_theme(base_size = 7) +
   theme(
     legend.position = 'top',
@@ -172,7 +174,9 @@ equiplot_wealth(wiq, 'penta3', dot_size = 1.5) +
 #### Residence
 
 ```{r, fig.width=3.5, fig.height=1.5}
-equiplot_area(area, 'penta3', dot_size = 1.5) +
+area %>% 
+  filter(if (is.null(survey_start_year)) TRUE else year >= survey_start_year) %>%
+  equiplot_area('penta3', dot_size = 1.5) +
   cd_report_theme(base_size = 7) +
   theme(
     legend.position = 'top',
