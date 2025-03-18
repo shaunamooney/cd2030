@@ -2,7 +2,7 @@ lowReportingUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('low_reporting'), 'Low Reporting'),
+    contentHeader(ns('low_reporting'), 'Global Vaccination Coverage Targets'),
     contentBody(
       box(
         title = 'Analysis Options',

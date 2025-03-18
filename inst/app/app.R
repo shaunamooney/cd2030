@@ -133,7 +133,7 @@ ui <- dashboardPage(
                menuSubItem('Sub-National Inequality',
                            tabName = 'subnational_inequality',
                            icon = icon('balance-scale-right')),
-               menuSubItem('Low Reportin Rate',
+               menuSubItem('Global Vaccination Coverage',
                            tabName = 'low_reporting',
                            icon = icon('user-slash')),
                menuSubItem('Sub-National Mapping',
