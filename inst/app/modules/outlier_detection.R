@@ -192,7 +192,7 @@ outlierDetectionServer <- function(id, cache) {
             ggplot(dt, aes(x = !!sym(input$admin_level), y = indicator, fill = value)) +
               geom_tile(color = 'white') +
               scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
-              labs(title = NULL, x = 'Indicator', y = 'District', fill = 'Value') +
+              labs(title = NULL, y = 'Indicator', x = input$admin_level, fill = 'Value') +
               theme_minimal() +
               theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
           )
@@ -209,7 +209,7 @@ outlierDetectionServer <- function(id, cache) {
             ggplot(dt, aes(x = !!sym(input$admin_level), y = year, fill = value)) +
               geom_tile(color = 'white') +
               scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
-              labs(title = NULL, x = 'Indicator', y = 'District', fill = 'Value') +
+              labs(title = NULL, x = input$admin_level, y = 'Year', fill = 'Value') +
               theme_minimal() +
               theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
           )

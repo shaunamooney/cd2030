@@ -148,11 +148,14 @@ plot.cd_threshold <- function(x,
     'Districts with dropout rate of < 10%'
   }
 
+  intercept <- if (indicator == 'coverage') 90 else 10
+
   x %>%
     filter(denominator == denom) %>%
     ggplot(aes(indicator, value, fill = factor(year))) +
     scale_y_continuous(breaks = scales::pretty_breaks(6), expand = c(0, 0)) +
     geom_col(position = 'dodge') +
+    geom_hline(yintercept = intercept, colour = 'red', size = 1.5) +
     labs(title = title,
         x = '',
          y = '') +
