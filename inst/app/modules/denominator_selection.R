@@ -70,8 +70,7 @@ denominatorSelectionServer <- function(id, cache) {
       observe({
         req(data())
 
-        indicator_groups <- attr(data(), 'indicator_groups')
-        inds <- indicator_groups$vacc
+        inds <- get_indicator_groups(data())$vacc
 
         updateSelectizeInput(session, 'indicator', choices = inds)
       })

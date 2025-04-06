@@ -42,10 +42,9 @@ calculate_outliers_summary <- function(.data) {
 
   check_cd_data(.data)
 
-  indicator_groups <- attr(.data, 'indicator_groups')
-  vaccine_only <- indicator_groups[['vacc']]
-  tracers <- attr(.data, 'tracers')
-  allindicators <- list_c(indicator_groups)
+  vaccine_only <- get_indicator_groups(.data)$vacc
+  tracers <- get_vaccine_tracers(.data)
+  allindicators <- get_all_indicators(.data)
 
   data <- .data %>%
     add_outlier5std_column(allindicators) %>%
@@ -108,10 +107,9 @@ calculate_district_outlier_summary <- function(.data) {
 
   check_cd_data(.data)
 
-  indicator_groups <- attr(.data, 'indicator_groups')
-  vaccine_only <- indicator_groups[['vacc']]
-  tracers <- attr(.data, 'tracers')
-  allindicators <- list_c(indicator_groups)
+  vaccine_only <- get_indicator_groups(.data)$vacc
+  tracers <- get_vaccine_tracers(.data)
+  allindicators <- get_all_indicators(.data)
 
   data <- .data %>%
     add_outlier5std_column(allindicators) %>%
@@ -140,8 +138,7 @@ outliers_summary <- function(.data, admin_level = c('adminlevel_1', 'district'))
   check_cd_data(.data)
   admin_level <- arg_match(admin_level)
 
-  indicator_groups <- attr(.data, 'indicator_groups')
-  allindicators <- list_c(indicator_groups)
+  allindicators <- get_all_indicators(.data)
 
   outlier_data <- .data %>%
     add_outlier5std_column(allindicators)

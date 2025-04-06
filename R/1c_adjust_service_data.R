@@ -87,8 +87,8 @@ adjust_service_data <- function(.data,
     k_defaults[common_names] <- k_factors[common_names]
   }
 
-  indicator_groups = attr(.data, 'indicator_groups')
-  all_indicators <- list_c(indicator_groups)
+  indicator_groups = get_indicator_groups(.data)
+  all_indicators <- get_all_indicators(.data)
   last_year <- robust_max(.data$year)
 
   merged_data <- .data %>%

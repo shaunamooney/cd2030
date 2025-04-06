@@ -26,11 +26,11 @@ tryCatch({
   stop("Something went wrong.")
 }, error = function(e) {
   cleaned <- clean_error_message(e)
-  print(cleaned)
+  cleaned
 })
 
 # Handling Non-Error Input
 cleaned <- clean_error_message("This is not an error object")
-print(cleaned)
+cleaned
 
 }

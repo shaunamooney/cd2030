@@ -122,7 +122,7 @@ add_mad_med_columns <- function(.data, indicators, group_by = 'district') {
   if (!group_by %in% colnames(.data) ||
       !'year' %in% colnames(.data) ||
       !all(indicators %in% colnames(.data))) {
-    cd_abort(c('x' = '{.arg {.data} must contain the columns specified by {.arg group_by} and {.field indicators}'))
+    cd_abort(c('x' = '{.arg .data} must contain the columns specified by {.arg group_by} and {.field indicators}'))
   }
 
   # Determine the last year in the data

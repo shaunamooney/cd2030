@@ -40,7 +40,7 @@ calculate_overall_score <- function(.data,
 
   check_cd_data(.data)
 
-  avg_reporting_rate <- calculate_average_reporting_rate(.data) %>%
+  avg_reporting_rate <- calculate_reporting_rate(.data) %>%
     select(year, mean_rr) %>%
     pivot_wider(names_from = year, values_from = mean_rr) %>%
     mutate(

@@ -29,7 +29,6 @@ renderCustomPlot <- function(expr) {
         (is.vector(check_data) && length(check_data) == 0) ||
         (is.matrix(check_data) && nrow(check_data) == 0)) { #Added matrix check
 
-      print(check_data)
       message <- clean_error_message(check_data)
 
       if (length(message) == 0 || message == '') {

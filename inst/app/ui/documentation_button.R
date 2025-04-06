@@ -38,6 +38,13 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
                 uiOutput(ns('checkbox_container'))
               )
             ),
+            ,
+            tags$div(
+              id = ns('question'),
+              class = 'parameters-section',
+              tags$h5('Associated Parameters:'),
+              uiOutput(ns('parameters_text'))
+            ),
             textAreaInput(
               inputId = ns('documentation_text'),
               label = 'Enter your notes or observations:',

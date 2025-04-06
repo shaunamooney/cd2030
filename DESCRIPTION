@@ -44,7 +44,8 @@ Imports:
     withr
 Suggests:
     knitr,
-    spelling
+    spelling,
+    testthat (>= 3.0.0)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
@@ -52,3 +53,4 @@ Depends:
     R (>= 3.5)
 LazyData: true
 BugReports: https://github.com/damurka/cd2030/issues
+Config/testthat/edition: 3

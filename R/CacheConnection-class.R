@@ -175,7 +175,14 @@ CacheConnection <- R6::R6Class(
       })
     },
 
-    set_cache_path = function(value) private$setter('rds_path', value, ~ !is.null(.x) && length(.x) > 0),
+    set_cache_path = function(value) {
+      path_set <- private$setter('rds_path', value, ~ !is.null(.x) && length(.x) > 0)
+      if (path_set) {
+        private$.has_changed <- TRUE
+        self$save_to_disk()
+      }
+    },
+
     set_countdown_data = function(value) private$setter('countdown_data', value, check_cd_data),
 
     set_adjusted_data = function(value) {

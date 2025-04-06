@@ -193,7 +193,7 @@ new_countdown <- function(.data, class = NULL, call = caller_env()) {
     indicator_groups = indicator_groups,
     tracers = tracers,
     country = country$alternate,
-    iso3 = country$iso3,
+    iso3 = as.character(country$iso3),
     class = c(class, 'cd_data')
   )
 }
@@ -253,7 +253,7 @@ read_and_clean_sheet <- function(path, sheet_name, sheet_ids, start_year, call =
 
   # Columns that are required to have data
   # required_columns <- c('district', 'year', 'month', 'first_admin_level', 'total_number_health_facilities')
-  required_columns <- c('district', 'year', 'month', 'first_admin_level')
+  required_columns <- c('country', 'first_admin_level', 'district', 'year', 'month')
 
   data <- tryCatch(
     read_excel(path, sheet = sheet_name, .name_repair = 'unique') %>%  # Read sheet
@@ -262,9 +262,13 @@ read_and_clean_sheet <- function(path, sheet_name, sheet_ids, start_year, call =
       select(-starts_with('..')) %>%                  # Remove columns with names starting with ".." (usually blank or junk columns)
       rename_with(~ gsub('\\.\\.\\.\\d+$', '', .)) %>%
       rename(district = any_of('district_name')) %>%  # Rename 'district_name' to 'district' if exists
-      mutate(across(-any_of(c('country', 'first_admin_level', 'district', 'month')), ~ suppressWarnings(as.numeric(.)))) %>% # Convert other columns to numeric
-      filter(!if_any(any_of(required_columns), is.na)) %>% # Remove rows with key columns missing
-      filter(if_any(matches('year'), ~ year >= start_year)),
+      drop_na(any_of(required_columns)) %>% # Remove rows with key columns missing
+      mutate(
+        across(any_of('year'), ~ as.integer(.)), # Convert year column to integer
+        across(-any_of(required_columns), ~ suppressWarnings(as.numeric(.))) # Convert other columns to numeric
+      ) %>%
+      filter(if_any(matches('year'), ~ year >= start_year)), # %>%
+      # tidyr::complete(district, year, month),
     error = function(e) {
       clean_message <- clean_error_message(e)
       cd_abort(c('x' = paste0(clean_message), ' in ', sheet_name), call = call)
@@ -437,7 +441,7 @@ standardize_data <- function(.data, call = caller_env()) {
 
       # Round selected columns and all columns ending with "_rate" to one decimal place
       across(
-        any_of(c(ends_with('_rate'), 'year', 'total_population', 'population_under_5years',
+        any_of(c(ends_with('_rate'), 'total_population', 'population_under_5years',
           'population_under_1year', 'live_births', 'total_births')),
         round, 0
       )
@@ -567,6 +571,7 @@ match_country <- function(country_name, call = caller_call()) {
     iso3 = iso2 = NULL
 
   check_required(country_name)
+
   if (!is_scalar_character(country_name)) {
     cd_abort(
       c('x' = 'Country contains multiple names. Please clean the data')
@@ -594,20 +599,14 @@ match_country <- function(country_name, call = caller_call()) {
         }
       )
     )
-    # mutate(
-    #   country_dist = stringdist::stringdist(tolower(country_name), tolower(country), method = "jw"),
-    #   alternate_dist = stringdist::stringdist(tolower(country_name), tolower(alternate), method = "jw")
-    # )
 
   # Select the single closest match based on combined distance
   closest_match <- distances %>%
-    # mutate(total_dist = country_dist + alternate_dist) %>%
     arrange(country_dist) %>%
     slice(1) # Always take the first row after sorting by total distance
 
   # Get the minimum distance values for 'country' and 'alternate' columns
   min_country_dist <- min(closest_match$country_dist, na.rm = TRUE)
-  # min_alternate_dist <- min(closest_match$alternate_dist, na.rm = TRUE)
 
   # Check if the closest match is within acceptable thresholds
   if (min_country_dist < 0.25) {
