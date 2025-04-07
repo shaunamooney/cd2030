@@ -1,5 +1,3 @@
-library(plotly)
-
 reportingRateUI <- function(id) {
   ns <- NS(id)
 
@@ -36,7 +34,7 @@ reportingRateUI <- function(id) {
         ))
       ),
       box(
-        title = 'Average Reporting Rate',
+        title = 'National Reporting Rate',
         status = 'success',
         collapsible = TRUE,
         width = 6,
@@ -81,11 +79,19 @@ reportingRateServer <- function(id, cache) {
         cache()$performance_threshold
       })
 
-      reporting_rate <- reactive({
+      national_rr <- reactive({
+        req(data())
+
+        data() %>%
+          calculate_reporting_rate()
+      })
+
+      subnational_rr <- reactive({
         req(data(), input$indicator, input$admin_level, threshold())
 
         data() %>%
-          calculate_reporting_rate(input$indicator, input$admin_level, threshold())
+          calculate_reporting_rate(input$admin_level) %>%
+          select(any_of(c('adminlevel_1', 'district', 'year', input$indicator)))
       })
 
       district_rr <- reactive({
@@ -95,17 +101,11 @@ reportingRateServer <- function(id, cache) {
           calculate_district_reporting_rate(threshold())
       })
 
-      average_rr <- reactive({
-        req(data())
-
-        data() %>%
-          calculate_average_reporting_rate()
-      })
-
       district_low_rr <- reactive({
-        req(reporting_rate(), input$year)
-        reporting_rate() %>%
-          subnational_low_reporting(as.integer(input$year))
+        req(subnational_rr(), input$year, input$indicator)
+
+        subnational_rr() %>%
+          filter(year == as.integer(input$year), !!sym(input$indicator) < threshold())
       })
 
       observeEvent(data(), {
@@ -136,13 +136,19 @@ reportingRateServer <- function(id, cache) {
       })
 
       output$district_missing_heatmap <- renderPlotly({
-        req(reporting_rate())
-        ggplotly(plot(reporting_rate()))
+        req(subnational_rr(), input$indicator, threshold())
+        ggplotly(plot(subnational_rr(),
+                      plot_type = 'heat_map',
+                      indicator = input$indicator,
+                      threshold = threshold()))
       })
 
       output$district_missing_bar <- renderCustomPlot({
-        req(reporting_rate())
-        plot(reporting_rate(), plot_type = 'bar')
+        req(subnational_rr(), input$indicator, threshold())
+        plot(subnational_rr(),
+             plot_type = 'bar',
+             indicator = input$indicator,
+             threshold = threshold())
       })
 
       output$district_report_plot <- renderCustomPlot({
@@ -153,15 +159,10 @@ reportingRateServer <- function(id, cache) {
       output$low_reporting <- renderReactable({
         req(district_low_rr())
 
-        dt <- district_low_rr()
-
-        cols <- grep('_rr', colnames(dt))
-
         district_low_rr() %>%
           reactable(
             filterable = FALSE,
             minRows = 10,
-            # groupBy = input$admin_level,
             columns = list(
               year = colDef(
                 aggregate = 'unique'
@@ -190,9 +191,9 @@ reportingRateServer <- function(id, cache) {
       downloadExcel(
         id = 'download_data',
         filename = 'checks_reporting_rate',
-        data = average_rr,
+        data = national_rr,
         excel_write_function = function(wb) {
-          low_rr_national <- average_rr()
+          low_rr_national <- national_rr()
           district_rr_national <- district_rr()
 
           sheet_name_1 <- "Average RR by year"

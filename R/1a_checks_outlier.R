@@ -10,6 +10,8 @@
 #'   for calculating outliers. Outlier flags should be computed prior and named
 #'   with the suffix `_outlier5std` (e.g., `anc1_outlier5std` where 1 indicates an
 #'   outlier and 0 indicates non-outliers).
+#' @param admin_level Character. The administrative level at which to calculate
+#'   reporting rates. Must be one of `"national"`, `"adminlevel_1"` or `"district"`.
 #'
 #' @details
 #' - **Outlier Detection**: Outliers are calculated based on Hampel’s robust X84
@@ -23,7 +25,8 @@
 #' - **Rounding**: Percentages of non-outliers are rounded to two decimal places for
 #'   accuracy and presentation clarity.
 #'
-#' @return A `cd_outliers_summary` object (tibble) with:
+#' @return
+#' A `cd_outliers_summary` object (tibble) with:
 #'   - Each indicator's non-outlier percentage (`_outlier5std` columns).
 #'   - Overall non-outlier summaries across all indicators, vaccination indicators, and tracers.
 #'
@@ -36,23 +39,29 @@
 #' # Output: Percentage of monthly values that are not extreme outliers, by year
 #'
 #' @export
-calculate_outliers_summary <- function(.data) {
+calculate_outliers_summary <- function(.data,
+                                       admin_level = c('national', 'adminlevel_1', 'district')) {
 
   year = . = NULL
 
   check_cd_data(.data)
+  admin_level <- arg_match(admin_level)
 
-  indicator_groups <- attr(.data, 'indicator_groups')
-  vaccine_only <- indicator_groups[['vacc']]
-  tracers <- attr(.data, 'tracers')
-  allindicators <- list_c(indicator_groups)
+  admin_level_cols <- switch(
+    admin_level,
+    national = 'year',
+    adminlevel_1 = c('adminlevel_1', 'year'),
+    district = c('adminlevel_1', 'district', 'year')
+  )
+
+  vaccine_only <- get_indicator_groups(.data)$vacc
+  tracers <- get_vaccine_tracers(.data)
+  allindicators <- get_all_indicators(.data)
 
   data <- .data %>%
     add_outlier5std_column(allindicators) %>%
     summarise(
-      across(
-        ends_with('_outlier5std'), mean, na.rm = TRUE),
-      .by = year
+      across(ends_with('_outlier5std'), mean, na.rm = TRUE), .by = admin_level_cols
     ) %>%
     mutate(
       mean_out_all = rowMeans(select(., ends_with('_outlier5std')), na.rm = TRUE),
@@ -64,7 +73,8 @@ calculate_outliers_summary <- function(.data) {
 
   new_tibble(
     data,
-    class = 'cd_outliers_summary'
+    class = 'cd_outlier',
+    admin_level = admin_level
   )
 }
 
@@ -108,10 +118,9 @@ calculate_district_outlier_summary <- function(.data) {
 
   check_cd_data(.data)
 
-  indicator_groups <- attr(.data, 'indicator_groups')
-  vaccine_only <- indicator_groups[['vacc']]
-  tracers <- attr(.data, 'tracers')
-  allindicators <- list_c(indicator_groups)
+  vaccine_only <- get_indicator_groups(.data)$vacc
+  tracers <- get_vaccine_tracers(.data)
+  allindicators <- get_all_indicators(.data)
 
   data <- .data %>%
     add_outlier5std_column(allindicators) %>%
@@ -135,35 +144,15 @@ calculate_district_outlier_summary <- function(.data) {
 }
 
 #' @export
-outliers_summary <- function(.data, admin_level = c('adminlevel_1', 'district')) {
-
+list_outlier_units <- function(.data,
+                               indicator = c(
+                                 'opv1', 'opv2', 'opv3', 'penta1', 'penta2', 'penta3', 'measles1',
+                                 'measles2', 'pcv1', 'pcv2', 'pcv3', 'bcg', 'rota1', 'rota2', 'ipv1', 'ipv2'
+                               ),
+                               admin_level = c('adminlevel_1', 'district')) {
   check_cd_data(.data)
+  indicator <- arg_match(indicator)
   admin_level <- arg_match(admin_level)
-
-  indicator_groups <- attr(.data, 'indicator_groups')
-  allindicators <- list_c(indicator_groups)
-
-  outlier_data <- .data %>%
-    add_outlier5std_column(allindicators)
-
-  new_tibble(
-    outlier_data,
-    class = 'cd_outlier',
-    admin_level = admin_level
-  )
-}
-
-#' @export
-plot.cd_outlier <- function(x,
-                            selection_type = c('region', 'vaccine'),
-                            indicator = c('anc1', 'bcg', 'dropout_measles12', 'dropout_penta13',
-                                          'dropout_penta3mcv1', 'instdeliveries', 'ipv1', 'ipv2',
-                                          'measles1', 'measles2', 'opv1', 'opv2', 'opv3', 'pcv1',
-                                          'pcv2', 'pcv3', 'penta1', 'penta2', 'penta3', 'rota1',
-                                          'rota2', 'undervax', 'zerodose'),
-                            ...) {
-
-  admin_level <- attr(x, 'admin_level')
 
   admin_level_cols <- switch(
     admin_level,
@@ -171,59 +160,63 @@ plot.cd_outlier <- function(x,
     district = c('adminlevel_1', 'district')
   )
 
-  indicator <- arg_match(indicator)
-  selection_type <- arg_match(selection_type)
+  admin_level_cols <- c(admin_level_cols, 'year', 'month')
 
-  data_prepared <- x %>%
+  x <- .data %>%
     summarise(
-      across(ends_with('_outlier5std'), ~ (1 - mean(., na.rm = TRUE)) * 100),
-      .by = c(admin_level_cols, year)
-    )
+      across(all_of(indicator), mean, na.rm  = TRUE),
+      .by = admin_level_cols
+    ) %>%
+    add_outlier5std_column(indicators = indicator, group_by = admin_level) %>%
+    select(any_of(c(admin_level_cols, indicator, paste0(indicator, c('_med', '_mad', '_outlier5std')))))
 
-  data_prepared <- if (selection_type == 'region') {
-    data_prepared %>%
-      mutate(
-        category = !!sym(admin_level),
-        value = !!sym(paste0(indicator, '_outlier5std'))
-      )
-  } else {
-    data_prepared %>%
-      pivot_longer(cols = ends_with('_outlier5std'),
-                   names_to = 'category',
-                   names_pattern = '^(.*)_outlier5std') %>%
-        summarise(
-          value = mean(value, na.rm = TRUE),
-          .by = c(year, category)
-        )
+  new_tibble(
+    x,
+    class = 'cd_outlier_list',
+    indicator = indicator,
+    admin_level = admin_level
+  )
+}
+
+#' @export
+plot.cd_outlier_list <- function(x, region = NULL) {
+
+  indicator <- attr(x, 'indicator')
+  admin_level <- attr(x, 'admin_level')
+  if (is.null(region) || !is_scalar_character(region)) {
+    abort('region must be a string')
   }
 
-  min_rr <- min(data_prepared$value, na.rm = TRUE)
-  low_threshold <- ifelse(min_rr < 80, min_rr, 70)
+  med <- paste0(indicator, '_med')
+  mad <- paste0(indicator, '_mad')
 
-  # breaks_vals <- if (selection_type == 'region') {
-  #   c(low_threshold, 95, 97, 99, 100)
-  # } else {
-  #   c(low_threshold, 70, 80, 90, 100)
-  # }
-
-  breaks_vals <- c(low_threshold, 70, 80, 90, 100)
-
-  ggplot(data_prepared, aes(year, value, fill = value)) +
-    geom_col() +
-    facet_wrap(~category) +
-    labs(title = paste0('Percent non-outliers by year and by ', selection_type), x = 'Year', y = '% Non Outliers', fill = '% Non Outliers') +
-    scale_fill_gradientn(
-      colors = c('red', "red", "orange", "yellowgreen", "forestgreen"),
-      values = scales::rescale(breaks_vals, to = c(0, 1)),
-      breaks = scales::pretty_breaks(5)(c(low_threshold, 100)),
-      labels = scales::pretty_breaks(5)(c(low_threshold, 100)),
-      limits = c(low_threshold, 100)
+  x %>%
+    mutate(
+      date = ym(paste0(year, month, sep = '-')),
+      upper_bound = !!sym(med) + !!sym(mad) * 5,
+      lower_bound = !!sym(med) - !!sym(mad) *5,
+      outlier_flag = !!sym(indicator) > upper_bound | !!sym(indicator) < lower_bound
+    ) %>%
+    filter(!!sym(admin_level) == region) %>%
+    ggplot(aes(date)) +
+    geom_line(aes(y = !!sym(indicator)), colour = 'forestgreen') +
+    geom_point(aes(y = !!sym(indicator)), colour = 'forestgreen') +
+    geom_line(aes(y = !!sym(med)), colour = 'cyan', linetype = 'dashed') +
+    geom_ribbon(aes(ymin = lower_bound, ymax = upper_bound), fill = "gray80", alpha = 0.5) +
+    geom_point(data = function(df) filter(df, outlier_flag),
+               aes(y = !!sym(indicator)), color = 'red', size = 2) +
+    labs(
+      title = NULL,
+      y = paste0(indicator, ' doses given'),
+      x = 'Month'
     ) +
+    scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+    scale_x_date(date_breaks = "3 months", date_labels = "%Y %b") +
+    cd_plot_theme() +
+    # theme_minimal() +
     theme(
-      panel.background = element_blank(),
-      strip.background = element_blank(),
-      # strip.text = element_text(size = 12)
-      panel.grid.major = element_line(colour = 'gray95'),
-      axis.ticks = element_blank()
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      plot.title = element_text(hjust = 0.5, size = 16)
     )
+
 }

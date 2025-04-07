@@ -57,9 +57,7 @@ consistencyCheckServer <- function(id, cache) {
       observe({
         req(cache())
 
-        indicator_groups <-cache()$indicator_groups
-        all_indicators <- purrr::list_c(indicator_groups)
-        names(all_indicators) <- all_indicators
+        all_indicators <- get_named_indicators(data())
         all_indicators <- c('Select' = '', all_indicators)
 
         updateSelectizeInput(session, 'x_axis', choices = all_indicators)

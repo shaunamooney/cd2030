@@ -1,0 +1,82 @@
+#' @export
+plot.cd_outlier <- function(x,
+                            selection_type = c('region', 'vaccine', 'heat_map'),
+                            indicator = NULL,
+                            ...) {
+
+  admin_level <- attr(x, 'admin_level')
+
+  print
+
+  indicator <- if (is.null(indicator) || indicator == '') {
+    NULL
+  } else {
+    arg_match(indicator, c(
+      'opv1', 'opv2', 'opv3', 'penta1', 'penta2', 'penta3', 'measles1',
+      'measles2', 'pcv1', 'pcv2', 'pcv3', 'bcg', 'rota1', 'rota2', 'ipv1', 'ipv2'
+    ))
+  }
+
+  selection_type <- arg_match(selection_type)
+
+  if (selection_type %in% c('region', 'vaccine')) {
+    data_prepared <- if (selection_type == 'region') {
+      x %>%
+        mutate(
+          category = !!sym(admin_level),
+          value = !!sym(paste0(indicator, '_outlier5std'))
+        )
+    } else {
+      x %>%
+        pivot_longer(cols = ends_with('_outlier5std'),
+                     names_to = 'category',
+                     names_pattern = '^(.*)_outlier5std') %>%
+        summarise(value = mean(value, na.rm = TRUE), .by = c(year, category))
+    }
+
+    min_rr <- min(data_prepared$value, na.rm = TRUE)
+    low_threshold <- ifelse(min_rr < 80, min_rr, 70)
+    breaks_vals <- c(low_threshold, 70, 80, 90, 100)
+
+    ggplot(data_prepared, aes(x = factor(year), y = value, fill = value)) +
+      geom_col() +
+      facet_wrap(~category) +
+      labs(
+        title = paste('Percent Non-Outliers by Year and', selection_type),
+        x = 'Year', y = '% Non-Outliers', fill = '% Non-Outliers'
+      ) +
+      scale_fill_gradientn(
+        colors = c('red', 'red', 'orange', 'yellowgreen', 'forestgreen'),
+        values = scales::rescale(breaks_vals),
+        limits = c(low_threshold, 100)
+      ) +
+      theme_minimal() +
+      theme(
+        panel.grid.major = element_line(color = 'gray95'),
+        axis.ticks = element_blank(),
+        strip.background = element_blank()
+      )
+
+  } else if (selection_type == 'heat_map') {
+    p <- if (is.null(indicator)) {
+      x %>%
+        pivot_longer(cols = ends_with('_outlier5std'), names_to = 'indicator') %>%
+        mutate(indicator = str_remove(indicator, '_outlier5std')) %>%
+        ggplot(aes(x = !!sym(admin_level), y = indicator, fill = value)) +
+          labs(x = admin_level, y = 'Indicator', fill = 'Value')
+    } else {
+      column_name <- paste0(indicator, '_outlier5std')
+      ggplot(x, aes(x = !!sym(admin_level), y = factor(year), fill = !!sym(column_name))) +
+        geom_text(aes(label = !!sym(column_name)), color = 'black', size = 3, vjust = 0.5) +
+          labs(x = admin_level, y = 'Year', fill = paste0(indicator, ' Value'))
+    }
+
+    ggplotly(
+      p +
+        geom_tile(color = 'white') +
+        scale_fill_gradient2(low = 'red3', mid = 'orange', high = 'forestgreen', midpoint = 80) +
+        theme_minimal() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 9))
+    )
+  }
+}
