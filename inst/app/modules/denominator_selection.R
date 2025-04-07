@@ -67,13 +67,13 @@ denominatorSelectionServer <- function(id, cache) {
                                        dpt1survey = rates$penta1)
       })
 
-      observe({
-        req(data())
-
-        inds <- get_indicator_groups(data())$vacc
-
-        updateSelectizeInput(session, 'indicator', choices = inds)
-      })
+      # observe({
+      #   req(data())
+      #
+      #   inds <- get_indicator_groups(data())$vacc
+      #
+      #   updateSelectizeInput(session, 'indicator', choices = inds)
+      # })
 
       output$penta3 <- renderCustomPlot({
         req(indicator_coverage())

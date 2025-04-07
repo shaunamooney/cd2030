@@ -51,7 +51,7 @@ outlierDetectionUI <- function(id) {
         width = 6,
         fluidRow(
           column(6, selectizeInput(ns('district'), label = 'District', choice = NULL)),
-          column(12, withSpinner(plotlyOutput(ns('district_trend'))))
+          column(12, withSpinner(plotCustomOutput(ns('district_trend'))))
         )
       )
     )
@@ -79,7 +79,7 @@ outlierDetectionServer <- function(id, cache) {
         req(data(), input$admin_level)
 
         data() %>%
-          outliers_summary(input$admin_level)
+          calculate_outliers_summary(input$admin_level)
       })
 
       region_cols <- reactive({
@@ -92,25 +92,16 @@ outlierDetectionServer <- function(id, cache) {
         )
       })
 
-      outlier_summary_filtered <- reactive({
-        req(outlier_summary(), region_cols)
-
-        outlier_summary() %>%
-          summarise(
-            across(starts_with(input$indicator), ~ mean(.x, na.rm = TRUE)),
-            .by = c(region_cols(), year, month)
-          )
-      })
-
       outlier_districts <- reactive({
-        req(outlier_summary(), input$indicator, region_cols(), input$year)
+        req(outlier_summary(), input$admin_level, input$indicator, input$year)
 
         outlier_column <- paste0(input$indicator, '_outlier5std')
         selected_year <- as.numeric(input$year)
 
-        outlier_summary_filtered() %>%
+        data() %>%
+          add_outlier5std_column(input$indicator, input$admin_level) %>%
           filter(if (selected_year == 0) TRUE else year == selected_year, !!sym(outlier_column) == 1) %>%
-          select(any_of(region_cols()), year, month, any_of(c(input$indicator, paste0(input$indicator, '_med'), paste0(input$indicator, '_mad'))))
+          select(any_of(c('adminlevel_1', 'district')), year, month, any_of(c(input$indicator, paste0(input$indicator, '_med'), paste0(input$indicator, '_mad'))))
       })
 
       observe({
@@ -177,43 +168,8 @@ outlierDetectionServer <- function(id, cache) {
       })
 
       output$district_outlier_heatmap <- renderPlotly({
-        req(outlier_summary(), region_cols())
-
-        if (input$indicator == '' || is.null(input$indicator) || length(input$indicator) == 0) {
-          selected_year <- as.numeric(input$year)
-
-          dt <- outlier_summary() %>%
-            filter(if (selected_year == 0) TRUE else year == selected_year) %>%
-            summarise(across(ends_with('_outlier5std'), ~ sum(.x, na.rm = TRUE)), .by = region_cols()) %>%
-            pivot_longer(col = ends_with('_outlier5std'), names_to = 'indicator') %>%
-            mutate(indicator = str_remove(indicator, '_outlier5std'))
-
-          ggplotly(
-            ggplot(dt, aes(x = !!sym(input$admin_level), y = indicator, fill = value)) +
-              geom_tile(color = 'white') +
-              scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
-              labs(title = NULL, y = 'Indicator', x = input$admin_level, fill = 'Value') +
-              theme_minimal() +
-              theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
-          )
-        } else {
-          dt <- outlier_summary() %>%
-            select(any_of(region_cols()), year, any_of(paste0(input$indicator, '_outlier5std'))) %>%
-            summarise(
-              value = sum(.data[[paste0(input$indicator, '_outlier5std')]], na.rm = TRUE),
-              .by = c(region_cols(), year)
-            ) %>%
-            arrange(year)
-
-          ggplotly(
-            ggplot(dt, aes(x = !!sym(input$admin_level), y = year, fill = value)) +
-              geom_tile(color = 'white') +
-              scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
-              labs(title = NULL, x = input$admin_level, y = 'Year', fill = 'Value') +
-              theme_minimal() +
-              theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
-          )
-        }
+        req(outlier_summary())
+        plot(outlier_summary(), 'heat_map', input$indicator)
       })
 
       output$region_bar_graph <- renderCustomPlot({
@@ -222,39 +178,15 @@ outlierDetectionServer <- function(id, cache) {
       })
 
       output$vaccine_bar_graph <- renderCustomPlot({
-        req(outlier_summary(), input$indicator)
+        req(outlier_summary())
         plot(outlier_summary(), 'vaccine', input$indicator)
       })
 
-      output$district_trend <- renderPlotly({
-        req(outlier_summary(), input$district, input$indicator)
+      output$district_trend <- renderCustomPlot({
+        req(data(), input$district, input$indicator, input$admin_level)
 
-        indicator <- input$indicator
-        mad <- paste0(indicator, '_mad')
-        med <- paste0(indicator, '_med')
-
-        dt <- outlier_summary() %>%
-          select(district, year, month, any_of(c(indicator, med, mad))) %>%
-          mutate(
-            upper_bound = !!sym(med) + !!sym(mad) * 5,
-            lower_bound = !!sym(med) - !!sym(mad) * 5,
-            date = ym(paste0(year, '-', as.integer(month)))
-          ) %>%
-          filter(district == input$district)
-
-        ggplotly(
-          ggplot(dt, aes(date)) +
-            geom_line(aes(y = !!sym(indicator)), colour = 'forestgreen') +
-            geom_line(aes(y = !!sym(med)), colour = 'cyan', linetype = 'dashed') +
-            geom_ribbon(aes(ymin = lower_bound, ymax = upper_bound), fill = "gray80", alpha = 0.5) +
-            scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-            scale_x_date(date_breaks = "3 months", date_labels = "%Y %b") +
-            theme_minimal() +
-            theme(
-              axis.text.x = element_text(angle = 45, hjust = 1),
-              plot.title = element_text(hjust = 0.5, size = 16)
-            )
-        )
+        outlier_units <- list_outlier_units(data(), input$indicator, input$admin_level)
+        plot(outlier_units, input$district)
       })
 
       downloadExcel(

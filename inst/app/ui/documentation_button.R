@@ -38,12 +38,11 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
                 uiOutput(ns('checkbox_container'))
               )
             ),
-            ,
             tags$div(
-              id = ns('question'),
+              id = ns('pointers_display'),
               class = 'parameters-section',
-              tags$h5('Associated Parameters:'),
-              uiOutput(ns('parameters_text'))
+              tags$h5('Interpretation Pointers:'),
+              uiOutput(ns('pointers_text'))
             ),
             textAreaInput(
               inputId = ns('documentation_text'),
@@ -87,6 +86,21 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
             })
           )
         )
+      })
+
+      output$pointers_text <- renderUI({
+        prompts <- selected_object$prompts
+
+        if (length(prompts) == 0) {
+          tags$em("No interpretation pointers provided for this object.")
+        } else {
+          tags$div(
+            style = "border: 1px solid #ddd; padding: 10px; background: #fefefe; border-radius: 5px;",
+            tags$ul(
+              map(prompts, ~ tags$li(style = "margin-bottom: 6px;", .x))
+            )
+          )
+        }
       })
 
       output$checkbox_container <- renderUI({

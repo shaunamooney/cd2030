@@ -4,7 +4,10 @@
 \alias{calculate_outliers_summary}
 \title{Calculate Outliers Summary by Year}
 \usage{
-calculate_outliers_summary(.data)
+calculate_outliers_summary(
+  .data,
+  admin_level = c("national", "adminlevel_1", "district")
+)
 }
 \arguments{
 \item{.data}{A data frame with district-level health indicators. This data
@@ -12,6 +15,9 @@ frame must include a \code{district} and \code{year} column, along with indicato
 for calculating outliers. Outlier flags should be computed prior and named
 with the suffix \verb{_outlier5std} (e.g., \code{anc1_outlier5std} where 1 indicates an
 outlier and 0 indicates non-outliers).}
+
+\item{admin_level}{Character. The administrative level at which to calculate
+reporting rates. Must be one of \code{"national"}, \code{"adminlevel_1"} or \code{"district"}.}
 }
 \value{
 A \code{cd_outliers_summary} object (tibble) with:

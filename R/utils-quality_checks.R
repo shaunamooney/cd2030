@@ -50,7 +50,8 @@ add_outlier5std_column <- function(.data, indicators, group_by = 'district') {
 
   district = NULL
 
-  check_cd_data(.data)
+  # check_cd_data(.data)
+  check_required(.data)
   check_required(indicators)
   check_required(group_by)
 
@@ -115,7 +116,8 @@ add_outlier5std_column <- function(.data, indicators, group_by = 'district') {
 #' @export
 add_mad_med_columns <- function(.data, indicators, group_by = 'district') {
   # Check that the input data and required columns are valid
-  check_cd_data(.data)
+  # check_cd_data(.data)
+  check_required(.data)
   check_required(indicators)
 
   # Validate group_by, year, and indicators columns
