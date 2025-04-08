@@ -131,6 +131,15 @@ reference:
     - add_outlier5std_column
     - add_mad_med_columns
     - add_missing_column
+    - get_all_indicators
+    - get_country_iso3
+    - get_country_name
+    - get_indicator_groups
+    - get_indicator_group_names
+    - get_named_indicators
+    - list_tracer_vaccines
+    - list_vaccines
+    - list_vaccine_indicators
     - robust_max
     - new_countdown
     - print.cd_data

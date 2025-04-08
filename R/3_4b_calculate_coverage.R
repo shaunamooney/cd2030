@@ -116,11 +116,7 @@ calculate_coverage  <- function(.data,
 #' }
 #' @export
 filter_coverage <- function(.data,
-                            indicator = c('anc1', 'bcg', 'dropout_measles12', 'dropout_penta13',
-                                          'dropout_penta3mcv1', 'instdeliveries', 'ipv1', 'ipv2',
-                                          'measles1', 'measles2', 'opv1', 'opv2', 'opv3', 'pcv1',
-                                          'pcv2', 'pcv3', 'penta1', 'penta2', 'penta3', 'rota1',
-                                          'rota2', 'undervax', 'zerodose'),
+                            indicator,
                             denominator = c('dhis2', 'anc1', 'penta1'),
                             region = NULL) {
 
@@ -129,7 +125,7 @@ filter_coverage <- function(.data,
   admin_level <- attr(.data, 'admin_level')
 
   # check_cd_coverage(,data)
-  indicator <- arg_match(indicator)
+  indicator <- arg_match(indicator, list_vaccine_indicators())
   denominator <- arg_match(denominator)
 
   if (admin_level != 'national' && is.null(region)) {

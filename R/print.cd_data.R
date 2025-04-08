@@ -40,7 +40,7 @@ print.cd_data <- function(x, ...) {
   year = adminlevel_1 = NULL
 
   # Summarize variable groups
-  variable_groups <- get_indicator_groups(x)
+  variable_groups <- get_indicator_groups()
 
   # Display header with styled border
   cli::cli_rule(center = "Countdown Object Summary")

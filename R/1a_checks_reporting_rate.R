@@ -47,7 +47,7 @@ calculate_reporting_rate <- function(.data,
     district = c('adminlevel_1', 'district', 'year')
   )
 
-  indicators <- paste0(get_indicator_group_names(.data), '_rr')
+  indicators <- paste0(get_indicator_group_names(), '_rr')
 
   reporting_rate <- .data %>%
     summarise(across(all_of(indicators), mean, na.rm = TRUE), .by = admin_level_cols) %>%
@@ -96,8 +96,7 @@ calculate_district_reporting_rate <- function(.data, threshold = 90) {
 
   check_cd_data(.data)
 
-  indicator_groups <- get_indicator_group_names(.data)
-  indicators <- paste0(indicator_groups, '_rr')
+  indicators <- paste0(get_indicator_group_names(), '_rr')
 
   reporting_rate <- .data %>%
     summarise(across(all_of(indicators), mean, na.rm = TRUE), .by = c(district, year)) %>%

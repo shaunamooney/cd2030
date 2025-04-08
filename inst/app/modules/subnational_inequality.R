@@ -60,14 +60,7 @@ subnationalInequalityUI <- function(id) {
           'Custom Check',
           fluidRow(
             column(3, selectizeInput(ns('indicator'), label = 'Indicator',
-                                     choices = c(
-                                       'Select' = '', "bcg", "anc1", "opv1", "opv2", "opv3", "pcv1",
-                                       "pcv2", "pcv3", "penta1", "penta2", "rota1", "rota2",
-                                       "instdeliveries", "measles2", "ipv1", "ipv2", "undervax",
-                                       "zerodose", "dropout_measles12"
-                                     )
-            )
-            )
+                                     choices = c('Select' = '', list_vaccine_indicators())))
           ),
           fluidRow(
             column(12, plotCustomOutput(ns('custom_check'))),

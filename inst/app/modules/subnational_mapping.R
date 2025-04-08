@@ -63,9 +63,7 @@ subnationalMappingUI <- function(id) {
           'Custom Check',
           fluidRow(
             column(3, selectizeInput(ns('indicator'), label = 'Indicator',
-                                     choices = c('Select' = '0', "anc1", "bcg", "measles2", "measles3", "opv1", "opv2", "opv3",
-                                                 "pcv1", "pcv2", "pcv3", "penta1", "penta2", "rota1", "rota2", "instdeliveries",
-                                                 "ipv1", "ipv2", "undervax", "zerodose", "dropout_measles12")))
+                                     choices = c('Select' = '0', list_vaccine_indicators())))
           ),
           fluidRow(
             column(12, plotCustomOutput(ns('custom'))),

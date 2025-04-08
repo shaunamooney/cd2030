@@ -33,9 +33,9 @@ calculate_completeness_summary <- function(.data) {
 
   check_cd_data(.data)
 
-  vaccine_only <- get_indicator_groups(.data)$vacc
-  tracers <-get_vaccine_tracers(.data)
-  allindicators <- get_all_indicators(.data)
+  vaccine_only <- list_vaccines ()
+  tracers <-list_tracer_vaccines ()
+  allindicators <- get_all_indicators()
 
   data <- .data %>%
     add_missing_column(allindicators) %>%
@@ -87,9 +87,8 @@ calculate_district_completeness_summary <- function(.data) {
 
   check_cd_data(.data)
 
-  vaccine_only <- get_indicator_groups(.data)$vacc
-  tracers <- get_vaccine_tracers(.data)
-  # allindicators <- get_all_indicators()
+  vaccine_only <- list_vaccines ()
+  tracers <- list_tracer_vaccines ()
 
   data <- .data %>%
     add_missing_column(vaccine_only) %>%

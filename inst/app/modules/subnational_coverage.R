@@ -64,13 +64,7 @@ subnationalCoverageUI <- function(id) {
                   3, selectizeInput(
                     ns('indicator'),
                     label = 'Indicator',
-                    choices = c(
-                      'Select' = '', "bcg", "anc1", "opv1", "opv2", "opv3", "pcv1",
-                      "pcv2", "pcv3", "penta1", "penta2", "rota1", "rota2",
-                      "instdeliveries", "measles2", "ipv1", "ipv2", "undervax",
-                      "dropout_penta13", "zerodose", "dropout_measles12",
-                      "dropout_penta3mcv1"
-                    )
+                    choices = c('Select' = '', list_vaccine_indicators())
                   )
                 )),
                 fluidRow(column(12, plotCustomOutput(

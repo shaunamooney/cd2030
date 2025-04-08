@@ -6,8 +6,7 @@
 \usage{
 list_outlier_units(
   .data,
-  indicator = c("opv1", "opv2", "opv3", "penta1", "penta2", "penta3", "measles1",
-    "measles2", "pcv1", "pcv2", "pcv3", "bcg", "rota1", "rota2", "ipv1", "ipv2"),
+  indicator,
   admin_level = c("adminlevel_1", "district")
 )
 }

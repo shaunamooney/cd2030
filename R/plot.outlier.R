@@ -43,15 +43,10 @@ plot.cd_outlier <- function(x,
 
   admin_level <- attr(x, 'admin_level')
 
-  print
-
   indicator <- if (is.null(indicator) || indicator == '') {
     NULL
   } else {
-    arg_match(indicator, c(
-      'opv1', 'opv2', 'opv3', 'penta1', 'penta2', 'penta3', 'measles1',
-      'measles2', 'pcv1', 'pcv2', 'pcv3', 'bcg', 'rota1', 'rota2', 'ipv1', 'ipv2'
-    ))
+    arg_match(indicator, list_vaccines())
   }
 
   selection_type <- arg_match(selection_type)

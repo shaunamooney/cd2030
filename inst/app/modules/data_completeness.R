@@ -198,7 +198,7 @@ dataCompletenessServer <- function(id, cache) {
 
         req(data())
 
-        vaccine_only <- get_indicator_groups(data())$vacc
+        vaccine_only <- list_vaccines ()
 
         data() %>%
           add_missing_column(vaccine_only) %>%

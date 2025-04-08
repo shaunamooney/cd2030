@@ -14,7 +14,9 @@ outlierDetectionUI <- function(id) {
           column(3, selectizeInput(ns('admin_level'), label = 'Admin Level',
                                    choice = c('Admin Level 1' = 'adminlevel_1',
                                               'District' = 'district'))),
-          column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL))
+          column(3, selectizeInput(ns('indicator'),
+                                   label = 'Indicator',
+                                   choice = c('Select Indicator' = '', list_vaccines())))
         )
       ),
       tabBox(
@@ -107,13 +109,6 @@ outlierDetectionServer <- function(id, cache) {
       observe({
         req(data())
 
-        vaccs <- vaccines_indicator()
-        updateSelectizeInput(session, 'indicator', choices = c('Select Indicator' = '', vaccs))
-      })
-
-      observe({
-        req(data())
-
         years <- data() %>%
           distinct(year) %>%
           arrange(desc(year)) %>%
@@ -131,7 +126,9 @@ outlierDetectionServer <- function(id, cache) {
           arrange(!!sym(input$admin_level)) %>%
           pull(!!sym(input$admin_level))
 
-        updateSelectizeInput(session, 'district', choices = c('Select' = '', region))
+        admin <- if (input$admin_level == 'district') 'District' else 'Admin Level 1'
+
+        updateSelectizeInput(session, 'district', label = admin, choices = c('Select' = '', region))
       })
 
 
@@ -169,7 +166,9 @@ outlierDetectionServer <- function(id, cache) {
 
       output$district_outlier_heatmap <- renderPlotly({
         req(outlier_summary())
-        plot(outlier_summary(), 'heat_map', input$indicator)
+        ggplotly(
+          plot(outlier_summary(), 'heat_map', input$indicator)
+        )
       })
 
       output$region_bar_graph <- renderCustomPlot({

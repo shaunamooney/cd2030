@@ -37,17 +37,15 @@
 #'
 #' @export
 plot.cd_coverage <- function(x,
-                             indicator = c('anc1', 'bcg', 'dropout_measles12', 'dropout_penta13',
-                                           'dropout_penta3mcv1', 'instdeliveries', 'ipv1', 'ipv2',
-                                           'measles1', 'measles2', 'opv1', 'opv2', 'opv3', 'pcv1',
-                                           'pcv2', 'pcv3', 'penta1', 'penta2', 'penta3', 'rota1',
-                                           'rota2', 'undervax', 'zerodose'),
+                             indicator,
                              denominator = c('dhis2', 'anc1', 'penta1'),
                              region = NULL,
                              ...) {
 
   estimates = year = value = `Survey estimates` = `DHIS2 estimate` = `WUENIC estimates` =
     `95% CI LL` = `95% CI UL` = NULL
+
+  indicator <- arg_match(indicator, list_vaccine_indicators())
 
   data_long <- x %>%
     filter_coverage(indicator, denominator, region)

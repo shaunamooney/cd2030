@@ -40,7 +40,9 @@ equityUI <- function(id) {
         tabPanel(
           'Custom Check',
           fluidRow(
-            column(3, selectizeInput(ns('indicator'), label = 'Indicator', choices = NULL))
+            column(3, selectizeInput(ns('indicator'),
+                                     label = 'Indicator',
+                                     choices =  c('Select' = '', list_vaccine_indicators())))
           ),
           fluidRow(
             column(12, plotCustomOutput(ns('custom_check'))),
@@ -81,19 +83,6 @@ equityServer <- function(id, cache) {
         req(cache())
         cache()$area_survey %>%
           filter(if (is.null(start_year())) TRUE else year >= start_year())
-      })
-
-      observe({
-
-        indicators <-  c("bcg", "anc1", "pcv3", "opv1", "opv2", "opv3", "penta2", "pcv1", "pcv2",
-                         "penta1", "penta3", "measles1", "rota1", "rota2", "instdeliveries", "measles2",
-                         "ipv1", "ipv2", "undervax", "dropout_penta13", "zerodose", "dropout_measles12",
-                         "dropout_penta3mcv1")
-
-        names(indicators) <- indicators
-        indicators <- c('Select' = '', indicators)
-
-        updateSelectInput(session, 'indicator', choices = indicators)
       })
 
       penta3_equiplot <- reactive({

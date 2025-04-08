@@ -52,7 +52,7 @@ generate_adjustment_values <- function(.data,
   check_cd_data(.data)
   adjustment <- arg_match(adjustment)
 
-  all_indicators <- get_all_indicators(.data)
+  all_indicators <- get_all_indicators()
 
   unadjusted_data <- .data %>%
     summarise(
