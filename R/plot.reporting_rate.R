@@ -1,3 +1,48 @@
+#' Plot Reporting Rates for Subnational Units
+#'
+#' This S3 method visualizes reporting rates for ANC, delivery, or vaccination indicators
+#' at subnational administrative levels using either heat maps or bar plots.
+#'
+#' @param x A `cd_reporting_rate` object. This should be the output of a reporting rate
+#'   calculation function containing subnational reporting rate data.
+#' @param plot_type A character string specifying the plot type. Options:
+#'   - `"heat_map"`: Creates a tile map of reporting rates across years and units.
+#'   - `"bar"`: Creates bar plots faceted by region/district showing year-wise trends.
+#' @param indicator A character. The indicator to visualize. Must be one of:
+#'   - `"anc_rr"`: Reporting rate for antenatal care visits
+#'   - `"idelv_rr"`: Reporting rate for institutional deliveries
+#'   - `"vacc_rr"`: Reporting rate for vaccination services
+#' @param threshold Numeric. The threshold for categorizing high, medium, and low reporting
+#'   (default = 90). Used in `heat_map` mode only.
+#' @param ... Additional arguments passed to internal methods (currently unused).
+#'
+#' @details
+#' The plot adapts based on:
+#'
+#' - `plot_type = "heat_map"`:
+#'   - Classifies reporting rates into three bands:
+#'     - Red: `< 70`
+#'     - Orange: `>= 70 & < threshold`
+#'     - Green: `>= threshold`
+#'   - Labels are overlaid on each tile.
+#'
+#' - `plot_type = "bar"`:
+#'   - Displays reporting rates as filled bars, faceted by district or adminlevel_1.
+#'   - Colors are scaled using a gradient from red to green.
+#'
+#' This function only supports subnational data. National-level objects will trigger an error.
+#'
+#' @return A `ggplot` object.
+#'
+#' @examples
+#' \dontrun{
+#'   # Example: Plot heat map of vaccination reporting rates
+#'   plot(cd_reporting_rate_obj, plot_type = "heat_map", indicator = "vacc_rr")
+#'
+#'   # Example: Plot bar charts for institutional delivery reporting
+#'   plot(cd_reporting_rate_obj, plot_type = "bar", indicator = "idelv_rr")
+#' }
+#'
 #' @export
 plot.cd_reporting_rate <- function(x,
                                    plot_type = c('heat_map', 'bar'),
