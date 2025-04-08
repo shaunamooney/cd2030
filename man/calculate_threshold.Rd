@@ -34,7 +34,7 @@ If no regions meet the criteria (i.e., all values are below the threshold), a de
 \examples{
 \dontrun{
   # Example usage:
-  result <- calculate_dropout(data, filter_year = 2023, indicator = "zerodose", source = "dhis2")
+  result <- calculate_threshold(data, filter_year = 2023, indicator = "zerodose", source = "dhis2")
   result
 }
 
