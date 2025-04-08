@@ -30,12 +30,13 @@ reference:
 
   - subtitle: "Reporting Rate"
     contents:
-    - calculate_average_reporting_rate
+    - calculate_reporting_rate
     - calculate_district_reporting_rate
-    - district_low_reporting
+    - plot.cd_reporting_rate
     - plot.cd_district_reporting_rate
+    - tbl_sum.cd_reporting_rate
     - tbl_sum.cd_district_reporting_rate
-    - tbl_sum.cd_average_reporting_rate
+
 
   - subtitle: "Date Completeness"
     contents:
@@ -56,6 +57,9 @@ reference:
     contents:
     - calculate_outliers_summary
     - calculate_district_outlier_summary
+    - list_outlier_units
+    - plot.cd_outlier
+    - plot.cd_outlier_list
     - tbl_sum.cd_outliers_summary
     - tbl_sum.cd_district_outliers_summary
 
@@ -89,7 +93,7 @@ reference:
     - prepare_population_metrics
     - calculate_indicator_coverage
     - calculate_indicator_threshold_coverage
-    - calculate_dropout
+    - calculate_threshold
     - plot_line_graph
     - plot_absolute_differences
     - plot.cd_indicator_coverage

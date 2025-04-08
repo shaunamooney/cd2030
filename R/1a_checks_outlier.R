@@ -143,6 +143,42 @@ calculate_district_outlier_summary <- function(.data) {
   )
 }
 
+#' Identify Outlier Units by Month for a Given Indicator
+#'
+#' This function summarizes a single immunization indicator by month and administrative level,
+#' then applies a Hampel filter (5 × MAD) to flag extreme outliers. It returns a tidy object
+#' suitable for plotting or time-series review at subnational levels.
+#'
+#' @param .data A `cd_data` object containing monthly health indicator data.
+#' @param indicator Character. The name of a single indicator to evaluate for outliers.
+#'   Must be one of:
+#'   `"opv1"`, `"opv2"`, `"opv3"`, `"penta1"`, `"penta2"`, `"penta3"`, `"measles1"`,
+#'   `"measles2"`, `"pcv1"`, `"pcv2"`, `"pcv3"`, `"bcg"`, `"rota1"`, `"rota2"`, `"ipv1"`, `"ipv2"`.
+#' @param admin_level Character. The administrative level to summarize by.
+#'   Options are `"adminlevel_1"` or `"district"`.
+#'
+#' @details
+#' - Computes monthly means of the specified indicator by administrative unit and time.
+#' - Calculates median and MAD (Median Absolute Deviation) for outlier detection.
+#' - Flags outliers when values exceed ±5×MAD from the median.
+#'
+#' @return A `cd_outlier_list` object (a tibble) with the following columns:
+#'   - Grouping columns (`adminlevel_1`, `district`, `year`, `month`)
+#'   - The selected indicator
+#'   - Median (`<indicator>_med`)
+#'   - MAD (`<indicator>_mad`)
+#'   - Outlier flag (`<indicator>_outlier5std`)
+#'
+#' This output is compatible with `plot.cd_outlier_list()` for diagnostics.
+#'
+#' @examples
+#' \dontrun{
+#'   # Detect monthly outliers in Penta1 at district level
+#'   outliers <- list_outlier_units(cd_data, indicator = "penta1", admin_level = "district")
+#'
+#'   # Plot flagged points in a specific region
+#'   plot(outliers, region = "Nakuru
+#'
 #' @export
 list_outlier_units <- function(.data,
                                indicator = c(
@@ -176,47 +212,4 @@ list_outlier_units <- function(.data,
     indicator = indicator,
     admin_level = admin_level
   )
-}
-
-#' @export
-plot.cd_outlier_list <- function(x, region = NULL) {
-
-  indicator <- attr(x, 'indicator')
-  admin_level <- attr(x, 'admin_level')
-  if (is.null(region) || !is_scalar_character(region)) {
-    abort('region must be a string')
-  }
-
-  med <- paste0(indicator, '_med')
-  mad <- paste0(indicator, '_mad')
-
-  x %>%
-    mutate(
-      date = ym(paste0(year, month, sep = '-')),
-      upper_bound = !!sym(med) + !!sym(mad) * 5,
-      lower_bound = !!sym(med) - !!sym(mad) *5,
-      outlier_flag = !!sym(indicator) > upper_bound | !!sym(indicator) < lower_bound
-    ) %>%
-    filter(!!sym(admin_level) == region) %>%
-    ggplot(aes(date)) +
-    geom_line(aes(y = !!sym(indicator)), colour = 'forestgreen') +
-    geom_point(aes(y = !!sym(indicator)), colour = 'forestgreen') +
-    geom_line(aes(y = !!sym(med)), colour = 'cyan', linetype = 'dashed') +
-    geom_ribbon(aes(ymin = lower_bound, ymax = upper_bound), fill = "gray80", alpha = 0.5) +
-    geom_point(data = function(df) filter(df, outlier_flag),
-               aes(y = !!sym(indicator)), color = 'red', size = 2) +
-    labs(
-      title = NULL,
-      y = paste0(indicator, ' doses given'),
-      x = 'Month'
-    ) +
-    scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-    scale_x_date(date_breaks = "3 months", date_labels = "%Y %b") +
-    cd_plot_theme() +
-    # theme_minimal() +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      plot.title = element_text(hjust = 0.5, size = 16)
-    )
-
 }
