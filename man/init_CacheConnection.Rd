@@ -2,18 +2,19 @@
 % Please edit documentation in R/CacheConnection-class.R
 \name{init_CacheConnection}
 \alias{init_CacheConnection}
-\title{Create a CacheConnection}
+\title{Create a CacheConnection Object}
 \usage{
 init_CacheConnection(rds_path = NULL, countdown_data = NULL)
 }
 \arguments{
-\item{rds_path}{Path to the RDS file (NULL for in-memory only).}
+\item{rds_path}{Optional character. Path to an RDS file to load the cache from.}
 
-\item{countdown_data}{Countdown data (class \code{cd_data}).}
+\item{countdown_data}{Optional \code{cd_data} object to initialize in-memory cache.}
 }
 \value{
-An object of class \link{CacheConnection}
+An instance of the \code{CacheConnection} class.
 }
 \description{
-Constructor function for objects of class \link{CacheConnection}.
+\code{init_CacheConnection} initializes a \code{CacheConnection} either from a provided \code{.rds} file path
+or directly from a \code{cd_data} object. Only one of the arguments should be non-NULL.
 }

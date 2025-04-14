@@ -18,7 +18,7 @@ pageObjectsConfig <- function(input) {
         single_entry = TRUE,
         prompts = list(
           'Make a statement about the presence of outliers in the immunization data: are there many or few, is the number of outliers increasing or decreasing?',
-          'Interpret the differences between the different regions and years: are there any regions that have more outliers? Are there any years that have more outliers? What are some explanations (e.g. campaigns or catch-up activities with older kids that may have been recorded incorrectly)? ',
+          'Interpret the differences between the different regions and years: are there any regions that have more outliers? Are there any years that have more outliers? What are some explanations (e.g. campaigns or catch-up activities with older kids that may have been recorded incorrectly)?',
           'Interpret the differences between the outliers across different vaccines and regions: are there any vaccines that stand out as having more or less outliers? What are some explanations?',
           'Interpret the example outliers: are they likely to be errors or is there an explanation for why they may be true values?'
         )
@@ -100,8 +100,7 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = TRUE,
         prompts = list(
-          'Consider the effect of the adjustment on the number of Measles doses administered, and mention the difference in the number, as well as the percent increase in 2023; highlight the year with the greatest impact if there is one; interpret if the impact of the adjustment on coverage rates is large or small
-'
+          'Consider the effect of the adjustment on the number of Measles doses administered, and mention the difference in the number, as well as the percent increase in 2023; highlight the year with the greatest impact if there is one; interpret if the impact of the adjustment on coverage rates is large or small'
         )
       ),
       'Custom Check' = list(
@@ -206,7 +205,7 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = FALSE,
         prompts = list(
-          'Are there regions that have especially high or especially low Penta1 coverage?',
+          'Are there regions that have especially high or especially low Measles1 coverage?',
           'Comment on the variation between highest-coverage and lowest-coverage regions and districts.'
         )
       ),
@@ -217,7 +216,7 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = FALSE,
         prompts = list(
-          'Are there regions that have especially high or especially low Penta1 coverage?',
+          'Are there regions that have especially high or especially low Penta3 coverage?',
           'Comment on the variation between highest-coverage and lowest-coverage regions and districts.'
         )
       ),
@@ -239,7 +238,7 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = FALSE,
         prompts = list(
-          'Are there regions that have especially high or especially low Penta dropout rates? How do they compare to regions with high or low Penta coverage?',
+          'Are there regions that have especially high or especially low Penta measles dropout rates? How do they compare to regions with high or low Penta coverage?',
           'Comment on the variation between highest-dropout and lowest-dropout regions and districts.'
         )
       ),
@@ -251,7 +250,7 @@ pageObjectsConfig <- function(input) {
         always_include = FALSE,
         single_entry = FALSE,
         prompts = list(
-          'Are there regions that have especially high or especially low Penta1 coverage?',
+          'Are there regions that have especially high or especially low coverage?',
           'Comment on the variation between highest-coverage and lowest-coverage regions and districts.'
         )
       )
@@ -263,7 +262,10 @@ pageObjectsConfig <- function(input) {
         ),
         always_include = TRUE,
         single_entry = FALSE,
-        prompts = list()
+        prompts = list(
+          'Are there regions that have especially high or especially low Measles1 coverage?',
+          'Comment on the variation between highest-coverage and lowest-coverage regions and districts.'
+        )
       ),
       'Penta 3' = list(
         parameters = list(
@@ -271,7 +273,10 @@ pageObjectsConfig <- function(input) {
         ),
         always_include = TRUE,
         single_entry = FALSE,
-        prompts = list()
+        prompts = list(
+          'Are there regions that have especially high or especially low Penta3 coverage?',
+          'Comment on the variation between highest-coverage and lowest-coverage regions and districts.'
+        )
       ),
       'Penta1 to Penta3 Dropout' = list(
         parameters = list(
@@ -279,7 +284,10 @@ pageObjectsConfig <- function(input) {
         ),
         always_include = TRUE,
         single_entry = FALSE,
-        prompts = list()
+        prompts = list(
+          'Are there regions that have especially high or especially low Penta dropout rates? How do they compare to regions with high or low Penta coverage?',
+          'Comment on the variation between highest-dropout and lowest-dropout regions and districts.'
+        )
       ),
       'Penta3 to Measles 1 Dropout' = list(
         parameters = list(
@@ -287,7 +295,10 @@ pageObjectsConfig <- function(input) {
         ),
         always_include = TRUE,
         single_entry = FALSE,
-        prompts = list()
+        prompts = list(
+          'Are there regions that have especially high or especially low Penta measles dropout rates? How do they compare to regions with high or low Penta coverage?',
+          'Comment on the variation between highest-dropout and lowest-dropout regions and districts.'
+        )
       ),
       'Custom Checks' = list(
         parameters = list(
@@ -296,7 +307,10 @@ pageObjectsConfig <- function(input) {
         ),
         always_include = FALSE,
         single_entry = FALSE,
-        prompts = list()
+        prompts = list(
+          'Are there regions that have especially high or especially low coverage?',
+          'Comment on the variation between highest-coverage and lowest-coverage regions and districts.'
+        )
       )
     ),
     subnational_mapping = list(
@@ -342,6 +356,32 @@ pageObjectsConfig <- function(input) {
         prompts = list()
       )
     ),
+    low_reporting = list(
+      'Coverage' = list(
+        parameters = list(
+          level = reactive({ input$admin_level })
+        ),
+        always_include = TRUE,
+        single_entry = FALSE,
+        prompts = list(
+         'Reflect on the percent of districts that are meeting performance targets for coverage: has it increased or decreased over time? Does it vary between different vaccines? ',
+         'Do these results using the adjusted data and alternative denominator align with performance indicators in the DHIS2 data? If they are different, why?',
+         'Then, make the same reflections for the percent of districts that are meeting performance targets for dropout.'
+        )
+      ),
+      'Dropout' = list(
+        parameters = list(
+          level = reactive({ input$admin_level })
+        ),
+        always_include = TRUE,
+        single_entry = FALSE,
+        prompts = list(
+          'Reflect on the percent of districts that are meeting performance targets for coverage: has it increased or decreased over time? Does it vary between different vaccines? ',
+          'Do these results using the adjusted data and alternative denominator align with performance indicators in the DHIS2 data? If they are different, why?',
+          'Then, make the same reflections for the percent of districts that are meeting performance targets for dropout.'
+        )
+      )
+    ),
     equity_assessment = list(
       'Measles 1' = list(
         parameters = list(
@@ -349,7 +389,13 @@ pageObjectsConfig <- function(input) {
         ),
         always_include = TRUE,
         single_entry = FALSE,
-        prompts = list()
+        prompts = list(
+          'Residence: are the gaps between the urban and rural areas large, have they changed over time? What pattern of inequality (bottom, linear, top)?',
+          'Region:  Are the gaps between regions large? Have they changed over time?',
+          'Wealth: are the gaps between the rich and poor large, have they changed over time? What pattern of inequality (bottom, linear, top)?',
+          'Education: are the gaps in coverage by mother’s education large, have they changed over time?',
+          'How do these results link to immunization strategies like fixed post, mobile and outreach?'
+        )
       ),
       'Penta 3' = list(
         parameters = list(
@@ -357,7 +403,13 @@ pageObjectsConfig <- function(input) {
         ),
         always_include = TRUE,
         single_entry = FALSE,
-        prompts = list()
+        prompts = list(
+          'Residence: are the gaps between the urban and rural areas large, have they changed over time? What pattern of inequality (bottom, linear, top)?',
+          'Region:  Are the gaps between regions large? Have they changed over time?',
+          'Wealth: are the gaps between the rich and poor large, have they changed over time? What pattern of inequality (bottom, linear, top)?',
+          'Education: are the gaps in coverage by mother’s education large, have they changed over time?',
+          'How do these results link to immunization strategies like fixed post, mobile and outreach?'
+        )
       ),
       'Custom Checks' = list(
         parameters = list(
@@ -366,7 +418,13 @@ pageObjectsConfig <- function(input) {
         ),
         always_include = FALSE,
         single_entry = FALSE,
-        prompts = list()
+        prompts = list(
+          'Residence: are the gaps between the urban and rural areas large, have they changed over time? What pattern of inequality (bottom, linear, top)?',
+          'Region:  Are the gaps between regions large? Have they changed over time?',
+          'Wealth: are the gaps between the rich and poor large, have they changed over time? What pattern of inequality (bottom, linear, top)?',
+          'Education: are the gaps in coverage by mother’s education large, have they changed over time?',
+          'How do these results link to immunization strategies like fixed post, mobile and outreach?'
+        )
       )
     )
   )

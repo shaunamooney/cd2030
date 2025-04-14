@@ -7,13 +7,13 @@
 #' @param start_year An integer. The minimum year to filter the data (default is
 #'   2019).
 #' @param admin_sheet_name A string. The name of the sheet containing administrative
-#'   data. Default is "Admin_data".
+#'   data. Default is `"Admin_data"`.
 #' @param population_sheet_name A string. The name of the sheet containing population
-#'   data. Default is "Population_data".
+#'   data. Default is `"Population_data"`.
 #' @param reporting_sheet_name A string. The name of the sheet containing reporting
-#'   completeness data. Default is "Reporting_completeness".
+#'   completeness data. Default is `"Reporting_completeness"`.
 #' @param service_sheet_names A vector of strings. The names of the sheets containing
-#'   service data. Default is `c("Service_data_1", "Service_data_2", "Service_data_3", "Vaccine_stock_data")`.
+#'   service data. Default is `c("Service_data_1", "Service_data_2", "Service_data_3")`.
 #'
 #' @return A tibble of class `cd_data`, containing cleaned and processed data.
 #' @details

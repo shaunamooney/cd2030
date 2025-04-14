@@ -103,13 +103,11 @@ plot.cd_outlier <- function(x,
           labs(x = admin_level, y = 'Year', fill = paste0(indicator, ' Value'))
     }
 
-    ggplotly(
-      p +
-        geom_tile(color = 'white') +
-        scale_fill_gradient2(low = 'red3', mid = 'orange', high = 'forestgreen', midpoint = 80) +
-        theme_minimal() +
-        theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 9))
-    )
+    p +
+      geom_tile(color = 'white') +
+      scale_fill_gradient2(low = 'red3', mid = 'orange', high = 'forestgreen', midpoint = 80) +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 9))
   }
 }
 

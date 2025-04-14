@@ -1,24 +1,24 @@
 source('modules/upload_data/upload_box.R')
 source('modules/upload_data/dhis2_box.R')
 
-uploadDataUI <- function(id) {
+uploadDataUI <- function(id, i18n) {
   ns <- NS(id)
 
   fluidRow(
-    uploadBoxUI(ns('upload_box')),
-    dhis2BoxUI(ns('dhis2_box'))
+    uploadBoxUI(ns('upload_box'), i18n),
+    dhis2BoxUI(ns('dhis2_box'), i18n)
   )
 }
 
-uploadDataServer <- function(id) {
+uploadDataServer <- function(id, i18n) {
   moduleServer(
     id = id,
     module = function(input, output, session) {
 
       cache <- reactiveVal()
 
-      dhis2_dt <- dhis2BoxServer('dhis2_box')
-      upload_dt <- uploadBoxServer('upload_box')
+      dhis2_dt <- dhis2BoxServer('dhis2_box', i18n)
+      upload_dt <- uploadBoxServer('upload_box', i18n)
 
       observeEvent(dhis2_dt(), {
         req(dhis2_dt())

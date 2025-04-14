@@ -22,8 +22,6 @@
 #'   percentage of non-outliers. Additionally, the function aggregates the non-outlier
 #'   rates across all indicators, as well as vaccination-only and tracer-only indicators,
 #'   providing an overall data quality summary.
-#' - **Rounding**: Percentages of non-outliers are rounded to two decimal places for
-#'   accuracy and presentation clarity.
 #'
 #' @return
 #' A `cd_outliers_summary` object (tibble) with:
@@ -35,8 +33,6 @@
 #'   # Check for extreme outliers in indicator data
 #'   calculate_outliers_summary(data)
 #' }
-#'
-#' # Output: Percentage of monthly values that are not extreme outliers, by year
 #'
 #' @export
 calculate_outliers_summary <- function(.data,
@@ -169,15 +165,14 @@ calculate_district_outlier_summary <- function(.data) {
 #'   - MAD (`<indicator>_mad`)
 #'   - Outlier flag (`<indicator>_outlier5std`)
 #'
-#' This output is compatible with `plot.cd_outlier_list()` for diagnostics.
-#'
 #' @examples
 #' \dontrun{
 #'   # Detect monthly outliers in Penta1 at district level
 #'   outliers <- list_outlier_units(cd_data, indicator = "penta1", admin_level = "district")
 #'
 #'   # Plot flagged points in a specific region
-#'   plot(outliers, region = "Nakuru
+#'   plot(outliers, region = "Nakuru")
+#' }
 #'
 #' @export
 list_outlier_units <- function(.data,

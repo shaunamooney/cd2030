@@ -1,19 +1,19 @@
-lowReportingUI <- function(id) {
+lowReportingUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('low_reporting'), 'Global Vaccination Coverage Targets'),
+    contentHeader(ns('low_reporting'), i18n$t("title_vaccination_coverage"), i18n = i18n),
     contentBody(
       box(
-        title = 'Analysis Options',
+        title = i18n$t("title_analysis_options"),
         status = 'success',
         width = 12,
         solidHeader = TRUE,
         fluidRow(
-          column(3, selectizeInput(ns('admin_level'), label = 'Subnational Level',
+          column(3, selectizeInput(ns('admin_level'), label = i18n$t("title_admin_level"),
                                    choices = c('Admin Level 1' = 'adminlevel_1',
                                                'District' = 'district'))),
-          column(3, selectizeInput(ns('denominator'), label = 'Denominator',
+          column(3, selectizeInput(ns('denominator'), label = i18n$t("title_denominator"),
                                    choices = c('DHIS2' = 'dhis2',
                                                'ANC 1' = 'anc1',
                                                'Penta 1' = 'penta1')))
@@ -21,11 +21,11 @@ lowReportingUI <- function(id) {
       ),
 
       tabBox(
-        title = 'Subnational Inequality',
+        title = i18n$t("title_vaccination_coverage"),
         width = 12,
 
         tabPanel(
-          title = 'Coverage',
+          title = i18n$t("title_coverage"),
           fluidRow(
             column(12, plotCustomOutput(ns('coverage'))),
             downloadCoverageUI(ns('coverage_download'))
@@ -33,7 +33,7 @@ lowReportingUI <- function(id) {
         ),
 
         tabPanel(
-          title = 'Dropout',
+          title = i18n$t("dropout"),
           fluidRow(
             column(12, plotCustomOutput(ns('dropout'))),
             downloadCoverageUI(ns('dropout_download'))
@@ -44,7 +44,7 @@ lowReportingUI <- function(id) {
   )
 }
 
-lowReportingServer <- function(id, cache) {
+lowReportingServer <- function(id, cache, i18n) {
 
   stopifnot(is.reactive(cache))
 
@@ -96,8 +96,9 @@ lowReportingServer <- function(id, cache) {
         'low_reporting',
         cache = cache,
         objects = pageObjectsConfig(input),
-        md_title = 'Regions with vaccination coverage of >= 90%',
-        md_file = '2_calculate_ratios.md'
+        md_title = i18n$t("title_vaccination_coverage"),
+        md_file = '2_calculate_ratios.md',
+        i18n = i18n
       )
 
     }

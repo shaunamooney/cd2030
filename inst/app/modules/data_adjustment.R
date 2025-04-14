@@ -1,28 +1,28 @@
-dataAjustmentUI <- function(id) {
+dataAjustmentUI <- function(id, i18n) {
   ns <- NS(id)
 
   k_factor_options <- c(0, 0.25, 0.5, 0.75)
   tagList(
-    contentHeader(ns('data_adjustment'), 'Data Adjustments', include_buttons = FALSE),
+    contentHeader(ns('data_adjustment'), i18n$t("title_adjustment"), include_buttons = FALSE, i18n = i18n),
     contentBody(
       fluidRow(
         column(
           8,
           offset = 2,
           box(
-            title = 'K-Factors',
+            title = i18n$t("title_factors"),
             status = 'success',
             solidHeader = TRUE,
             width = 12,
             fluidRow(
               column(4, selectizeInput(ns('k_anc'),
-                                       label = 'ANC K-Factor',
+                                       label = i18n$t("title_anc_factor"),
                                        choices = k_factor_options)),
               column(4, selectizeInput(ns('k_delivery'),
-                                       label = 'Delivery K-Factor',
+                                       label = i18n$t("title_delivery_factor"),
                                        choices = k_factor_options)),
               column(4, selectizeInput(ns('k_vaccines'),
-                                       label = 'Vaccines K-Factor',
+                                       label = i18n$t("title_vaccines_factor"),
                                        choices = k_factor_options))
             )
           )
@@ -38,16 +38,14 @@ dataAjustmentUI <- function(id) {
 
             fluidRow(
               column(12, tags$p(
-                "Adjusting the data applies custom corrections, such as removing specific
-            years and scaling selected indicators. This process modifies the current
-            dataset to align with predefined criteria for completeness and consistency.",
-                style = "color: red; font-weight: bold; margin-bottom: 15px;"
+                i18n$t("msg_adjustment_info"),
+                style = 'color: red; font-weight: bold; margin-bottom: 15px;'
               ))
             ),
 
             fluidRow(
               column(8, offset = 2, actionButton(ns('adjust_data'),
-                                                 label = 'Adjust Data',
+                                                 label = i18n$t("btn_adjust_data"),
                                                  icon = icon('wrench'),
                                                  style = 'background-color: #FFEB3B;font-weight: 500;width:100%; margin-top: 15px;')),
               column(8, offset = 2, messageBoxUI(ns('feedback'))),
@@ -60,7 +58,7 @@ dataAjustmentUI <- function(id) {
   )
 }
 
-dataAdjustmentServer <- function(id, cache) {
+dataAdjustmentServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
@@ -68,7 +66,7 @@ dataAdjustmentServer <- function(id, cache) {
     module = function(input, output, session) {
 
       state <- reactiveValues(loaded = FALSE)
-      messageBox <- messageBoxServer('feedback', default_message = 'Dataset not adjusted')
+      messageBox <- messageBoxServer('feedback', i18n = i18n, default_message = 'Dataset not adjusted')
 
       data <- reactive({
         req(cache())
@@ -119,7 +117,7 @@ dataAdjustmentServer <- function(id, cache) {
 
       observeEvent(input$adjust_data, {
         req(cache())
-        messageBox$update_message('Adjusting ...', 'info')
+        messageBox$update_message(i18n$t('msg_adjusting'), 'info')
         cache()$set_adjusted_flag(FALSE)
         cache()$set_adjusted_flag(TRUE)
       })
@@ -132,9 +130,9 @@ dataAdjustmentServer <- function(id, cache) {
 
           cache()$set_adjusted_data(dt)
 
-          messageBox$update_message('Data Adjusted', 'success')
+          messageBox$update_message(i18n$t('msg_data_adjusted'), 'success')
         } else {
-          messageBox$update_message('Dataset not adjusted', 'info')
+          messageBox$update_message(i18n$t('msg_dataset_not_adjusted'), 'info')
         }
       })
 
@@ -142,18 +140,20 @@ dataAdjustmentServer <- function(id, cache) {
         id = 'download_data',
         filename = reactive('master_adj_dataset'),
         extension = reactive('dta'),
+        i18n = i18n,
         content = function(file) {
           haven::write_dta(modified_data(), file)
         },
         data = adjusted_flag,
-        label = "Download Adjusted Dataset"
+        label = "btn_download_adjusted_dataset"
       )
 
       contentHeaderServer(
         'data_adjustment',
         cache = cache,
-        md_title = 'Data Adjustments',
-        md_file = '2_reporting_rate.md'
+        md_title = i18n$t("title_data_adjustment"),
+        md_file = '2_reporting_rate.md',
+        i18n = i18n
       )
     }
   )

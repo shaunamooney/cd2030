@@ -3,7 +3,7 @@ mappingModalUI <- function(id, name) {
   actionButton(ns('map'), name)
 }
 
-mappingModalServer <- function(id, cache, survey_data, survey_map, title, show_col, type) {
+mappingModalServer <- function(id, cache, survey_data, survey_map, title, show_col, type, i18n) {
   stopifnot(is.reactive(cache))
   stopifnot(is.reactive(survey_data))
   stopifnot(is.reactive(survey_map))
@@ -40,7 +40,8 @@ mappingModalServer <- function(id, cache, survey_data, survey_map, title, show_c
           choices = dt,
           survey_map = survey_map(),
           show_col = show_col,
-          type = type
+          type = type,
+          i18n = i18n
         )
       })
 
@@ -62,7 +63,7 @@ mappingModalServer <- function(id, cache, survey_data, survey_map, title, show_c
   )
 }
 
-createMappingModal <- function(ns, title, gregion, choices, survey_map, show_col, type) {
+createMappingModal <- function(ns, title, gregion, choices, survey_map, show_col, type, i18n) {
   # Helper to get selected choice
   get_selected_choice <- function(region, survey_map, show_col) {
     if (!is.null(survey_map)) {
@@ -95,12 +96,12 @@ createMappingModal <- function(ns, title, gregion, choices, survey_map, show_col
   # Show the modal dialog
   showModal(
     modalDialog(
-      title = title,
+      title = i18n$t(title),
       size = 'l',
       fluidPage(do.call(tagList, modal_content)),
       footer = tagList(
-        actionButton(ns('save_map'), 'Save Mapping'),
-        modalButton('Cancel')
+        actionButton(ns('save_map'), i18n$t("btn_save_mapping")),
+        modalButton(i18n$t("btn_cancel"))
       )
     )
   )

@@ -1,25 +1,25 @@
-subnationalCoverageUI <- function(id) {
+subnationalCoverageUI <- function(id, i18n) {
   ns <- NS(id)
 
-  tagList(contentHeader(ns('subnational_coverage'), 'Subnational Coverage'),
+  tagList(contentHeader(ns('subnational_coverage'), i18n$t("title_subnational_coverage"), i18n = i18n),
           contentBody(
             box(
-              title = 'Analysis Options',
+              title = i18n$t("title_analysis_options"),
               status = 'success',
               width = 12,
               solidHeader = TRUE,
               fluidRow(
                 column(3, selectizeInput(
                   ns('admin_level'),
-                  label = 'Admin Level',
+                  label = i18n$t("title_admin_level"),
                   choices = c('Admin Level 1' = 'adminlevel_1', 'District' = 'district')
                 )),
                 column(3, selectizeInput(
-                  ns('region'), label = 'Admin Level 1', choices = NULL
+                  ns('region'), label = i18n$t("opt_admin_level_1"), choices = NULL
                 )),
                 column(3, selectizeInput(
                   ns('denominator'),
-                  label = 'Denominator',
+                  label = i18n$t("title_denominator"),
                   choices = c(
                     'DHIS2' = 'dhis2',
                     'ANC 1' = 'anc1',
@@ -28,42 +28,42 @@ subnationalCoverageUI <- function(id) {
                 )),
                 column(
                   3,
-                  selectizeInput(ns('year'), label = 'Survey Start Year', choices = NULL)
+                  selectizeInput(ns('year'), label = i18n$t("title_survey_year"), choices = NULL)
                 )
               )
             ),
 
             tabBox(
-              title = 'Subnational Coverage Trend',
+              title = i18n$t("title_subnational_coverage_trend"),
               id = 'national_trend',
               width = 12,
 
-              tabPanel(title = 'Measles 1', fluidRow(
+              tabPanel(title = i18n$t("opt_mcv1"), fluidRow(
                 column(12, plotCustomOutput(ns('measles1'))), downloadCoverageUI(ns('measles1_download'))
               )),
 
-              tabPanel(title = 'Penta 3', fluidRow(
+              tabPanel(title = i18n$t("opt_penta3"), fluidRow(
                 column(12, plotCustomOutput(ns('penta3'))), downloadCoverageUI(ns('penta3_download'))
               )),
 
-              tabPanel(title = 'Penta 3 to Measles 1 Dropout', fluidRow(
+              tabPanel(title = i18n$t("title_penta3_mcv1_dropout"), fluidRow(
                 column(12, plotCustomOutput(ns(
                   'dropout_penta3mcv1'
                 ))), downloadCoverageUI(ns('dropout_penta3mcv1_download'))
               )),
 
-              tabPanel(title = 'Penta 1 to Penta 3 Droput', fluidRow(
+              tabPanel(title = i18n$t("title_penta13_dropout"), fluidRow(
                 column(12, plotCustomOutput(ns(
                   'dropout_penta13'
                 ))), downloadCoverageUI(ns('dropout_penta13_download'))
               )),
 
               tabPanel(
-                'Custom Check',
+                i18n$t("opt_custom_check"),
                 fluidRow(column(
                   3, selectizeInput(
                     ns('indicator'),
-                    label = 'Indicator',
+                    label = i18n$t("title_indicator"),
                     choices = c('Select' = '', list_vaccine_indicators())
                   )
                 )),
@@ -77,7 +77,7 @@ subnationalCoverageUI <- function(id) {
           ))
 }
 
-subnationalCoverageServer <- function(id, cache) {
+subnationalCoverageServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(id = id, module = function(input, output, session) {
@@ -149,7 +149,7 @@ subnationalCoverageServer <- function(id, cache) {
           'region',
           choices = admin_level,
           selected = selected_region,
-          label = if (input$admin_level == 'adminlevel_1') 'Admin Level 1' else 'District'
+          label = if (input$admin_level == 'adminlevel_1') i18n$t("opt_admin_level_1") else i18n$t("opt_district")
         )
       })
 
@@ -222,7 +222,8 @@ subnationalCoverageServer <- function(id, cache) {
         denominator = denominator,
         data_fn = filter_coverage,
         region = input$region,
-        sheet_name = 'Measles 1 Coverage'
+        sheet_name = i18n$t("title_mcv1_coverage"),
+        i18n = i18n
       )
 
       downloadCoverageServer(
@@ -233,7 +234,8 @@ subnationalCoverageServer <- function(id, cache) {
         denominator = denominator,
         data_fn = filter_coverage,
         region = input$region,
-        sheet_name = 'Penta 3 Coverage'
+        i18n = i18n,
+        sheet_name = i18n$t("title_penta3_coverage")
       )
 
       downloadCoverageServer(
@@ -244,7 +246,8 @@ subnationalCoverageServer <- function(id, cache) {
         denominator = denominator,
         data_fn = filter_coverage,
         region = input$region,
-        sheet_name = 'Penta 1 to Penta 3 Dropout'
+        i18n = i18n,
+        sheet_name = i18n$t("title_penta13_dropout")
       )
 
       downloadCoverageServer(
@@ -255,7 +258,8 @@ subnationalCoverageServer <- function(id, cache) {
         denominator = denominator,
         data_fn = filter_coverage,
         region = input$region,
-        sheet_name = 'Penta 3 to Measles 1 Dropout'
+        i18n = i18n,
+        sheet_name = i18n$t("title_penta3_mcv1_dropout")
       )
 
       downloadCoverageServer(
@@ -266,15 +270,17 @@ subnationalCoverageServer <- function(id, cache) {
         denominator = denominator,
         data_fn = filter_coverage,
         region = input$region,
-        sheet_name = paste0(input$indicator, ' Coverage')
+        i18n = i18n,
+        sheet_name = paste(input$indicator, i18n$t("title_coverage"))
       )
 
       contentHeaderServer(
         'subnational_coverage',
         cache = cache,
         objects = pageObjectsConfig(input),
-        md_title = 'Subnational Coverage',
-        md_file = '2_reporting_rate.md'
+        md_title = i18n$t("title_subnational_coverage"),
+        md_file = '2_reporting_rate.md',
+        i18n = i18n
       )
     }
   )

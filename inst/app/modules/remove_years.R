@@ -1,31 +1,28 @@
-removeYearsUI <- function(id) {
+removeYearsUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('remove_years'), 'Remove Years', include_buttons = FALSE),
+    contentHeader(ns('remove_years'), i18n$t("btn_remove_years"), include_buttons = FALSE),
     contentBody(
       fluidRow(
         column(
           8,
           offset = 2,
           box(
-            title = 'Remove Years with Erratic Data',
+            title = i18n$t("title_remove_years"),
             status = 'danger',
             width = 12,
             solidHeader = TRUE,
             fluidRow(
               column(12, tags$p(
-                'This module allows you to remove years with erratic data from the dataset.
-            Erratic data may result from low reporting completeness, extreme outliers, or inconsistent
-            trends, which can compromise analysis integrity. Use this tool to ensure clean and reliable
-            data for meaningful insights and decision-making.',
+                i18n$t("msg_removal_info"),
                 style = "color: red; font-weight: bold; margin-bottom: 15px;"
               ))
             ),
 
             fluidRow(
               column(8, offset = 2, selectizeInput(ns('year_to_remove'),
-                                                   label = 'Select Years to Remove:',
+                                                   label = i18n$t("title_select_removal_years"),
                                                    choices = NULL,
                                                    multiple = TRUE,
                                                    options = list(placeholder = 'Choose years to remove...'))),
@@ -36,7 +33,7 @@ removeYearsUI <- function(id) {
                 8,
                 offset = 2,
                 actionButton(ns('remove_year'),
-                             label = 'Confirm Removal',
+                             label = i18n$t("btn_confirm_removal"),
                              icon = icon('wrench'),
                              style = 'background-color: #FFEB3B;font-weight: 500;width:100%; margin-top: 15px;')
               ),
@@ -50,7 +47,7 @@ removeYearsUI <- function(id) {
   )
 }
 
-removeYearsServer <- function(id, cache) {
+removeYearsServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
@@ -58,6 +55,7 @@ removeYearsServer <- function(id, cache) {
     module = function(input, output, session) {
 
       messageBox <- messageBoxServer('remove_feedback',
+                                     i18n = i18n,
                                      default_message = 'No years have been removed yet.')
 
       data <- reactive({
@@ -85,12 +83,11 @@ removeYearsServer <- function(id, cache) {
 
         if (length(excluded_years()) > 0) {
           updateSelectInput(session, 'year_to_remove', selected = excluded_years())
-          messageBox$update_message(
-            paste0('Data for the following years has been removed: ', paste(excluded_years(), collapse = ', ')),
-            'success'
-          )
+          list_years <- paste(excluded_years(), collapse = ', ')
+          template <- i18n$t("msg_removed_year")
+          messageBox$update_message(str_glue('{template} {list_years}'), 'success')
         } else {
-          messageBox$update_message('No years have been removed yet.', 'info')
+          messageBox$update_message(i18n$t('msg_no_years_removed'), 'info')
         }
       })
 
@@ -102,7 +99,7 @@ removeYearsServer <- function(id, cache) {
       contentHeaderServer(
         'remove_years',
         cache = cache,
-        md_title = 'Remove Years',
+        md_title = i18n$t("btn_remove_years"),
         md_file = '2_reporting_rate.md'
       )
     }

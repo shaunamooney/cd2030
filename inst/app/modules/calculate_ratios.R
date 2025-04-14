@@ -1,27 +1,27 @@
-calculateRatiosUI <- function(id) {
+calculateRatiosUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('ratios'), 'Ratios'),
+    contentHeader(ns('ratios'), i18n$t("title_calculate_ratios"), i18n = i18n),
     contentBody(
       box(
-        title = 'Ratio Options',
+        title = i18n$t("title_ratio_options"),
         status = 'success',
         width = 12,
         fluidRow(
           column(3, offset = 1, numericInput(ns('anc1_coverage'),
-                                            'ANC1 Coverage (%)',
+                                             i18n$t("title_anc1_coverage"),
                                             min = 0, max = 100, value = 98, step = 1)),
           column(3, offset = 0, numericInput(ns('penta1_coverage'),
-                                            'Penta1 Coverage (%)',
+                                             i18n$t("title_penta1_coverage"),
                                             min = 0, max = 100, value = 97, step = 1)),
           column(3, offset = 0, numericInput(ns('penta3_coverage'),
-                                            'Penta3 Coverage (%)',
+                                             i18n$t("title_penta3_coverage_pct"),
                                             min = 0, max = 100, value = 89, step = 1))
         )
       ),
       box(
-        title = 'Ratio Plots',
+        title = i18n$t("title_ratio_plots"),
         status = 'success',
         width = 12,
         fluidRow(
@@ -33,7 +33,7 @@ calculateRatiosUI <- function(id) {
   )
 }
 
-calculateRatiosServer <- function(id, cache) {
+calculateRatiosServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
@@ -84,6 +84,7 @@ calculateRatiosServer <- function(id, cache) {
         id = 'ratio_plot_download',
         filename = 'ratio_plot',
         data = data,
+        i18n = i18n,
         plot_function = function() {
           plot(calculate_ratios_summary(data(), survey_coverage = survey_estimates()))
         }
@@ -93,8 +94,9 @@ calculateRatiosServer <- function(id, cache) {
         'ratios',
         cache = cache,
         objects = pageObjectsConfig(input),
-        md_title = 'Ratios',
-        md_file = '2_calculate_ratios.md'
+        md_title = i18n$t("title_ratios"),
+        md_file = '2_calculate_ratios.md',
+        i18n = i18n
       )
     }
   )

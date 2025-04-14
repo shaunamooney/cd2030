@@ -1,36 +1,36 @@
-documentationButtonUI <- function(id) {
+documentationButtonUI <- function(id, i18n) {
   ns <- NS(id)
   actionButton(
     inputId = ns('document_page'),
-    label = 'Add Notes',
+    label = i18n$t("btn_add_notes"),
     icon = icon('edit'),
     class ='btn bg-purple btn-flat btn-sm',
     style = 'margin-left:4px;'
   )
 }
 
-documentationButtonServer <- function(id, cache, document_objects, page_id, page_name) {
+documentationButtonServer <- function(id, cache, document_objects, page_id, page_name, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     observeEvent(input$document_page, {
-      req(document_objects)
+      req(cache(), document_objects)
 
       objects <- names(document_objects)
 
       showModal(
         modalDialog(
-          title = paste('Document Page:', page_name),
+          title = paste(i18n$t("title_document_page"), page_name),
           fluidPage(
             fluidRow(
               column(
                 6,
                 selectInput(
                   inputId = ns('object_select'),
-                  label = 'Select object to document:',
-                  choices = c('Select Object' = '', objects)
+                  label = i18n$t("opt_document_object_to_document"),
+                  choices = c(set_names('', i18n$t("title_document_select_object")), objects)
                 )
               ),
               column(
@@ -41,26 +41,26 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
             tags$div(
               id = ns('pointers_display'),
               class = 'parameters-section',
-              tags$h5('Interpretation Pointers:'),
+              tags$h5(i18n$t("title_document_interpretation_pointers")),
               uiOutput(ns('pointers_text'))
             ),
             textAreaInput(
               inputId = ns('documentation_text'),
-              label = 'Enter your notes or observations:',
-              placeholder = 'Add documentation for this object...',
+              label = i18n$t("title_document_enter_notes"),
+              placeholder = i18n$t("msg_add_documentation"),
               width = '100%',
               height = '150px'
             ),
             tags$div(
               id = ns('parameters_display'),
               class = 'parameters-section',
-              tags$h5('Associated Parameters:'),
+              tags$h5(i18n$t("title_document_associated_parameters")),
               uiOutput(ns('parameters_text'))
             )
           ),
           footer = tagList(
-            modalButton('Cancel'),
-            actionButton(ns('save_documentation'), 'Save', class = 'btn-primary')
+            modalButton(i18n$t("btn_cancel")),
+            actionButton(ns('save_documentation'), i18n$t("btn_save"), class = 'btn-primary')
           ),
           size = 'l'
         )
@@ -68,7 +68,7 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
     })
 
     observeEvent(input$object_select, {
-      req(input$object_select)
+      req(cache(), input$object_select)
 
       selected_object <- document_objects[[input$object_select]]
 
@@ -77,11 +77,11 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
 
       output$parameters_text <- renderUI({
         tags$div(
-          style = "border: 1px solid #ddd; padding: 10px; background: #f9f9f9; border-radius: 5px;",
+          style = 'border: 1px solid #ddd; padding: 10px; background: #f9f9f9; border-radius: 5px;',
           tags$ul(
             map(names(params), ~ {
               tags$li(
-                tags$b(.x), ": ", tags$span(style = "color: #007bff;", params[[.x]])
+                tags$b(.x), ': ', tags$span(style = 'color: #007bff;', params[[.x]])
               )
             })
           )
@@ -92,12 +92,12 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
         prompts <- selected_object$prompts
 
         if (length(prompts) == 0) {
-          tags$em("No interpretation pointers provided for this object.")
+          tags$em(i18n$t("msg_none"))
         } else {
           tags$div(
-            style = "border: 1px solid #ddd; padding: 10px; background: #fefefe; border-radius: 5px;",
+            style = 'border: 1px solid #ddd; padding: 10px; background: #fefefe; border-radius: 5px;',
             tags$ul(
-              map(prompts, ~ tags$li(style = "margin-bottom: 6px;", .x))
+              map(prompts, ~ tags$li(style = 'margin-bottom: 6px;', i18n$t(.x)))
             )
           )
         }
@@ -107,23 +107,23 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
         if (selected_object$always_include) {
           tags$div(
             tags$input(
-              type = "checkbox",
-              checked = "checked",
-              disabled = "disabled",
-              style = "margin-right: 10px;"
+              type = 'checkbox',
+              checked = 'checked',
+              disabled = 'disabled',
+              style = 'margin-right: 10px;'
             ),
-            tags$label("Include this note in the report (Always included)")
+            tags$label(i18n$t("btn_document_include_in_page_report"))
           )
         } else {
           tagList(
             checkboxInput(
               inputId = ns('include_in_report'),
-              label = 'Include this note in the final report',
+              label = i18n$t("btn_document_include_final"),
               value = TRUE
             ),
             checkboxInput(
               inputId = ns('include_plot_table'),
-              label = 'Include plot/table in the page report',
+              label = i18n$t("btn_include_plot_in_page_report"),
               value = FALSE
             )
           )
@@ -140,7 +140,7 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
           updateCheckboxInput(session, 'include_plot_table', value = existing_notes$include_plot_table[1])
         }
       } else {
-        updateTextAreaInput(session, 'documentation_text', value = "")
+        updateTextAreaInput(session, 'documentation_text', value = '')
         updateCheckboxInput(session, 'include_in_report', value = FALSE)
         if (!selected_object$always_include) {
           updateCheckboxInput(session, 'include_plot_table', value = FALSE)
@@ -150,7 +150,7 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
 
     observeEvent(input$save_documentation, {
       # Validate required inputs
-      req(input$object_select, input$documentation_text)
+      req(cache(), input$object_select, input$documentation_text)
 
       # Retrieve the selected object and its parameters
       selected_object <- document_objects[[input$object_select]]
@@ -159,7 +159,7 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
       params <- tryCatch(
         map(selected_object$parameters, ~ .x()),
         error = function(e) {
-          showNotification("Error evaluating parameters. Please check your input.", type = "error")
+          showNotification(i18n$t("error_evaluating_parameters"), type = 'error')
           return(NULL)
         }
       )
@@ -193,11 +193,11 @@ documentationButtonServer <- function(id, cache, document_objects, page_id, page
 
         # Close modal and show success notification
         removeModal()
-        showNotification("Documentation saved successfully!", type = "message")
+        showNotification(i18n$t("msg_documentation_saved"), type = 'message')
       }, error = function(e) {
         # Handle errors during the save process
-        showNotification("Failed to save documentation. Please try again.", type = "error")
-        message("Error saving documentation: ", clean_error_message(e))  # Log error details
+        showNotification(i18n$t("msg_documentation_save_failed"), type = 'error')
+        message('Error saving documentation: ', clean_error_message(e))  # Log error details
       })
     })
 
