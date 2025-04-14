@@ -1,19 +1,19 @@
-subnationalInequalityUI <- function(id) {
+subnationalInequalityUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('subnational_inequality'), 'Subnational Inequality'),
+    contentHeader(ns('subnational_inequality'), i18n$t("title_subnational_inequality"), i18n = i18n),
     contentBody(
       box(
-        title = 'Analysis Options',
+        title = i18n$t("title_analysis_options"),
         status = 'success',
         width = 12,
         solidHeader = TRUE,
         fluidRow(
-          column(3, selectizeInput(ns('admin_level'), label = 'Subnational Level',
+          column(3, selectizeInput(ns('admin_level'), label = i18n$t("title_admin_level"),
                                    choices = c('Admin Level 1' = 'adminlevel_1',
                                                'District' = 'district'))),
-          column(3, selectizeInput(ns('denominator'), label = 'Denominator',
+          column(3, selectizeInput(ns('denominator'), label = i18n$t("title_denominator"),
                                    choices = c('DHIS2' = 'dhis2',
                                                'ANC 1' = 'anc1',
                                                'Penta 1' = 'penta1')))
@@ -21,11 +21,11 @@ subnationalInequalityUI <- function(id) {
       ),
 
       tabBox(
-        title = 'Subnational Inequality',
+        title = i18n$t("title_subnational_inequality"),
         width = 12,
 
         tabPanel(
-          title = 'Measles 1',
+          title = i18n$t("opt_mcv1"),
           fluidRow(
             column(12, plotCustomOutput(ns('measles1'))),
             downloadCoverageUI(ns('measles1_download'))
@@ -33,7 +33,7 @@ subnationalInequalityUI <- function(id) {
         ),
 
         tabPanel(
-          title = 'Penta 3',
+          title = i18n$t("opt_penta3"),
           fluidRow(
             column(12, plotCustomOutput(ns('penta3'))),
             downloadCoverageUI(ns('penta3_download'))
@@ -41,7 +41,7 @@ subnationalInequalityUI <- function(id) {
         ),
 
         tabPanel(
-          title = 'Penta 1 to Penta 3 Dropout',
+          title = i18n$t("title_penta13_dropout"),
           fluidRow(
             column(12, plotCustomOutput(ns('dropout_penta13'))),
             downloadCoverageUI(ns('dropout_penta13_download'))
@@ -49,7 +49,7 @@ subnationalInequalityUI <- function(id) {
         ),
 
         tabPanel(
-          title = 'Penta 3 to Measles 1 Dropout',
+          title = i18n$t("title_penta3_mcv1_dropout"),
           fluidRow(
             column(12, plotCustomOutput(ns('dropout_penta3mcv1'))),
             downloadCoverageUI(ns('dropout_penta3mcv1_download'))
@@ -57,17 +57,10 @@ subnationalInequalityUI <- function(id) {
         ),
 
         tabPanel(
-          'Custom Check',
+          i18n$t("opt_custom_check"),
           fluidRow(
-            column(3, selectizeInput(ns('indicator'), label = 'Indicator',
-                                     choices = c(
-                                       'Select' = '', "bcg", "anc1", "opv1", "opv2", "opv3", "pcv1",
-                                       "pcv2", "pcv3", "penta1", "penta2", "rota1", "rota2",
-                                       "instdeliveries", "measles2", "ipv1", "ipv2", "undervax",
-                                       "zerodose", "dropout_measles12"
-                                     )
-            )
-            )
+            column(3, selectizeInput(ns('indicator'), label = i18n$t("title_indicator"),
+                                     choices = c('Select' = '', list_vaccine_indicators())))
           ),
           fluidRow(
             column(12, plotCustomOutput(ns('custom_check'))),
@@ -79,7 +72,7 @@ subnationalInequalityUI <- function(id) {
   )
 }
 
-subnationalInequalityServer <- function(id, cache) {
+subnationalInequalityServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
@@ -152,7 +145,8 @@ subnationalInequalityServer <- function(id, cache) {
         indicator = reactive('measles1'),
         denominator = denominator,
         data_fn = filter_inequality,
-        sheet_name = 'Measles 1 Inequality'
+        i18n = i18n,
+        sheet_name = i18n$t("title_mcv1_inequality")
       )
 
       downloadCoverageServer(
@@ -162,7 +156,8 @@ subnationalInequalityServer <- function(id, cache) {
         indicator = reactive('penta3'),
         denominator =denominator,
         data_fn = filter_inequality,
-        sheet_name = 'Penta 3 Inequality'
+        i18n = i18n,
+        sheet_name = i18n$t("title_penta3_inequality")
       )
 
       downloadCoverageServer(
@@ -172,7 +167,8 @@ subnationalInequalityServer <- function(id, cache) {
         indicator = reactive('dropout_penta13'),
         denominator = denominator,
         data_fn = filter_inequality,
-        sheet_name = 'Penta 1 to Penta 3 Dropout Inequality'
+        i18n = i18n,
+        sheet_name = i18n$t("title_penta13_inequality")
       )
 
       downloadCoverageServer(
@@ -182,7 +178,8 @@ subnationalInequalityServer <- function(id, cache) {
         indicator = reactive('dropout_penta3mcv1'),
         denominator = denominator,
         data_fn = filter_inequality,
-        sheet_name = 'Penta 3 to Measles 1 Dropout Inequality'
+        i18n = i18n,
+        sheet_name = i18n$t("title_penta3_mcv1_inequality")
       )
 
       downloadCoverageServer(
@@ -192,6 +189,7 @@ subnationalInequalityServer <- function(id, cache) {
         indicator = reactive(input$indicator),
         denominator = denominator,
         data_fn = filter_inequality,
+        i18n = i18n,
         sheet_name = paste0(input$indicator, ' Inequality')
       )
 
@@ -199,8 +197,9 @@ subnationalInequalityServer <- function(id, cache) {
         'subnational_inequality',
         cache = cache,
         objects = pageObjectsConfig(input),
-        md_title = 'Subnational Inequality',
-        md_file = '2_reporting_rate.md'
+        md_title = i18n$t("title_subnational_inequality"),
+        md_file = '2_reporting_rate.md',
+        i18n = i18n
       )
     }
   )

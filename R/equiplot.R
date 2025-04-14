@@ -129,10 +129,7 @@ equiplot <- function(.data, variables, group_by, x_title = NULL, legend_title = 
 #'
 #' @export
 equiplot_area <- function(.data,
-                          indicator = c('bcg', "anc1", "pcv3", "opv1", "opv2", "opv3",
-                                        "penta2", "pcv1", "pcv2", "penta1", "penta3", "measles1",
-                                        "rota1", "rota2", "instdeliveries", "measles2", "ipv1", "ipv2",
-                                        "undervax", "dropout_penta13", "zerodose", "dropout_measles12", "dropout_penta3mcv1"),
+                          indicator,
                           x_title = NULL,
                           dot_size = NULL) {
 
@@ -140,7 +137,7 @@ equiplot_area <- function(.data,
 
   check_equity_data(.data)
 
-  indicator <- arg_match(indicator)
+  indicator <- arg_match(indicator, list_vaccine_indicators())
 
   if (is.null(x_title)) {
     x_title <- paste0(indicator, ' Coverage (%)')
@@ -177,10 +174,7 @@ equiplot_area <- function(.data,
 #'
 #' @export
 equiplot_education <- function(.data,
-                               indicator = c('bcg', "anc1", "pcv3", "opv1", "opv2", "opv3",
-                                             "penta2", "pcv1", "pcv2", "penta1", "penta3", "measles1",
-                                             "rota1", "rota2", "instdeliveries", "measles2", "ipv1", "ipv2",
-                                             "undervax", "dropout_penta13", "zerodose", "dropout_measles12", "dropout_penta3mcv1"),
+                               indicator,
                                x_title = NULL,
                                dot_size = NULL) {
 
@@ -188,7 +182,7 @@ equiplot_education <- function(.data,
 
   check_equity_data(.data)
 
-  indicator <- arg_match(indicator)
+  indicator <- arg_match(indicator, list_vaccine_indicators())
 
   if (is.null(x_title)) {
     x_title <- paste0(indicator, ' Coverage (%)')
@@ -227,17 +221,14 @@ equiplot_education <- function(.data,
 #'
 #' @export
 equiplot_wealth <- function(.data,
-                            indicator = c('bcg', "anc1", "pcv3", "opv1", "opv2", "opv3",
-                                          "penta2", "pcv1", "pcv2", "penta1", "penta3", "measles1",
-                                          "rota1", "rota2", "instdeliveries", "measles2", "ipv1", "ipv2",
-                                          "undervax", "dropout_penta13", "zerodose", "dropout_measles12", "dropout_penta3mcv1"),
+                            indicator,
                             x_title = NULL,
                             dot_size = NULL) {
   year = NULL
 
   check_equity_data(.data)
 
-  indicator <- arg_match(indicator)
+  indicator <- arg_match(indicator, list_vaccine_indicators())
 
   indicator_name <- paste0('r_', indicator)
 

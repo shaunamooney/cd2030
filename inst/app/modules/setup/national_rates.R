@@ -5,34 +5,34 @@ dedupe <- function(r) {
 }
 
 
-nationalRatesUI <- function(id) {
+nationalRatesUI <- function(id, i18n) {
   ns <- NS(id)
 
   box(
-    title = 'Setup National Rates',
+    title = i18n$t("title_national_rates"),
     status = 'success',
     solidHeader = TRUE,
     width = 12,
     fluidRow(
-      column(3, offset = 1, numericInput(ns('neonatal_mortality_rate'), 'Neonatal Mortality Rate',
+      column(3, offset = 1, numericInput(ns('neonatal_mortality_rate'), i18n$t("title_nmr"),
                                          min = 0, max = 0.05, value = 0.025, step = 0.001)),
-      column(3, offset = 0, numericInput(ns('post_neonatal_mortality_rate'), 'Post Neonatal Mortality Rate',
+      column(3, offset = 0, numericInput(ns('post_neonatal_mortality_rate'), i18n$t("title_pnmr"),
                                          min = 0, max = 0.05, value = 0.024, step = 0.001)),
-      column(3, offset = 0, numericInput(ns('twin_rate'), 'Twin Rate',
+      column(3, offset = 0, numericInput(ns('twin_rate'), i18n$t("title_twin_rate"),
                                          min = 0, max = 0.05, value = 0.015, step = 0.001))
     ),
     fluidRow(
-      column(3, offset = 1, numericInput(ns('pregnancy_loss'), 'Pregnancy Loss',
+      column(3, offset = 1, numericInput(ns('pregnancy_loss'), i18n$t("title_pregnancy_loss"),
                                          min = 0, max = 0.05, value = 0.03, step = 0.001)),
-      column(3, offset = 0, numericInput(ns('stillbirth_rate'), 'Still Birth Rate',
+      column(3, offset = 0, numericInput(ns('stillbirth_rate'), i18n$t("title_still_birth_rate"),
                                          min = 0, max = 0.05, value = 0.02, step = 0.001)),
-      column(3, offset = 0, numericInput(ns('penta1_mortality_rate'), 'ANC1 to Penta1 Mortality Rate',
+      column(3, offset = 0, numericInput(ns('penta1_mortality_rate'), i18n$t("title_anc1_to_penta1_mort_rate"),
                                          min = 0, max = 0.05, value = 0.025, step = 0.001))
     ),
     fluidRow(
-      column(3, offset = 1, numericInput(ns('anc1_prop'), 'ANC1 Survey',
+      column(3, offset = 1, numericInput(ns('anc1_prop'), i18n$t("title_anc1_survey"),
                                          min = 0, max = 100, value = 0, step = 1)),
-      column(3, offset = 0, numericInput(ns('penta1_prop'), 'Penta1 Survey',
+      column(3, offset = 0, numericInput(ns('penta1_prop'), i18n$t("title_penta1_survey"),
                                          min = 0, max = 100, value = 0, step = 1)),
     )
   )

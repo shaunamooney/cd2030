@@ -1,0 +1,1554 @@
+{
+  "languages": [
+    "key",
+    "en",
+    "fr"
+  ],
+  "translation": [
+    {
+      "key": "change_language",
+      "en": "Change Language",
+      "fr": "Changer de langue"
+    },
+    {
+      "key": "title_intro",
+      "en": "Introduction",
+      "fr": "Introduction"
+    },
+    {
+      "key": "title_load_data",
+      "en": "Load Data",
+      "fr": "Charger les données"
+    },
+    {
+      "key": "title_quality",
+      "en": "Quality Checks",
+      "fr": "Contrôles de qualité"
+    },
+    {
+      "key": "title_reporting",
+      "en": "Reporting Rate",
+      "fr": "Taux de notification"
+    },
+    {
+      "key": "title_outlier",
+      "en": "Outlier Detection",
+      "fr": "Détection des valeurs aberrantes"
+    },
+    {
+      "key": "title_consistency",
+      "en": "Internal Consistency",
+      "fr": "Cohérence interne"
+    },
+    {
+      "key": "title_completeness",
+      "en": "Data Completeness",
+      "fr": "Complétude des données"
+    },
+    {
+      "key": "title_calculate_ratios",
+      "en": "Calculate Ratios",
+      "fr": "Calcul des ratios"
+    },
+    {
+      "key": "title_overall",
+      "en": "Overall Score",
+      "fr": "Score global"
+    },
+    {
+      "key": "btn_remove_years",
+      "en": "Remove Years",
+      "fr": "Supprimer les années"
+    },
+    {
+      "key": "title_adjustment",
+      "en": "Data Adjustment",
+      "fr": "Ajustement des données"
+    },
+    {
+      "key": "title_adjustment_changes",
+      "en": "Data Adjustment Changes",
+      "fr": "Changements d'ajustement"
+    },
+    {
+      "key": "title_setup",
+      "en": "Analysis Setup",
+      "fr": "Paramètres d’analyse"
+    },
+    {
+      "key": "title_denominator_selection",
+      "en": "Denominator Selection",
+      "fr": "Sélection du dénominateur"
+    },
+    {
+      "key": "title_denominator_assessment",
+      "en": "Denominator Assessment",
+      "fr": "Évaluation du dénominateur"
+    },
+    {
+      "key": "title_national_analysis",
+      "en": "National Analysis",
+      "fr": "Analyse nationale"
+    },
+    {
+      "key": "title_national_coverage",
+      "en": "National Coverage",
+      "fr": "Couverture nationale"
+    },
+    {
+      "key": "title_subnational_analysis",
+      "en": "Sub-National Analysis",
+      "fr": "Analyse infranationale"
+    },
+    {
+      "key": "title_subnational_coverage",
+      "en": "Sub-National Coverage",
+      "fr": "Couverture infranationale"
+    },
+    {
+      "key": "title_subnational_inequality",
+      "en": "Sub-National Inequality",
+      "fr": "Inégalités infranationales"
+    },
+    {
+      "key": "title_vaccination_coverage",
+      "en": "Global Vaccination Coverage",
+      "fr": "Couverture vaccinale mondiale"
+    },
+    {
+      "key": "title_subnational_mapping",
+      "en": "Sub-National Mapping",
+      "fr": "Cartographie infranationale"
+    },
+    {
+      "key": "title_equity_assessment",
+      "en": "Equity Assessment",
+      "fr": "Évaluation de l'équité"
+    },
+    {
+      "key": "title_countdown",
+      "en": "Countdown Analysis",
+      "fr": "Analyse Countdown"
+    },
+    {
+      "key": "btn_cache_set",
+      "en": "Set Cache Directory",
+      "fr": "Définir le répertoire de cache"
+    },
+    {
+      "key": "btn_cache_save",
+      "en": "Save Cache",
+      "fr": "Enregistrer le cache"
+    },
+    {
+      "key": "msg_cache_directory_set",
+      "en": "Directory set successfully!",
+      "fr": "Répertoire défini avec succès !"
+    },
+    {
+      "key": "msg_success",
+      "en": "Success",
+      "fr": "Succès"
+    },
+    {
+      "key": "error_permission",
+      "en": "Error: {error_message}. Please check you have permission to selected folder",
+      "fr": "Erreur : {error_message}. Veuillez vérifier que vous avez l'autorisation d'accéder au dossier sélectionné"
+    },
+    {
+      "key": "msg_cache_saved_success",
+      "en": "Cache saved successfully!",
+      "fr": "Cache enregistré avec succès !"
+    },
+    {
+      "key": "btn_download_report",
+      "en": "Download Report",
+      "fr": "Télécharger le rapport"
+    },
+    {
+      "key": "error_download_report_no_data",
+      "en": "The necessary data for generating the report is not available. Please ensure that the data is uploaded and processed correctly.",
+      "fr": "Les données nécessaires à la génération du rapport ne sont pas disponibles. Veuillez vous assurer que les données sont correctement téléchargées et traitées."
+    },
+    {
+      "key": "title_download_options",
+      "en": "Download Options",
+      "fr": "Options de téléchargement"
+    },
+    {
+      "key": "title_report_type",
+      "en": "Report Type:",
+      "fr": "Type de rapport :"
+    },
+    {
+      "key": "opt_full_report",
+      "en": "Full Report",
+      "fr": "Rapport complet"
+    },
+    {
+      "key": "opt_one_pager",
+      "en": "One Pager",
+      "fr": "Une page"
+    },
+    {
+      "key": "btn_cancel",
+      "en": "Cancel",
+      "fr": "Annuler"
+    },
+    {
+      "key": "btn_ok",
+      "en": "OK",
+      "fr": "OK"
+    },
+    {
+      "key": "msg_error",
+      "en": "Error",
+      "fr": "Erreur"
+    },
+    {
+      "key": "btn_generate_report",
+      "en": "Generate Report",
+      "fr": "Générer le rapport"
+    },
+    {
+      "key": "title_select_format",
+      "en": "Select Format:",
+      "fr": "Sélectionner le format :"
+    },
+    {
+      "key": "msg_report_generating",
+      "en": "Your report is being generated. This might take a few moments.",
+      "fr": "Votre rapport est en cours de génération. Cela peut prendre quelques instants."
+    },
+    {
+      "key": "msg_loading",
+      "en": "Loading...",
+      "fr": "Chargement..."
+    },
+    {
+      "key": "msg_download_ready",
+      "en": "Download Ready",
+      "fr": "Téléchargement prêt"
+    },
+    {
+      "key": "msg_report_generated",
+      "en": "The report has been successfully generated. Click below to download it.",
+      "fr": "Le rapport a été généré avec succès. Cliquez ci-dessous pour le télécharger."
+    },
+    {
+      "key": "msg_report_generated_dialog",
+      "en": "This dialog will remain open until you download the report or click 'Dismiss.'",
+      "fr": "Cette boîte de dialogue restera ouverte jusqu'à ce que vous téléchargiez le rapport ou cliquiez sur 'Fermer'."
+    },
+    {
+      "key": "btn_dismiss",
+      "en": "Dismiss",
+      "fr": "Fermer"
+    },
+    {
+      "key": "error_report_generation",
+      "en": "An error occurred while generating the report. Please try again.",
+      "fr": "Une erreur s'est produite lors de la génération du rapport. Veuillez réessayer."
+    },
+    {
+      "key": "msg_generating_report",
+      "en": "Generating Report",
+      "fr": "Génération du rapport"
+    },
+    {
+      "key": "btn_add_notes",
+      "en": "Add Notes",
+      "fr": "Ajouter des notes"
+    },
+    {
+      "key": "title_document_page",
+      "en": "Document Page:",
+      "fr": "Page à documenter :"
+    },
+    {
+      "key": "title_document_select_object",
+      "en": "Select Object",
+      "fr": "Sélectionner l'objet"
+    },
+    {
+      "key": "opt_document_object_to_document",
+      "en": "Select object to document:",
+      "fr": "Sélectionnez l’objet à documenter :"
+    },
+    {
+      "key": "title_document_interpretation_pointers",
+      "en": "Interpretation Pointers:",
+      "fr": "Pistes d'interprétation :"
+    },
+    {
+      "key": "title_document_enter_notes",
+      "en": "Enter your notes or observations:",
+      "fr": "Entrez vos notes ou observations :"
+    },
+    {
+      "key": "msg_add_documentation",
+      "en": "Add documentation for this object...",
+      "fr": "Ajouter une documentation pour cet objet..."
+    },
+    {
+      "key": "title_document_associated_parameters",
+      "en": "Associated Parameters:",
+      "fr": "Paramètres associés :"
+    },
+    {
+      "key": "btn_save",
+      "en": "Save",
+      "fr": "Enregistrer"
+    },
+    {
+      "key": "msg_none",
+      "en": "None",
+      "fr": "Aucun"
+    },
+    {
+      "key": "btn_document_include_in_page_report",
+      "en": "Include this note in the report (Always included)",
+      "fr": "Inclure cette note dans le rapport (Toujours incluse)"
+    },
+    {
+      "key": "btn_document_include_final",
+      "en": "Include this note in the final report",
+      "fr": "Inclure cette note dans le rapport final"
+    },
+    {
+      "key": "btn_include_plot_in_page_report",
+      "en": "Include plot/table in the page report",
+      "fr": "Inclure graphique/tableau dans le rapport de page"
+    },
+    {
+      "key": "error_evaluating_parameters",
+      "en": "Error evaluating parameters. Please check your input.",
+      "fr": "Erreur lors de l’évaluation des paramètres. Veuillez vérifier votre saisie."
+    },
+    {
+      "key": "msg_documentation_saved",
+      "en": "Documentation saved successfully!",
+      "fr": "Documentation enregistrée avec succès !"
+    },
+    {
+      "key": "msg_documentation_save_failed",
+      "en": "Failed to save documentation. Please try again.",
+      "fr": "Échec de l’enregistrement de la documentation. Veuillez réessayer."
+    },
+    {
+      "key": "btn_help",
+      "en": "Get Help",
+      "fr": "Obtenir de l'aide"
+    },
+    {
+      "key": "title_upload_data",
+      "en": "Upload Data",
+      "fr": "Téléverser les données"
+    },
+    {
+      "key": "btn_upload",
+      "en": "Upload",
+      "fr": "Téléverser"
+    },
+    {
+      "key": "btn_upload_hfd_data",
+      "en": "Upload HFD data",
+      "fr": "Téléverser les données HFD"
+    },
+    {
+      "key": "btn_browse_or_drop",
+      "en": "Browse or Drop...",
+      "fr": "Parcourir ou déposer..."
+    },
+    {
+      "key": "msg_supported_formats_xls_xlsx_dta_rds",
+      "en": "Supported formats: .xls, .xlsx, .dta, .rds",
+      "fr": "Formats pris en charge : .xls, .xlsx, .dta, .rds"
+    },
+    {
+      "key": "error_upload_failed_unsupported_format",
+      "en": "Upload failed: Unsupported file format.",
+      "fr": "Échec du téléversement : format de fichier non pris en charge."
+    },
+    {
+      "key": "msg_upload_success",
+      "en": "Upload successful: File {file_name} is ready.",
+      "fr": "Téléversement réussi : le fichier {file_name} est prêt."
+    },
+    {
+      "key": "error_upload_failed",
+      "en": "Upload failed: {clean_message}",
+      "fr": "Échec du téléversement : {clean_message}"
+    },
+    {
+      "key": "btn_download_master_dataset",
+      "en": "Download Master Dataset",
+      "fr": "Télécharger le jeu de données principal"
+    },
+    {
+      "key": "msg_awaiting_upload",
+      "en": "Awaiting file upload...",
+      "fr": "En attente du téléchargement du fichier..."
+    },
+    {
+      "key": "msg_waiting",
+      "en": "Waiting ...",
+      "fr": "En attente ..."
+    },
+    {
+      "key": "error_invalid_status",
+      "en": "Invalid status. Choose from 'info', 'success', 'error', or 'warning'.",
+      "fr": "Statut invalide. Choisissez parmi 'info', 'success', 'error' ou 'warning'."
+    },
+    {
+      "key": "msg_dataset_not_adjusted",
+      "en": "Dataset not adjusted",
+      "fr": "Ensemble de données non ajusté"
+    },
+    {
+      "key": "msg_no_years_removed",
+      "en": "No years have been removed yet.",
+      "fr": "Aucune année n'a encore été supprimée."
+    },
+    {
+      "key": "msg_survey_not_set",
+      "en": "Survey folder not set",
+      "fr": "Dossier des enquêtes non défini"
+    },
+    {
+      "key": "title_dhis2_import",
+      "en": "Import from DHIS2",
+      "fr": "Importer depuis DHIS2"
+    },
+    {
+      "key": "title_country",
+      "en": "Country",
+      "fr": "Pays"
+    },
+    {
+      "key": "title_period",
+      "en": "Period",
+      "fr": "Période"
+    },
+    {
+      "key": "title_dhis2_username",
+      "en": "DHIS2 User Name",
+      "fr": "Nom d'utilisateur DHIS2"
+    },
+    {
+      "key": "title_dhis2_password",
+      "en": "DHIS2 Password",
+      "fr": "Mot de passe DHIS2"
+    },
+    {
+      "key": "btn_login",
+      "en": "Login",
+      "fr": "Connexion"
+    },
+    {
+      "key": "btn_download_master_file",
+      "en": "Download Master File",
+      "fr": "Télécharger le fichier principal"
+    },
+    {
+      "key": "btn_download_excel_file",
+      "en": "Download Excel File",
+      "fr": "Télécharger le fichier Excel"
+    },
+    {
+      "key": "opt_select_country",
+      "en": "Select Country",
+      "fr": "Sélectionner un pays"
+    },
+    {
+      "key": "error_country",
+      "en": "Error: Country must be selected",
+      "fr": "Erreur : un pays doit être sélectionné"
+    },
+    {
+      "key": "error_username",
+      "en": "Error: Username must be provided",
+      "fr": "Erreur : le nom d'utilisateur doit être fourni"
+    },
+    {
+      "key": "error_password",
+      "en": "Error: Password must be provided",
+      "fr": "Erreur : le mot de passe doit être fourni"
+    },
+    {
+      "key": "msg_dhis2_connect",
+      "en": "Connecting to DHIS2...",
+      "fr": "Connexion à DHIS2..."
+    },
+    {
+      "key": "error_download_error",
+      "en": "Download Error: {clean_message}",
+      "fr": "Erreur de téléchargement : {clean_message}"
+    },
+    {
+      "key": "msg_fetching_data",
+      "en": "Fetching data...",
+      "fr": "Récupération des données..."
+    },
+    {
+      "key": "msg_saving_data",
+      "en": "Saving data...",
+      "fr": "Enregistrement des données..."
+    },
+    {
+      "key": "msg_download_success",
+      "en": "Data successfully downloaded!",
+      "fr": "Données téléchargées avec succès !"
+    },
+    {
+      "key": "error_download",
+      "en": "Download Error: ",
+      "fr": "Erreur de téléchargement : "
+    },
+    {
+      "key": "title_dhis2_download",
+      "en": "DHIS2 Download",
+      "fr": "Téléchargement DHIS2"
+    },
+    {
+      "key": "title_to",
+      "en": " to ",
+      "fr": " à "
+    },
+    {
+      "key": "title_reporting_rate_options",
+      "en": "Reporting Rate Options",
+      "fr": "Options de taux de notification"
+    },
+    {
+      "key": "title_performance_threshold",
+      "en": "Performance Threshold",
+      "fr": "Seuil de performance"
+    },
+    {
+      "key": "title_admin_level",
+      "en": "Admin Level",
+      "fr": "Niveau administratif"
+    },
+    {
+      "key": "opt_admin_level_1",
+      "en": "Admin Level 1",
+      "fr": "Niveau administratif 1"
+    },
+    {
+      "key": "opt_district",
+      "en": "District",
+      "fr": "District"
+    },
+    {
+      "key": "title_indicator",
+      "en": "Indicator",
+      "fr": "Indicateur"
+    },
+    {
+      "key": "opt_anc",
+      "en": "ANC",
+      "fr": "CPN"
+    },
+    {
+      "key": "opt_institutional_delivery",
+      "en": "Institutional Delivery",
+      "fr": "Accouchement en établissement"
+    },
+    {
+      "key": "opt_vaccination",
+      "en": "Vaccination",
+      "fr": "Vaccination"
+    },
+    {
+      "key": "title_subnational_reporting_rate",
+      "en": "Sub-National Reporting Rate",
+      "fr": "Taux de notification infranational"
+    },
+    {
+      "key": "title_heat_map",
+      "en": "Heat Map",
+      "fr": "Carte thermique"
+    },
+    {
+      "key": "title_bar_graph",
+      "en": "Bar Graph",
+      "fr": "Diagramme en barres"
+    },
+    {
+      "key": "title_national_reporting_rate",
+      "en": "National Reporting Rate",
+      "fr": "Taux de notification national"
+    },
+    {
+      "key": "title_subnational_low_reporting",
+      "en": "Sub-National Units with Low Reporting",
+      "fr": "Unités infranationales à faible notification"
+    },
+    {
+      "key": "title_year",
+      "en": "Year",
+      "fr": "Année"
+    },
+    {
+      "key": "title_average_rr",
+      "en": "Average RR by year",
+      "fr": "TR moyen par année"
+    },
+    {
+      "key": "table_reporting_rate",
+      "en": "Table 1 - average reporting rates for all indicators, by year",
+      "fr": "Tableau 1 - taux moyens de notification pour tous les indicateurs, par année"
+    },
+    {
+      "key": "sheet_reporting_district",
+      "en": "RR >= {input$threshold} (districts)",
+      "fr": "TR >= {input$threshold} (districts)"
+    },
+    {
+      "key": "table_district_reporting",
+      "en": "Table 2 - Percentage of districts with reporting rates >= {input$threshold}, by year",
+      "fr": "Tableau 2 - Pourcentage de districts avec TR >= {input$threshold}, par année"
+    },
+    {
+      "key": "title_districts_low_reporting",
+      "en": "Districts Low Reporting Rating",
+      "fr": "Districts à faible taux de notification"
+    },
+    {
+      "key": "table_district_reporting_year",
+      "en": "Table 3 - Districts with Reporting Rate < {input$threshold} for {input$indicator} in {input$year}",
+      "fr": "Tableau 3 - Districts avec TR < {input$threshold} pour {input$indicator} en {input$year}"
+    },
+    {
+      "key": "opt_select_indicator",
+      "en": "Select Indicator",
+      "fr": "Sélectionner un indicateur"
+    },
+    {
+      "key": "title_indicators_with_outlier",
+      "en": "Indicators with Outliers",
+      "fr": "Indicateurs avec des valeurs aberrantes"
+    },
+    {
+      "key": "title_vaccine_bar_graph",
+      "en": "Vaccine Bar Graph",
+      "fr": "Graphique en barres des vaccins"
+    },
+    {
+      "key": "title_region_bar_graph",
+      "en": "Region Bar Graph",
+      "fr": "Graphique en barres des régions"
+    },
+    {
+      "key": "title_district_outliers",
+      "en": "Districts with Outliers",
+      "fr": "Districts avec des valeurs aberrantes"
+    },
+    {
+      "key": "title_district_trends",
+      "en": "Districts Trends",
+      "fr": "Tendances des districts"
+    },
+    {
+      "key": "title_outliers",
+      "en": "Outliers",
+      "fr": "Valeurs aberrantes"
+    },
+    {
+      "key": "table_outliers",
+      "en": "Table 2a: Percentage of monthly values that are not extreme outliers, by year",
+      "fr": "Tableau 2a : Pourcentage de valeurs mensuelles qui ne sont pas des valeurs aberrantes extrêmes, par année"
+    },
+    {
+      "key": "sheet_district_outliers",
+      "en": "Outliers (districts)",
+      "fr": "Valeurs aberrantes (districts)"
+    },
+    {
+      "key": "table_district_outliers",
+      "en": "Table 2b: Percentage of districts with no extreme outliers, by year",
+      "fr": "Tableau 2b : Pourcentage de districts sans valeurs aberrantes extrêmes, par année"
+    },
+    {
+      "key": "title_district_extreme_outlier",
+      "en": "Districts with Extreme Outliers",
+      "fr": "Districts avec des valeurs aberrantes extrêmes"
+    },
+    {
+      "key": "title_district_extreme_outlier_gen",
+      "en": "Districts with extreme outliers for {input$indicator} in {input$year}",
+      "fr": "Districts avec des valeurs aberrantes extrêmes pour {input$indicator} en {input$year}"
+    },
+    {
+      "key": "btn_download_outlier",
+      "en": "Download Outliers",
+      "fr": "Télécharger les valeurs aberrantes"
+    },
+    {
+      "key": "btn_download_plot",
+      "en": "Download Plot",
+      "fr": "Télécharger le graphique"
+    },
+    {
+      "key": "btn_download_data",
+      "en": "Download Data",
+      "fr": "Télécharger les données"
+    },
+    {
+      "key": "title_consistency_checks",
+      "en": "Consistency Checks",
+      "fr": "Vérifications de cohérence"
+    },
+    {
+      "key": "opt_anc1_and_penta1",
+      "en": "ANC1 and Penta1",
+      "fr": "ANC1 et Penta1"
+    },
+    {
+      "key": "opt_penta1_and_penta3",
+      "en": "Penta1 and Penta3",
+      "fr": "Penta1 et Penta3"
+    },
+    {
+      "key": "opt_opv1_and_opv3",
+      "en": "OPV1 and OPV3",
+      "fr": "OPV1 et OPV3"
+    },
+    {
+      "key": "opt_custom_check",
+      "en": "Custom Check",
+      "fr": "Vérification personnalisée"
+    },
+    {
+      "key": "title_x_axis",
+      "en": "X axis",
+      "fr": "Axe X"
+    },
+    {
+      "key": "title_y_axis",
+      "en": "Y axis",
+      "fr": "Axe Y"
+    },
+    {
+      "key": "title_completeness_options",
+      "en": "Completeness Options",
+      "fr": "Options de complétude"
+    },
+    {
+      "key": "title_completeness_indicators",
+      "en": "Indicators with Missing Data",
+      "fr": "Indicateurs avec des données manquantes"
+    },
+    {
+      "key": "title_complete_vaccines",
+      "en": "Complete Vaccines",
+      "fr": "Vaccins complets"
+    },
+    {
+      "key": "title_incomplete_vaccines_by_region",
+      "en": "Incomplete Vaccines by Region",
+      "fr": "Vaccins incomplets par région"
+    },
+    {
+      "key": "title_districts_with_missing_data",
+      "en": "Districts with Missing Data",
+      "fr": "Districts avec des données manquantes"
+    },
+    {
+      "key": "title_missing",
+      "en": "Missings",
+      "fr": "Données manquantes"
+    },
+    {
+      "key": "table_complete_monthly",
+      "en": "Table 4a: Percentage of monthly values with complete data, by year",
+      "fr": "Tableau 4a : Pourcentage des valeurs mensuelles avec des données complètes, par année"
+    },
+    {
+      "key": "sheet_districts_missing",
+      "en": "Missings (districts)",
+      "fr": "Données manquantes (districts)"
+    },
+    {
+      "key": "table_districts_missing",
+      "en": "Table 4a: Percentage of Districts with complete data, by year",
+      "fr": "Tableau 4a : Pourcentage de districts avec des données complètes, par année"
+    },
+    {
+      "key": "btn_download_districts",
+      "en": "Download Districts",
+      "fr": "Télécharger les districts"
+    },
+    {
+      "key": "title_districts_with_missing_data_1",
+      "en": "Districts with incomplete data",
+      "fr": "Districts avec des données incomplètes"
+    },
+    {
+      "key": "title_districts_with_missing_indicator",
+      "en": "Districts with incomplete data for {input$indicator} in {input$year}",
+      "fr": "Districts avec des données incomplètes pour {input$indicator} en {input$year}"
+    },
+    {
+      "key": "title_districts_with_complete_data",
+      "en": "Percent of districts with complete data by vaccine",
+      "fr": "Pourcentage de districts avec des données complètes par vaccin"
+    },
+    {
+      "key": "title_ratio_options",
+      "en": "Ratio Options",
+      "fr": "Options de ratio"
+    },
+    {
+      "key": "title_anc1_coverage",
+      "en": "ANC1 Coverage (%)",
+      "fr": "Couverture ANC1 (%)"
+    },
+    {
+      "key": "title_penta1_coverage",
+      "en": "Penta1 Coverage (%)",
+      "fr": "Couverture Penta1 (%)"
+    },
+    {
+      "key": "title_penta3_coverage_pct",
+      "en": "Penta3 Coverage (%)",
+      "fr": "Couverture Penta3 (%)"
+    },
+    {
+      "key": "title_ratio_plots",
+      "en": "Ratio Plots",
+      "fr": "Graphiques de ratios"
+    },
+    {
+      "key": "title_ratios",
+      "en": "Ratios",
+      "fr": "Ratios"
+    },
+    {
+      "key": "title_monthly_completeness",
+      "en": "1. Completeness of monthly facility reporting (Immunization)",
+      "fr": "1. Complétude des rapports mensuels des établissements (Vaccination)"
+    },
+    {
+      "key": "title_extreme_outliers",
+      "en": "2. Extreme outliers (Common Vaccine antigens)",
+      "fr": "2. Valeurs aberrantes extrêmes (Antigènes vaccinaux courants)"
+    },
+    {
+      "key": "title_consistency_annual_reporting",
+      "en": "3. Consistency of annual reporting",
+      "fr": "3. Cohérence des rapports annuels"
+    },
+    {
+      "key": "title_remove_years",
+      "en": "Remove Years with Erratic Data",
+      "fr": "Supprimer les années avec des données erratiques"
+    },
+    {
+      "key": "msg_removal_info",
+      "en": "This module allows you to remove years with erratic data from the dataset. Erratic data may result from low reporting completeness, extreme outliers, or inconsistent trends, which can compromise analysis integrity.",
+      "fr": "Ce module vous permet de supprimer les années présentant des données erratiques. Les données erratiques peuvent résulter d’une complétude faible des rapports, de valeurs aberrantes extrêmes ou de tendances incohérentes, ce qui peut compromettre l’intégrité de l’analyse."
+    },
+    {
+      "key": "title_select_removal_years",
+      "en": "Select Years to Remove:",
+      "fr": "Sélectionner les années à supprimer :"
+    },
+    {
+      "key": "btn_confirm_removal",
+      "en": "Confirm Removal",
+      "fr": "Confirmer la suppression"
+    },
+    {
+      "key": "msg_removed_year",
+      "en": "Data for the following years has been removed:",
+      "fr": "Les données des années suivantes ont été supprimées :"
+    },
+    {
+      "key": "title_factors",
+      "en": "K-Factors",
+      "fr": "Facteurs K"
+    },
+    {
+      "key": "title_anc_factor",
+      "en": "ANC K-Factor",
+      "fr": "Facteur K ANC"
+    },
+    {
+      "key": "title_delivery_factor",
+      "en": "Delivery K-Factor",
+      "fr": "Facteur K Accouchement"
+    },
+    {
+      "key": "title_vaccines_factor",
+      "en": "Vaccines K-Factor",
+      "fr": "Facteur K Vaccins"
+    },
+    {
+      "key": "btn_adjust",
+      "en": "Adjust",
+      "fr": "Ajuster"
+    },
+    {
+      "key": "msg_adjustment_info",
+      "en": "Adjusting the data applies custom corrections, such as removing specific years and scaling selected indicators. This process modifies the current dataset to align with predefined criteria for completeness and consistency.",
+      "fr": "L'ajustement des données applique des corrections personnalisées, telles que la suppression d'années spécifiques et la mise à l'échelle de certains indicateurs. Ce processus modifie l'ensemble de données actuel pour l'aligner sur des critères prédéfinis de complétude et de cohérence."
+    },
+    {
+      "key": "btn_adjust_data",
+      "en": "Adjust Data",
+      "fr": "Ajuster les données"
+    },
+    {
+      "key": "title_data_adjustment",
+      "en": "Data Adjustments",
+      "fr": "Ajustements des données"
+    },
+    {
+      "key": "btn_download_adjusted_dataset",
+      "en": "Download Adjusted Dataset",
+      "fr": "Télécharger l'ensemble de données ajusté"
+    },
+    {
+      "key": "msg_data_adjusted",
+      "en": "Data Adjusted",
+      "fr": "Données ajustées"
+    },
+    {
+      "key": "msg_adjusting",
+      "en": "Adjusting ...",
+      "fr": "Ajustement en cours..."
+    },
+    {
+      "key": "title_visualize_changes",
+      "en": "Visualize effects of changes",
+      "fr": "Visualiser les effets des changements"
+    },
+    {
+      "key": "opt_live_births",
+      "en": "Live Births",
+      "fr": "Naissances vivantes"
+    },
+    {
+      "key": "opt_penta1",
+      "en": "Penta 1",
+      "fr": "Penta 1"
+    },
+    {
+      "key": "opt_bcg",
+      "en": "BCG",
+      "fr": "BCG"
+    },
+    {
+      "key": "opt_measles",
+      "en": "Measles",
+      "fr": "Rougeole"
+    },
+    {
+      "key": "figure_live_births_outlier",
+      "en": "Figure 1c: Comparison of number of live births before and after adjustments for completness and outliers",
+      "fr": "Figure 1c : Comparaison du nombre de naissances vivantes avant et après ajustements pour complétude et valeurs aberrantes"
+    },
+    {
+      "key": "figure_penta_outlier",
+      "en": "Figure 1d: Comparison of number of penta1 vaccination before and after adjustments for completness and outliers",
+      "fr": "Figure 1d : Comparaison du nombre de vaccinations Penta1 avant et après ajustements pour complétude et valeurs aberrantes"
+    },
+    {
+      "key": "figure_bcg_outlier",
+      "en": "Figure 1e: Comparison of number of BCG vaccination before and after adjustments for completness and outliers",
+      "fr": "Figure 1e : Comparaison du nombre de vaccinations BCG avant et après ajustements pour complétude et valeurs aberrantes"
+    },
+    {
+      "key": "figure_mcv1_outlier",
+      "en": "Figure 1f: Comparison of number of measles vaccination before and after adjustments for completness and outliers",
+      "fr": "Figure 1f : Comparaison du nombre de vaccinations contre la rougeole avant et après ajustements pour complétude et valeurs aberrantes"
+    },
+    {
+      "key": "title_national_rates",
+      "en": "Setup National Rates",
+      "fr": "Configurer les taux nationaux"
+    },
+    {
+      "key": "title_nmr",
+      "en": "Neonatal Mortality Rate",
+      "fr": "Taux de mortalité néonatale"
+    },
+    {
+      "key": "title_pnmr",
+      "en": "Post Neonatal Mortality Rate",
+      "fr": "Taux de mortalité post-néonatale"
+    },
+    {
+      "key": "title_twin_rate",
+      "en": "Twin Rate",
+      "fr": "Taux de naissances gémellaires"
+    },
+    {
+      "key": "title_pregnancy_loss",
+      "en": "Pregnancy Loss",
+      "fr": "Perte de grossesse"
+    },
+    {
+      "key": "title_still_birth_rate",
+      "en": "Still Birth Rate",
+      "fr": "Taux de mortinatalité"
+    },
+    {
+      "key": "title_anc1_to_penta1_mort_rate",
+      "en": "ANC1 to Penta1 Mortality Rate",
+      "fr": "Taux de mortalité de ANC1 à Penta1"
+    },
+    {
+      "key": "title_anc1_survey",
+      "en": "ANC1 Survey",
+      "fr": "Enquête ANC1"
+    },
+    {
+      "key": "title_penta1_survey",
+      "en": "Penta1 Survey",
+      "fr": "Enquête Penta1"
+    },
+    {
+      "key": "title_upload_un_estimates",
+      "en": "Upload UN Estimates data",
+      "fr": "Téléverser les estimations des Nations Unies"
+    },
+    {
+      "key": "title_upload_wuenic",
+      "en": "Upload WUENIC estimates",
+      "fr": "Téléverser les estimations WUENIC"
+    },
+    {
+      "key": "title_upload_survey",
+      "en": "Upload Survey Folder",
+      "fr": "Téléverser le dossier d'enquête"
+    },
+    {
+      "key": "title_subnational_mapping_opt",
+      "en": "Subnational Manual Data Mapping (Optional)",
+      "fr": "Cartographie manuelle des données infranationales (optionnel)"
+    },
+    {
+      "key": "btn_map_survey",
+      "en": "Map Survey Data",
+      "fr": "Associer les données d'enquête"
+    },
+    {
+      "key": "btn_map_mapping",
+      "en": "Map Mapping Data",
+      "fr": "Associer les données de cartographie"
+    },
+    {
+      "key": "btn_save_mapping",
+      "en": "Save Mapping",
+      "fr": "Enregistrer la cartographie"
+    },
+    {
+      "key": "msg_survey_mapping_not_done",
+      "en": "Survey mapping has not been done",
+      "fr": "La cartographie de l'enquête n'a pas été effectuée"
+    },
+    {
+      "key": "msg_map_mapping_not_done",
+      "en": "Map mapping has not been done",
+      "fr": "La cartographie de la carte n'a pas été effectuée"
+    },
+    {
+      "key": "msg_map_mapping_uploaded",
+      "en": "Map mapping data is uploaded",
+      "fr": "La cartographie de la carte n'a pas été effectuée"
+    },
+    {
+      "key": "opt_total_population",
+      "en": "Total Population",
+      "fr": "Population totale"
+    },
+    {
+      "key": "opt_births",
+      "en": "Births",
+      "fr": "Naissances"
+    },
+    {
+      "key": "opt_penta3",
+      "en": "Penta 3",
+      "fr": "Penta 3"
+    },
+    {
+      "key": "opt_mcv1",
+      "en": "Measles 1",
+      "fr": "Rougeole 1"
+    },
+    {
+      "key": "title_analysis_options",
+      "en": "Analysis Options",
+      "fr": "Options d'analyse"
+    },
+    {
+      "key": "title_denominator",
+      "en": "Denominator",
+      "fr": "Dénominateur"
+    },
+    {
+      "key": "title_survey_year",
+      "en": "Survey Start Year",
+      "fr": "Année de début de l'enquête"
+    },
+    {
+      "key": "title_national_coverage_trend",
+      "en": "National Coverage Trend",
+      "fr": "Tendance de la couverture nationale"
+    },
+    {
+      "key": "title_penta3_mcv1_dropout",
+      "en": "Penta 3 to Measles 1 Dropout",
+      "fr": "Abandon entre Penta 3 et Rougeole 1"
+    },
+    {
+      "key": "title_mcv1_coverage",
+      "en": "Measles 1 Coverage",
+      "fr": "Couverture Rougeole 1"
+    },
+    {
+      "key": "title_penta3_coverage",
+      "en": "Penta 3 Coverage",
+      "fr": "Couverture Penta 3"
+    },
+    {
+      "key": "title_penta13_dropout",
+      "en": "Penta 1 to Penta 3 Dropout",
+      "fr": "Abandon entre Penta 1 et Penta 3"
+    },
+    {
+      "key": "title_coverage",
+      "en": "Coverage",
+      "fr": "Couverture"
+    },
+    {
+      "key": "title_subnational_coverage_trend",
+      "en": "Sub-National Coverage Trend",
+      "fr": "Tendance de la couverture infranationale"
+    },
+    {
+      "key": "title_penta3_mcv1_inequality",
+      "en": "Penta 3 to Measles 1 Dropout Inequality",
+      "fr": "Inégalités d’abandon entre Penta 3 et Rougeole 1"
+    },
+    {
+      "key": "title_penta13_inequality",
+      "en": "Penta 1 to Penta 3 Dropout Inequality",
+      "fr": "Inégalités d’abandon entre Penta 1 et Penta 3"
+    },
+    {
+      "key": "title_inequality",
+      "en": "Inequality",
+      "fr": "Inégalités"
+    },
+    {
+      "key": "title_penta3_inequality",
+      "en": "Penta 3 Inequality",
+      "fr": "Inégalités de couverture Penta 3"
+    },
+    {
+      "key": "title_mcv1_inequality",
+      "en": "Measles 1 Inequality",
+      "fr": "Inégalités de couverture Rougeole 1"
+    },
+    {
+      "key": "dropout",
+      "en": "Dropout",
+      "fr": "Abandon"
+    },
+    {
+      "key": "title_select_years",
+      "en": "Select Years",
+      "fr": "Sélectionner les années"
+    },
+    {
+      "key": "title_palette",
+      "en": "Palette",
+      "fr": "Palette"
+    },
+    {
+      "key": "title_coverage_level",
+      "en": "Coverage/Utilization Level",
+      "fr": "Niveau de couverture/utilisation"
+    },
+    {
+      "key": "title_distribution_of_penta13_dropout",
+      "en": "Distribution of Penta1 to Penta3 dropout in {country()} by Regions",
+      "fr": "Répartition de l’abandon entre Penta1 et Penta3 en {country()} par région"
+    },
+    {
+      "key": "title_distribution_of_penta3",
+      "en": "Distribution of Penta3 Coverage in {country()} by Regions",
+      "fr": "Répartition de la couverture Penta3 en {country()} par région"
+    },
+    {
+      "key": "title_distribution_of_penta3_mcv1_dropout",
+      "en": "Distribution of Penta3 to Measles1 dropout in {country()} by Regions",
+      "fr": "Répartition de l’abandon entre Penta3 et Rougeole1 en {country()} par région"
+    },
+    {
+      "key": "title_distribution_of_measles1",
+      "en": "Distribution of Measles 1 Coverage in {country()} by Regions",
+      "fr": "Répartition de la couverture Rougeole 1 en {country()} par région"
+    },
+    {
+      "key": "title_distribution_of_indicator",
+      "en": "Distribution of {input$indicator} Coverage in {country()} by Regions",
+      "fr": "Répartition de la couverture {input$indicator} en {country()} par région"
+    },
+    {
+      "key": "title_equity_type",
+      "en": "Equity Type",
+      "fr": "Type d'équité"
+    },
+    {
+      "key": "title_equity_analysis",
+      "en": "Equity Analysis",
+      "fr": "Analyse de l'équité"
+    },
+	{
+		"key": "reporting_rate_reporting_rate_1",
+		"en": "Interpret the differences between the different admin1 units: are there any admin1s that stand out as more or less complete? What are some explanations?",
+		"fr": "Interprétez les différences entre les différentes unités admin1 : y a-t-il des admin1 qui se distinguent comme étant plus ou moins complètes ? Quelles sont les explications possibles ?"
+	  },
+	  {
+		"key": "reporting_rate_reporting_rate_2",
+		"en": "Interpret the differences between different years: are there any years that stand out as being more or less complete? What are some explanations?",
+		"fr": "Interprétez les différences entre les différentes années : y a-t-il des années qui se distinguent comme étant plus ou moins complètes ? Quelles sont les explications possibles ?"
+	  },
+	  {
+		"key": "outlier_detection_outlier_detection_1",
+		"en": "Make a statement about the presence of outliers in the immunization data: are there many or few, is the number of outliers increasing or decreasing?",
+		"fr": "Faites une déclaration sur la présence de valeurs aberrantes dans les données de vaccination : y en a-t-il beaucoup ou peu, le nombre de valeurs aberrantes augmente-t-il ou diminue-t-il ?"
+	  },
+	  {
+		"key": "outlier_detection_outlier_detection_2",
+		"en": "Interpret the differences between the different regions and years: are there any regions that have more outliers? Are there any years that have more outliers? What are some explanations (e.g. campaigns or catch-up activities with older kids that may have been recorded incorrectly)?",
+		"fr": "Interprétez les différences entre les différentes régions et années : y a-t-il des régions qui ont plus de valeurs aberrantes ? Y a-t-il des années qui ont plus de valeurs aberrantes ? Quelles sont les explications possibles (par exemple, des campagnes ou des activités de rattrapage avec des enfants plus âgés qui ont pu être mal enregistrées) ?"
+	  },
+	  {
+		"key": "outlier_detection_outlier_detection_3",
+		"en": "Interpret the differences between the outliers across different vaccines and regions: are there any vaccines that stand out as having more or less outliers? What are some explanations?",
+		"fr": "Interprétez les différences entre les valeurs aberrantes selon les différents vaccins et régions : y a-t-il des vaccins qui se distinguent par un nombre plus ou moins élevé de valeurs aberrantes ? Quelles sont les explications possibles ?"
+	  },
+	  {
+		"key": "outlier_detection_outlier_detection_4",
+		"en": "Interpret the example outliers: are they likely to be errors or is there an explanation for why they may be true values?",
+		"fr": "Interprétez les valeurs aberrantes exemples : sont-elles probablement des erreurs ou existe-t-il une explication pour laquelle elles pourraient être des valeurs réelles ?"
+	  },
+	  {
+		"key": "data_completeness_data_completeness_1",
+		"en": "Interpret the differences between the different vaccines: are there any vaccines that stand out as more or less complete? What are some explanations?",
+		"fr": "Interprétez les différences entre les différents vaccins : y a-t-il des vaccins qui se distinguent comme étant plus ou moins complets ? Quelles sont les explications possibles ?"
+	  },
+	  {
+		"key": "data_completeness_data_completeness_2",
+		"en": "Interpret the differences between the different regions: are there any regions that stand out as more or less complete? What are some explanations (e.g. stockout)?",
+		"fr": "Interprétez les différences entre les différentes régions : y a-t-il des régions qui se distinguent comme étant plus ou moins complètes ? Quelles sont les explications possibles (par exemple, rupture de stock) ?"
+	  },
+	  {
+		"key": "adjustment_changes_penta1_1",
+		"en": "Consider the effect of the adjustment on the number of DTP1 doses administered, and mention the difference in the number, as well as the percent increase in 2023; highlight the year with the greatest impact if there is one; interpret if the impact of the adjustment on coverage rates is large or small",
+		"fr": "Considérez l'effet de l'ajustement sur le nombre de doses de DTC1 administrées, et mentionnez la différence en nombre ainsi que l'augmentation en pourcentage en 2023 ; mettez en évidence l'année avec le plus grand impact, s'il y en a une ; interprétez si l'impact sur les taux de couverture est important ou faible"
+	  },
+	  {
+		"key": "adjustment_changes_bcg_1",
+		"en": "Consider the effect of the adjustment on the number of BCG doses administered, and mention the difference in the number, as well as the percent increase in 2023; highlight the year with the greatest impact if there is one; interpret if the impact of the adjustment on coverage rates is large or small",
+		"fr": "Considérez l'effet de l'ajustement sur le nombre de doses de BCG administrées, et mentionnez la différence en nombre ainsi que l'augmentation en pourcentage en 2023 ; mettez en évidence l'année avec le plus grand impact, s'il y en a une ; interprétez si l'impact sur les taux de couverture est important ou faible"
+	  },
+	  {
+		"key": "adjustment_changes_measles1_1",
+		"en": "Consider the effect of the adjustment on the number of Measles doses administered, and mention the difference in the number, as well as the percent increase in 2023; highlight the year with the greatest impact if there is one; interpret if the impact of the adjustment on coverage rates is large or small",
+		"fr": "Considérez l'effet de l'ajustement sur le nombre de doses de rougeole administrées, et mentionnez la différence en nombre ainsi que l'augmentation en pourcentage en 2023 ; mettez en évidence l'année avec le plus grand impact, s'il y en a une ; interprétez si l'impact sur les taux de couverture est important ou faible"
+	  },
+	  {
+		"key": "adjustment_changes_custom_check_1",
+		"en": "Consider the effect of the adjustment on the number of doses administered, and mention the difference in the number, as well as the percent increase in 2023; highlight the year with the greatest impact if there is one; interpret if the impact of the adjustment on coverage rates is large or small",
+		"fr": "Considérez l'effet de l'ajustement sur le nombre total de doses administrées, et mentionnez la différence en nombre ainsi que l'augmentation en pourcentage en 2023 ; mettez en évidence l'année avec le plus grand impact, s'il y en a une ; interprétez si l'impact sur les taux de couverture est important ou faible"
+	  },
+	  {
+		"key": "denominator_assessment_total_population_1",
+		"en": "How do the estimates of total population differ compared to the UN projection?",
+		"fr": "Comment les estimations de la population totale diffèrent-elles des projections de l'ONU ?"
+	  },
+	  {
+		"key": "denominator_assessment_births_1",
+		"en": "How do the estimates of births differ compared to the UN projection?",
+		"fr": "Comment les estimations du nombre de naissances diffèrent-elles des projections de l'ONU ?"
+	  },
+	  {
+		"key": "denominator_selection_penta3_1",
+		"en": "What is the selected denominator for the key vaccination indicators and why?  Note that one best denominator should be selected to be applied for all immunization data.",
+		"fr": "Quel est le dénominateur sélectionné pour les principaux indicateurs de vaccination et pourquoi ? Un seul dénominateur optimal doit être utilisé pour toutes les données de vaccination."
+	  },
+	  {
+		"key": "denominator_selection_measles1_1",
+		"en": "What is the selected denominator for the key vaccination indicators and why?  Note that one best denominator should be selected to be applied for all immunization data.",
+		"fr": "Quel est le dénominateur sélectionné pour les principaux indicateurs de vaccination et pourquoi ? Un seul dénominateur optimal doit être utilisé pour toutes les données de vaccination."
+	  },
+	  {
+		"key": "denominator_selection_bcg_1",
+		"en": "What is the selected denominator for the key vaccination indicators and why?  Note that one best denominator should be selected to be applied for all immunization data.",
+		"fr": "Quel est le dénominateur sélectionné pour les principaux indicateurs de vaccination et pourquoi ? Un seul dénominateur optimal doit être utilisé pour toutes les données de vaccination."
+	  },
+	  {
+		"key": "national_coverage_measles1_1",
+		"en": "First address data quality: Are the levels and trends plausible? Is there good consistency between the facility and survey data?",
+		"fr": "Commencez par évaluer la qualité des données : les niveaux et tendances sont-ils plausibles ? Y a-t-il une bonne cohérence entre les données des établissements et les enquêtes ?"
+	  },
+	  {
+		"key": "national_coverage_measles1_2",
+		"en": "Then, interpret the data if there is sufficient confidence in the observed levels and trends. How does the coverage compare to global targets to reach 90% coverage? Is this a positive trend? Are there explanations for the observed levels and trends?",
+		"fr": "Ensuite, interprétez les données s'il y a suffisamment de confiance dans les niveaux et les tendances observés. Comment la couverture se compare-t-elle aux objectifs mondiaux de 90 % ? S'agit-il d'une tendance positive ? Quelles sont les explications possibles pour les niveaux et tendances observés ?"
+	  },
+	  {
+		"key": "national_coverage_penta3_1",
+		"en": "First address data quality: Are the levels and trends plausible? Is there good consistency between the facility and survey data?",
+		"fr": "Commencez par évaluer la qualité des données : les niveaux et tendances sont-ils plausibles ? Y a-t-il une bonne cohérence entre les données des établissements et les enquêtes ?"
+	  },
+	  {
+		"key": "national_coverage_penta3_2",
+		"en": "Then, interpret the data if there is sufficient confidence in the observed levels and trends. How does the coverage compare to global targets to reach 90% coverage? Is this a positive trend? Are there explanations for the observed levels and trends?",
+		"fr": "Ensuite, interprétez les données s'il y a suffisamment de confiance dans les niveaux et les tendances observés. Comment la couverture se compare-t-elle aux objectifs mondiaux de 90 % ? S'agit-il d'une tendance positive ? Quelles sont les explications possibles pour les niveaux et tendances observés ?"
+	  },
+	  {
+		"key": "national_coverage_penta1_to_penta3_dropout_1",
+		"en": "Are the dropout rates similar to the survey data? What is the dropout in surveys among those with cards vs those without?",
+		"fr": "Les taux d'abandon sont-ils similaires aux données d'enquête ? Quel est le taux d'abandon dans les enquêtes parmi ceux avec une carte par rapport à ceux sans carte ?"
+	  },
+	  {
+		"key": "national_coverage_penta1_to_penta3_dropout_2",
+		"en": "Is dropout improving, staying the same or getting worse?",
+		"fr": "Le taux d'abandon s'améliore-t-il, reste-t-il stable ou se détériore-t-il ?"
+	  },
+	  {
+		"key": "national_coverage_penta3_to_measles1_dropout_1",
+		"en": "Are the dropout rates similar to the survey data? What is the dropout in surveys among those with cards vs those without?",
+		"fr": "Les taux d'abandon sont-ils similaires aux données d'enquête ? Quel est le taux d'abandon dans les enquêtes parmi ceux avec une carte par rapport à ceux sans carte ?"
+	  },
+	  {
+		"key": "national_coverage_penta3_to_measles1_dropout_2",
+		"en": "Is dropout improving, staying the same or getting worse?",
+		"fr": "Le taux d'abandon s'améliore-t-il, reste-t-il stable ou se détériore-t-il ?"
+	  },
+	  {
+		"key": "national_coverage_custom_checks_1",
+		"en": "First address data quality: Are the levels and trends plausible? Is there good consistency between the facility and survey data?",
+		"fr": "Commencez par évaluer la qualité des données : les niveaux et tendances sont-ils plausibles ? Y a-t-il une bonne cohérence entre les données des établissements et les enquêtes ?"
+	  },
+	  {
+		"key": "national_coverage_custom_checks_2",
+		"en": "Then, interpret the data if there is sufficient confidence in the observed levels and trends. How does the coverage compare to global targets to reach 90% coverage? Is this a positive trend? Are there explanations for the observed levels and trends?",
+		"fr": "Ensuite, interprétez les données s'il y a suffisamment de confiance dans les niveaux et les tendances observés. Comment la couverture se compare-t-elle aux objectifs mondiaux de 90 % ? S'agit-il d'une tendance positive ? Quelles sont les explications possibles pour les niveaux et tendances observés ?"
+	  },
+	  {
+    "key": "subnational_coverage_measles1_1",
+    "en": "Are there regions that have especially high or especially low Measles1 coverage?",
+    "fr": "Existe-t-il des régions avec une couverture Rougeole 1 particulièrement élevée ou faible ?"
+  },
+  {
+    "key": "subnational_coverage_measles1_2",
+    "en": "Comment on the variation between highest-coverage and lowest-coverage regions and districts.",
+    "fr": "Commentez la variation entre les régions et districts ayant la couverture la plus élevée et la plus faible."
+  },
+  {
+    "key": "subnational_coverage_penta3_1",
+    "en": "Are there regions that have especially high or especially low Penta3 coverage?",
+    "fr": "Y a-t-il des régions avec une couverture Penta3 particulièrement élevée ou faible ?"
+  },
+  {
+    "key": "subnational_coverage_penta3_2",
+    "en": "Comment on the variation between highest-coverage and lowest-coverage regions and districts.",
+    "fr": "Commentez la variation entre les régions et districts ayant la couverture la plus élevée et la plus faible."
+  },
+  {
+    "key": "subnational_coverage_penta1_to_penta3_dropout_1",
+    "en": "Are there regions that have especially high or especially low Penta dropout rates? How do they compare to regions with high or low Penta coverage?",
+    "fr": "Y a-t-il des régions avec des taux d'abandon Penta particulièrement élevés ou faibles ? Comment cela se compare-t-il aux taux de couverture Penta ?"
+  },
+  {
+    "key": "subnational_coverage_penta1_to_penta3_dropout_2",
+    "en": "Comment on the variation between highest-dropout and lowest-dropout regions and districts.",
+    "fr": "Commentez la variation entre les régions et districts ayant les taux d’abandon les plus élevés et les plus faibles."
+  },
+  {
+    "key": "subnational_coverage_penta3_to_measles1_dropout_1",
+    "en": "Are there regions that have especially high or especially low Penta measles dropout rates? How do they compare to regions with high or low Penta coverage?",
+    "fr": "Existe-t-il des régions avec des taux d'abandon entre Penta3 et Rougeole1 particulièrement élevés ou faibles ? Comment cela se compare-t-il aux régions ayant une couverture Penta élevée ou faible ?"
+  },
+  {
+    "key": "subnational_coverage_penta3_to_measles1_dropout_2",
+    "en": "Comment on the variation between highest-dropout and lowest-dropout regions and districts.",
+    "fr": "Commentez la variation entre les régions et districts ayant les taux d’abandon les plus élevés et les plus faibles."
+  },
+  {
+    "key": "subnational_coverage_custom_checks_1",
+    "en": "Are there regions that have especially high or especially low coverage?",
+    "fr": "Y a-t-il des régions avec une couverture particulièrement élevée ou faible ?"
+  },
+  {
+    "key": "subnational_coverage_custom_checks_2",
+    "en": "Comment on the variation between highest-coverage and lowest-coverage regions and districts.",
+    "fr": "Commentez la variation entre les régions et districts ayant la couverture la plus élevée et la plus faible."
+  },
+  {
+    "key": "subnational_inequality_measles1_1",
+    "en": "Are there regions that have especially high or especially low Measles1 coverage?",
+    "fr": "Existe-t-il des régions avec une couverture Rougeole 1 particulièrement élevée ou faible ?"
+  },
+  {
+    "key": "subnational_inequality_measles1_2",
+    "en": "Comment on the variation between highest-coverage and lowest-coverage regions and districts.",
+    "fr": "Commentez la variation entre les régions et districts ayant la couverture la plus élevée et la plus faible."
+  },
+  {
+    "key": "subnational_inequality_penta3_1",
+    "en": "Are there regions that have especially high or especially low Penta3 coverage?",
+    "fr": "Y a-t-il des régions avec une couverture Penta3 particulièrement élevée ou faible ?"
+  },
+  {
+    "key": "subnational_inequality_penta3_2",
+    "en": "Comment on the variation between highest-coverage and lowest-coverage regions and districts.",
+    "fr": "Commentez la variation entre les régions et districts ayant la couverture la plus élevée et la plus faible."
+  },
+  {
+    "key": "subnational_inequality_penta1_to_penta3_dropout_1",
+    "en": "Are there regions that have especially high or especially low Penta dropout rates? How do they compare to regions with high or low Penta coverage?",
+    "fr": "Y a-t-il des régions avec des taux d'abandon Penta particulièrement élevés ou faibles ? Comment cela se compare-t-il aux taux de couverture Penta ?"
+  },
+  {
+    "key": "subnational_inequality_penta1_to_penta3_dropout_2",
+    "en": "Comment on the variation between highest-dropout and lowest-dropout regions and districts.",
+    "fr": "Commentez la variation entre les régions et districts ayant les taux d’abandon les plus élevés et les plus faibles."
+  },
+  {
+    "key": "subnational_inequality_penta3_to_measles1_dropout_1",
+    "en": "Are there regions that have especially high or especially low Penta measles dropout rates? How do they compare to regions with high or low Penta coverage?",
+    "fr": "Existe-t-il des régions avec des taux d’abandon entre Penta3 et Rougeole1 particulièrement élevés ou faibles ? Comment cela se compare-t-il aux régions ayant une couverture Penta élevée ou faible ?"
+  },
+  {
+    "key": "subnational_inequality_penta3_to_measles1_dropout_2",
+    "en": "Comment on the variation between highest-dropout and lowest-dropout regions and districts.",
+    "fr": "Commentez la variation entre les régions et districts ayant les taux d’abandon les plus élevés et les plus faibles."
+  },
+  {
+    "key": "subnational_inequality_custom_checks_1",
+    "en": "Are there regions that have especially high or especially low coverage?",
+    "fr": "Y a-t-il des régions avec une couverture particulièrement élevée ou faible ?"
+  },
+  {
+    "key": "subnational_inequality_custom_checks_2",
+    "en": "Comment on the variation between highest-coverage and lowest-coverage regions and districts.",
+    "fr": "Commentez la variation entre les régions et districts ayant la couverture la plus élevée et la plus faible."
+  },
+  {
+    "key": "low_reporting_coverage_1",
+    "en": "Reflect on the percent of districts that are meeting performance targets for coverage: has it increased or decreased over time? Does it vary between different vaccines?",
+    "fr": "Réfléchissez au pourcentage de districts atteignant les objectifs de performance pour la couverture : a-t-il augmenté ou diminué avec le temps ? Varie-t-il selon les vaccins ?"
+  },
+  {
+    "key": "low_reporting_coverage_2",
+    "en": "Do these results using the adjusted data and alternative denominator align with performance indicators in the DHIS2 data? If they are different, why?",
+    "fr": "Ces résultats utilisant les données ajustées et un dénominateur alternatif sont-ils conformes aux indicateurs de performance dans les données DHIS2 ? S’ils diffèrent, pourquoi ?"
+  },
+  {
+    "key": "low_reporting_coverage_3",
+    "en": "Then, make the same reflections for the percent of districts that are meeting performance targets for dropout.",
+    "fr": "Ensuite, faites les mêmes réflexions pour le pourcentage de districts atteignant les objectifs de performance en matière d’abandon."
+  },
+  {
+    "key": "low_reporting_dropout_1",
+    "en": "Reflect on the percent of districts that are meeting performance targets for coverage: has it increased or decreased over time? Does it vary between different vaccines?",
+    "fr": "Réfléchissez au pourcentage de districts atteignant les objectifs de performance pour la couverture : a-t-il augmenté ou diminué avec le temps ? Varie-t-il selon les vaccins ?"
+  },
+  {
+    "key": "low_reporting_dropout_2",
+    "en": "Do these results using the adjusted data and alternative denominator align with performance indicators in the DHIS2 data? If they are different, why?",
+    "fr": "Ces résultats utilisant les données ajustées et un dénominateur alternatif sont-ils conformes aux indicateurs de performance dans les données DHIS2 ? S’ils diffèrent, pourquoi ?"
+  },
+  {
+    "key": "low_reporting_dropout_3",
+    "en": "Then, make the same reflections for the percent of districts that are meeting performance targets for dropout.",
+    "fr": "Ensuite, faites les mêmes réflexions pour le pourcentage de districts atteignant les objectifs de performance en matière d’abandon."
+  },
+  {
+    "key": "equity_assessment_measles1_1",
+    "en": "Residence: are the gaps between the urban and rural areas large, have they changed over time? What pattern of inequality (bottom, linear, top)?",
+    "fr": "Résidence : les écarts entre les zones urbaines et rurales sont-ils importants, ont-ils évolué au fil du temps ? Quel est le modèle d'inégalité (bas, linéaire, haut) ?"
+  },
+  {
+    "key": "equity_assessment_measles1_2",
+    "en": "Region:  Are the gaps between regions large? Have they changed over time?",
+    "fr": "Région : les écarts entre les régions sont-ils importants ? Ont-ils évolué au fil du temps ?"
+  },
+  {
+    "key": "equity_assessment_measles1_3",
+    "en": "Wealth: are the gaps between the rich and poor large, have they changed over time? What pattern of inequality (bottom, linear, top)?",
+    "fr": "Richesse : les écarts entre les riches et les pauvres sont-ils importants, ont-ils évolué au fil du temps ? Quel est le modèle d'inégalité (bas, linéaire, haut) ?"
+  },
+  {
+    "key": "equity_assessment_measles1_4",
+    "en": "Education: are the gaps in coverage by mother’s education large, have they changed over time?",
+    "fr": "Éducation : les écarts de couverture selon le niveau d'éducation de la mère sont-ils importants, ont-ils changé au fil du temps ?"
+  },
+  {
+    "key": "equity_assessment_measles1_5",
+    "en": "How do these results link to immunization strategies like fixed post, mobile and outreach?",
+    "fr": "Comment ces résultats sont-ils liés aux stratégies de vaccination telles que les postes fixes, mobiles et les activités de proximité ?"
+  },
+  {
+    "key": "equity_assessment_penta3_1",
+    "en": "Residence: are the gaps between the urban and rural areas large, have they changed over time? What pattern of inequality (bottom, linear, top)?",
+    "fr": "Résidence : les écarts entre les zones urbaines et rurales sont-ils importants, ont-ils évolué au fil du temps ? Quel est le modèle d'inégalité (bas, linéaire, haut) ?"
+  },
+  {
+    "key": "equity_assessment_penta3_2",
+    "en": "Region:  Are the gaps between regions large? Have they changed over time?",
+    "fr": "Région : les écarts entre les régions sont-ils importants ? Ont-ils évolué au fil du temps ?"
+  },
+  {
+    "key": "equity_assessment_penta3_3",
+    "en": "Wealth: are the gaps between the rich and poor large, have they changed over time? What pattern of inequality (bottom, linear, top)?",
+    "fr": "Richesse : les écarts entre les riches et les pauvres sont-ils importants, ont-ils évolué au fil du temps ? Quel est le modèle d'inégalité (bas, linéaire, haut) ?"
+  },
+  {
+    "key": "equity_assessment_penta3_4",
+    "en": "Education: are the gaps in coverage by mother’s education large, have they changed over time?",
+    "fr": "Éducation : les écarts de couverture selon le niveau d'éducation de la mère sont-ils importants, ont-ils changé au fil du temps ?"
+  },
+  {
+    "key": "equity_assessment_penta3_5",
+    "en": "How do these results link to immunization strategies like fixed post, mobile and outreach?",
+    "fr": "Comment ces résultats sont-ils liés aux stratégies de vaccination telles que les postes fixes, mobiles et les activités de proximité ?"
+  },
+  {
+    "key": "equity_assessment_custom_checks_1",
+    "en": "Residence: are the gaps between the urban and rural areas large, have they changed over time? What pattern of inequality (bottom, linear, top)?",
+    "fr": "Résidence : les écarts entre les zones urbaines et rurales sont-ils importants, ont-ils évolué au fil du temps ? Quel est le modèle d'inégalité (bas, linéaire, haut) ?"
+  },
+  {
+    "key": "equity_assessment_custom_checks_2",
+    "en": "Region:  Are the gaps between regions large? Have they changed over time?",
+    "fr": "Région : les écarts entre les régions sont-ils importants ? Ont-ils évolué au fil du temps ?"
+  },
+  {
+    "key": "equity_assessment_custom_checks_3",
+    "en": "Wealth: are the gaps between the rich and poor large, have they changed over time? What pattern of inequality (bottom, linear, top)?",
+    "fr": "Richesse : les écarts entre les riches et les pauvres sont-ils importants, ont-ils évolué au fil du temps ? Quel est le modèle d'inégalité (bas, linéaire, haut) ?"
+  },
+  {
+    "key": "equity_assessment_custom_checks_4",
+    "en": "Education: are the gaps in coverage by mother’s education large, have they changed over time?",
+    "fr": "Éducation : les écarts de couverture selon le niveau d'éducation de la mère sont-ils importants, ont-ils changé au fil du temps ?"
+  },
+  {
+    "key": "equity_assessment_custom_checks_5",
+    "en": "How do these results link to immunization strategies like fixed post, mobile and outreach?",
+    "fr": "Comment ces résultats sont-ils liés aux stratégies de vaccination telles que les postes fixes, mobiles et les activités de proximité ?"
+  }
+  ]
+}

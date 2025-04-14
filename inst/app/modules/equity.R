@@ -1,16 +1,16 @@
-equityUI <- function(id) {
+equityUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('equity_assessment'), 'Equity Assessment'),
+    contentHeader(ns('equity_assessment'), i18n$t("title_equity_assessment"), i18n = i18n),
     contentBody(
       box(
-        title = 'Analysis Options',
+        title = i18n$t("title_analysis_options"),
         status = 'success',
         width = 12,
         solidHeader = TRUE,
         fluidRow(
-          column(3, selectizeInput(ns('type'), label = 'Equity Type',
+          column(3, selectizeInput(ns('type'), label = i18n$t("title_equity_type"),
                                    choices = c('Area' = 'area',
                                                'Maternal Education' = 'meduc',
                                                'Wealth Quintile' = 'wiq')))
@@ -18,11 +18,11 @@ equityUI <- function(id) {
       ),
 
       tabBox(
-        title = 'Equity Analysis',
+        title = i18n$t("title_equity_analysis"),
         width = 12,
 
         tabPanel(
-          title = 'Penta 3',
+          title = i18n$t("opt_penta3"),
           fluidRow(
             column(12, plotCustomOutput(ns('penta3'))),
             column(3, downloadButtonUI(ns('penta3_download')))
@@ -30,7 +30,7 @@ equityUI <- function(id) {
         ),
 
         tabPanel(
-          title = 'Measles 1',
+          title = i18n$t("opt_mcv1"),
           fluidRow(
             column(12, plotCustomOutput(ns('measles1'))),
             column(3, downloadButtonUI(ns('measles1_download')))
@@ -38,9 +38,11 @@ equityUI <- function(id) {
         ),
 
         tabPanel(
-          'Custom Check',
+          i18n$t("opt_custom_check"),
           fluidRow(
-            column(3, selectizeInput(ns('indicator'), label = 'Indicator', choices = NULL))
+            column(3, selectizeInput(ns('indicator'),
+                                     label = i18n$t("title_indicator"),
+                                     choices =  c('Select' = '', list_vaccine_indicators())))
           ),
           fluidRow(
             column(12, plotCustomOutput(ns('custom_check'))),
@@ -53,7 +55,7 @@ equityUI <- function(id) {
   )
 }
 
-equityServer <- function(id, cache) {
+equityServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
@@ -81,19 +83,6 @@ equityServer <- function(id, cache) {
         req(cache())
         cache()$area_survey %>%
           filter(if (is.null(start_year())) TRUE else year >= start_year())
-      })
-
-      observe({
-
-        indicators <-  c("bcg", "anc1", "pcv3", "opv1", "opv2", "opv3", "penta2", "pcv1", "pcv2",
-                         "penta1", "penta3", "measles1", "rota1", "rota2", "instdeliveries", "measles2",
-                         "ipv1", "ipv2", "undervax", "dropout_penta13", "zerodose", "dropout_measles12",
-                         "dropout_penta3mcv1")
-
-        names(indicators) <- indicators
-        indicators <- c('Select' = '', indicators)
-
-        updateSelectInput(session, 'indicator', choices = indicators)
       })
 
       penta3_equiplot <- reactive({
@@ -142,6 +131,7 @@ equityServer <- function(id, cache) {
         id = 'penta3_download',
         filename = paste0('penta3_', input$type, '_equity'),
         data = penta3_equiplot,
+        i18n = i18n,
         plot_function = function() {
           tryCatch(
             plot(penta3_equiplot()),
@@ -154,6 +144,7 @@ equityServer <- function(id, cache) {
         id = 'measles1_download',
         filename = paste0('measles1_', input$type, '_equity'),
         data = measles1_equiplot,
+        i18n = i18n,
         plot_function = function() {
           tryCatch(
             plot(measles1_equiplot()),
@@ -166,6 +157,7 @@ equityServer <- function(id, cache) {
         id = 'custom_download',
         filename = paste0(input$indicator, '_', input$type, '_equity'),
         data = custom_equiplot,
+        i18n = i18n,
         plot_function = function() {
           tryCatch(
             plot(custom_equiplot()),
@@ -178,8 +170,9 @@ equityServer <- function(id, cache) {
         'equity_assessment',
         cache = cache,
         objects = pageObjectsConfig(input),
-        md_title = 'Equity Assessment',
-        md_file = '2_reporting_rate.md'
+        md_title = i18n$t("title_equity_assessment"),
+        md_file = '2_reporting_rate.md',
+        i18n = i18n
       )
     }
   )

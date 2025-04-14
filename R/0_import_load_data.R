@@ -7,13 +7,13 @@
 #' @param start_year An integer. The minimum year to filter the data (default is
 #'   2019).
 #' @param admin_sheet_name A string. The name of the sheet containing administrative
-#'   data. Default is "Admin_data".
+#'   data. Default is `"Admin_data"`.
 #' @param population_sheet_name A string. The name of the sheet containing population
-#'   data. Default is "Population_data".
+#'   data. Default is `"Population_data"`.
 #' @param reporting_sheet_name A string. The name of the sheet containing reporting
-#'   completeness data. Default is "Reporting_completeness".
+#'   completeness data. Default is `"Reporting_completeness"`.
 #' @param service_sheet_names A vector of strings. The names of the sheets containing
-#'   service data. Default is `c("Service_data_1", "Service_data_2", "Service_data_3", "Vaccine_stock_data")`.
+#'   service data. Default is `c("Service_data_1", "Service_data_2", "Service_data_3")`.
 #'
 #' @return A tibble of class `cd_data`, containing cleaned and processed data.
 #' @details
@@ -160,14 +160,7 @@ load_data <- function(path) {
 #' @export
 new_countdown <- function(.data, class = NULL, call = caller_env()) {
   # Indicator groups required for analysis within Countdown 2030
-  indicator_groups <- list(
-    anc = c("anc1"),
-    idelv = c("ideliv", "instlivebirths"),
-    vacc = c("opv1", "opv2", "opv3", "penta1", "penta2", "penta3", "measles1",
-             "measles2", "pcv1", "pcv2", "pcv3", "bcg", "rota1", "rota2", "ipv1", 'ipv2')
-  )
-
-  tracers <- c('penta1', 'penta2', 'penta3', 'measles1', 'bcg', 'opv1', 'opv2', 'opv3')
+  indicator_groups <- get_indicator_groups()
 
   # Check for any missing columns within the indicator groups
   missing_cols <- list_c(imap(indicator_groups, ~ setdiff(c(.x, paste0(.y, '_rr')), colnames(.data))))
@@ -190,8 +183,6 @@ new_countdown <- function(.data, class = NULL, call = caller_env()) {
   # Add attributes for indicator groups and tracers and create the cd_data class
   new_tibble(
     .data,
-    indicator_groups = indicator_groups,
-    tracers = tracers,
     country = country$alternate,
     iso3 = as.character(country$iso3),
     class = c(class, 'cd_data')
@@ -267,8 +258,7 @@ read_and_clean_sheet <- function(path, sheet_name, sheet_ids, start_year, call =
         across(any_of('year'), ~ as.integer(.)), # Convert year column to integer
         across(-any_of(required_columns), ~ suppressWarnings(as.numeric(.))) # Convert other columns to numeric
       ) %>%
-      filter(if_any(matches('year'), ~ year >= start_year)), # %>%
-      # tidyr::complete(district, year, month),
+      filter(if_any(matches('year'), ~ year >= start_year)),
     error = function(e) {
       clean_message <- clean_error_message(e)
       cd_abort(c('x' = paste0(clean_message), ' in ', sheet_name), call = call)

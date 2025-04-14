@@ -42,8 +42,6 @@ values on the analysis.
 percentage of non-outliers. Additionally, the function aggregates the non-outlier
 rates across all indicators, as well as vaccination-only and tracer-only indicators,
 providing an overall data quality summary.
-\item \strong{Rounding}: Percentages of non-outliers are rounded to two decimal places for
-accuracy and presentation clarity.
 }
 }
 \examples{
@@ -51,7 +49,5 @@ accuracy and presentation clarity.
   # Check for extreme outliers in indicator data
   calculate_outliers_summary(data)
 }
-
-# Output: Percentage of monthly values that are not extreme outliers, by year
 
 }

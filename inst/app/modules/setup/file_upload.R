@@ -2,11 +2,11 @@ source('modules/setup/file_upload_helpers.R')
 source('modules/setup/modal_helpers.R')
 source('ui/directory-input.R')
 
-fileUploadUI <- function(id) {
+fileUploadUI <- function(id, i18n) {
   ns <- NS(id)
 
   box(
-    title = 'Upload Survey Data',
+    title = i18n$t("title_upload_survey"),
     status = 'success',
     solidHeader = TRUE,
     width = 12,
@@ -16,8 +16,8 @@ fileUploadUI <- function(id) {
         6,
         fileInput(
           inputId = ns('un_data'),
-          label = 'Upload UN Estimates data',
-          buttonLabel = 'Browse or Drop...',
+          label = i18n$t("title_upload_un_estimates"),
+          buttonLabel = i18n$t("btn_browse_or_drop"),
           placeholder = 'Supported formats: .dta',
           accept = '.dta'
         ),
@@ -28,8 +28,8 @@ fileUploadUI <- function(id) {
         6,
         fileInput(
           inputId = ns('wuenic_data'),
-          label = 'Upload WUENIC estimates',
-          buttonLabel = 'Browse or Drop...',
+          label = i18n$t("title_upload_wuenic"),
+          buttonLabel = i18n$t("btn_browse_or_drop"),
           placeholder = 'Supported formats: .dta',
           accept = '.dta'
         ),
@@ -42,8 +42,8 @@ fileUploadUI <- function(id) {
         6,
         directoryInput(
           ns('directory_select'),
-          label = 'Upload Survey Data',
-          buttonLabel = 'Browse or Drop...',
+          label = i18n$t("title_upload_survey"),
+          buttonLabel = i18n$t("btn_browse_or_drop"),
           accept = '.dta'
         ),
 
@@ -51,10 +51,10 @@ fileUploadUI <- function(id) {
       ),
       column(
         6,
-        tags$label('Subnational Manual Data Mapping (Optional)', style = 'font-weight: bold; margin-top: 10px; margin-bottom: 5px; display: block;'),
+        tags$label(i18n$t("title_subnational_mapping_opt"), style = 'font-weight: bold; margin-top: 10px; margin-bottom: 5px; display: block;'),
         fluidRow(
-          column(6, mappingModalUI(ns('survey_data'), 'Map Survey Data')),
-          column(6, mappingModalUI(ns('map_data'), 'Map Mapping Data')),
+          column(6, mappingModalUI(ns('survey_data'), i18n$t('btn_map_survey'))),
+          column(6, mappingModalUI(ns('map_data'), i18n$t('btn_map_mapping'))),
           column(12, messageBoxUI(ns('survey_feedback'))),
           column(12, messageBoxUI(ns('map_feedback')))
         )
@@ -63,18 +63,18 @@ fileUploadUI <- function(id) {
   )
 }
 
-fileUploadServer <- function(id, cache) {
+fileUploadServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
 
-      un_message_box <- messageBoxServer('un_feedback')
-      wuenic_message_box <- messageBoxServer('wuenic_feedback')
-      survey_message_box <- messageBoxServer('survey_feedback')
-      map_message_box <- messageBoxServer('map_feedback')
-      selected_dir_box <- messageBoxServer('selected_dir_feedback', 'Survey folder not set')
+      un_message_box <- messageBoxServer('un_feedback', i18n = i18n)
+      wuenic_message_box <- messageBoxServer('wuenic_feedback', i18n = i18n)
+      survey_message_box <- messageBoxServer('survey_feedback', i18n = i18n)
+      map_message_box <- messageBoxServer('map_feedback', i18n = i18n)
+      selected_dir_box <- messageBoxServer('selected_dir_feedback', 'Survey folder not set', i18n = i18n)
 
       state <- reactiveValues(loaded = FALSE)
 
@@ -102,10 +102,11 @@ fileUploadServer <- function(id, cache) {
           end_year <- max(data()$year)
           un <- load_un_estimates(input$un_data$datapath, country_iso(), start_year, end_year)
           cache()$set_un_estimates(un)
-          un_message_box$update_message(paste('Upload successful: File', file_name, 'is ready.'), 'success')
+
+          un_message_box$update_message(str_glue(i18n$t('msg_upload_success')), 'success')
         },
         error = function(e) {
-          un_message_box$update_message('Upload failed: Check the file format and try again.', 'error')
+          un_message_box$update_message(i18n$t('error_upload_failed_unsupported_format'), 'error')
         })
       })
 
@@ -128,7 +129,7 @@ fileUploadServer <- function(id, cache) {
         if (is.null(input$un_data$name) && !is.null(cache()$un_estimates)) {
           un_message_box$update_message(paste('Upload successful: File loaded from cache'), 'success')
         } else {
-          un_message_box$update_message(paste('Awaiting file upload...'), 'info')
+          un_message_box$update_message(i18n$t('msg_awaiting_upload'), 'info')
         }
       })
 
@@ -140,10 +141,10 @@ fileUploadServer <- function(id, cache) {
         tryCatch({
           wuenic <- load_wuenic_data(input$wuenic_data$datapath, country_iso())
           cache()$set_wuenic_estimates(wuenic)
-          wuenic_message_box$update_message(paste('Upload successful: File', file_name, 'is ready.'), 'success')
+          wuenic_message_box$update_message(str_glue(i18n$t("msg_upload_success")), 'success')
         },
         error = function(e) {
-          wuenic_message_box$update_message('Upload failed: Check the file format and try again.', 'error')
+          wuenic_message_box$update_message(i18n$t('error_upload_failed_unsupported_format'), 'error')
         })
       })
 
@@ -152,7 +153,7 @@ fileUploadServer <- function(id, cache) {
         if (is.null(input$wuenic_data$name) && !is.null(cache()$wuenic_estimates)) {
           wuenic_message_box$update_message(paste('Upload successful: File loaded from cache'), 'success')
         } else {
-          wuenic_message_box$update_message(paste('Awaiting file upload...'), 'info')
+          wuenic_message_box$update_message(i18n$t('msg_awaiting_upload'), 'info')
         }
       })
 
@@ -166,7 +167,7 @@ fileUploadServer <- function(id, cache) {
                 !is.null(cache()$education_survey))) {
           selected_dir_box$update_message('Loading from cache', 'success')
         } else {
-          selected_dir_box$update_message('Awaiting file upload...', 'info')
+          selected_dir_box$update_message(i18n$t('msg_awaiting_upload'), 'info')
         }
 
         if (!is.null(cache()$national_survey)) {
@@ -275,7 +276,7 @@ fileUploadServer <- function(id, cache) {
       observe({
         req(data())
         if (is.null(survey_map())) {
-          survey_message_box$update_message('Survey mapping has not been done', 'info')
+          survey_message_box$update_message(i18n$t('msg_survey_mapping_not_done'), 'info')
         } else {
           survey_message_box$update_message('Survey mapping data is uploaded', 'success')
         }
@@ -304,9 +305,9 @@ fileUploadServer <- function(id, cache) {
       observe({
         req(data())
         if (is.null(map_map())) {
-          map_message_box$update_message('Map mapping has not been done', 'info')
+          map_message_box$update_message(i18n$t('msg_map_mapping_not_done'), 'info')
         } else {
-          map_message_box$update_message('Map mapping data is uploaded', 'success')
+          map_message_box$update_message(i18n$t('msg_map_mapping_uploaded'), 'success')
         }
       })
 

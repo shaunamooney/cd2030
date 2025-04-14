@@ -1,9 +1,9 @@
-downloadButtonUI <- function(id, label = 'Download') {
+downloadButtonUI <- function(id) {
   ns <- NS(id)
   uiOutput(ns('download_ui'))
 }
 
-downloadButtonServer <- function(id, filename, extension, content, data, label = 'Download', message = 'Downloading...') {
+downloadButtonServer <- function(id, filename, extension, content, data, i18n, label = 'Download', message = 'Downloading...') {
   stopifnot(is.reactive(data))
   stopifnot(is.reactive(filename))
   stopifnot(is.reactive(extension))
@@ -24,7 +24,7 @@ downloadButtonServer <- function(id, filename, extension, content, data, label =
         req(check_data())
 
         downloadButton(ns('download_button'),
-                       label = label,
+                       label = i18n$t(label),
                        icon = icon(name = NULL, class = "bi bi-download"),
                        class = 'btn btn-default btn-flat',
                        style = 'width:100%;margin-top:10px;')
@@ -37,12 +37,12 @@ downloadButtonServer <- function(id, filename, extension, content, data, label =
         content = function(file) {
           session$sendCustomMessage(
             type = 'starting_download',
-            list(id = ns('download_button'), message = message)
+            list(id = ns('download_button'), message = i18n$t(message))
           )
           content(file)
           session$sendCustomMessage(
             type = 'end_download',
-            list(id = ns('download_button'), label = label)
+            list(id = ns('download_button'), label = i18n$t(label))
           )
         }
       )

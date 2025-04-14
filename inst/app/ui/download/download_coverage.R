@@ -7,7 +7,7 @@ downloadCoverageUI <- function(id) {
 }
 
 downloadCoverageServer <- function(id, data, filename, indicator, denominator,
-                                   data_fn, region = NULL, sheet_name = 'Coverage') {
+                                   data_fn, i18n, region = NULL, sheet_name = 'Coverage') {
   stopifnot(is.reactive(data))
   stopifnot(is.reactive(indicator))
   stopifnot(is.reactive(denominator))
@@ -28,6 +28,7 @@ downloadCoverageServer <- function(id, data, filename, indicator, denominator,
         id = 'plot',
         filename = filename,
         data = download_data,
+        i18n = i18n,
         plot_function = function() {
           plot(data(), indicator = indicator(), denominator = denominator(), region = region)
         }
@@ -37,6 +38,7 @@ downloadCoverageServer <- function(id, data, filename, indicator, denominator,
         id = 'data',
         filename = filename,
         data = download_data,
+        i18n = i18n,
         excel_write_function = function(wb) {
           coverage <- download_data()
 

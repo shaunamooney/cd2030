@@ -1,40 +1,42 @@
-reportingRateUI <- function(id) {
+reportingRateUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('reporting_rate'), 'Reporting Rate'),
+    contentHeader(ns('reporting_rate'), i18n$t("title_reporting"), i18n = i18n),
     contentBody(
       box(
-        title = 'Reporting Rate Options',
+        title = i18n$t("title_reporting_rate_options"),
         status = 'success',
         solidHeader = TRUE,
         width = 12,
         fluidRow(
-          column(3, numericInput(ns('threshold'), label = 'Performance Threshold', value = 90)),
-          column(3, selectizeInput(ns('admin_level'), label = 'Admin Level',
+          column(3, numericInput(ns('threshold'), label = i18n$t("title_performance_threshold"), value = 90)),
+          # TODO: to include translation
+          column(3, selectInput(ns('admin_level'), label = i18n$t("title_admin_level"),
                                    choices = c('Admin Level 1' = 'adminlevel_1',
                                                'District' = 'district'))),
-          column(3, selectizeInput(ns('indicator'),
-                                   label = 'Indicator',
+          # TODO: to include translation
+          column(3, selectInput(ns('indicator'),
+                                   label = i18n$t("title_indicator"),
                                    choices = c('ANC' = 'anc_rr',
                                                'Institutional Delivery' = 'idelv_rr',
                                                'Vaccination' = 'vacc_rr')))
         )
       ),
       tabBox(
-        title = 'Sub-National Reporting Rate',
+        title = i18n$t("title_subnational_reporting_rate"),
         width = 12,
 
-        tabPanel(title = 'Heat Map', fluidRow(
+        tabPanel(title = i18n$t("title_heat_map"), fluidRow(
           column(12, withSpinner(plotlyOutput(ns('district_missing_heatmap'))))
         )),
 
-        tabPanel(title = 'Bar Graph', fluidRow(
+        tabPanel(title = i18n$t("title_bar_graph"), fluidRow(
           column(12, plotCustomOutput(ns('district_missing_bar')))
         ))
       ),
       box(
-        title = 'National Reporting Rate',
+        title = i18n$t("title_national_reporting_rate"),
         status = 'success',
         collapsible = TRUE,
         width = 6,
@@ -45,12 +47,12 @@ reportingRateUI <- function(id) {
         )
       ),
       box(
-        title = 'Subnational Units with Low Reporting',
+        title = i18n$t("title_subnational_low_reporting"),
         width = 6,
         status = 'success',
         fluidRow(
           column(3, selectizeInput(ns('year'),
-                                   label = 'Year',
+                                   label = i18n$t("title_year"),
                                    choices =NULL)),
           column(3, offset = 6, downloadButtonUI(ns('download_districts'))),
           column(12, reactableOutput(ns('low_reporting')))
@@ -60,7 +62,7 @@ reportingRateUI <- function(id) {
   )
 }
 
-reportingRateServer <- function(id, cache) {
+reportingRateServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
@@ -183,6 +185,7 @@ reportingRateServer <- function(id, cache) {
         id = 'download_plot',
         filename = 'district_rr_plot',
         data = district_rr,
+        i18n = i18n,
         plot_function = function() {
           plot(district_rr())
         }
@@ -192,19 +195,20 @@ reportingRateServer <- function(id, cache) {
         id = 'download_data',
         filename = 'checks_reporting_rate',
         data = national_rr,
+        i18n = i18n,
         excel_write_function = function(wb) {
           low_rr_national <- national_rr()
           district_rr_national <- district_rr()
 
-          sheet_name_1 <- "Average RR by year"
+          sheet_name_1 <- i18n$t("title_average_rr")
           addWorksheet(wb, sheet_name_1)
-          writeData(wb, sheet = sheet_name_1, x = "Table 1 - average reporting rates for all indicators, by year", startCol = 1, startRow = 1)
+          writeData(wb, sheet = sheet_name_1, x = i18n$t("table_reporting_rate"), startCol = 1, startRow = 1)
           writeData(wb, sheet = sheet_name_1, x = low_rr_national, startCol = 1, startRow = 3)
 
           # Check if sheet exists; if not, add it
-          sheet_name_2 <- "RR >= threshold (districts)"
+          sheet_name_2 <- str_glue(i18n$t("sheet_reporting_district"))
           addWorksheet(wb, sheet_name_2)
-          writeData(wb, sheet = sheet_name_2, x = "Table 2 - Percentage of districts with reporting rates >= threshold, by year", startRow = 1, startCol = 1)
+          writeData(wb, sheet = sheet_name_2, x = str_glue(i18n$t("table_district_reporting")), startRow = 1, startCol = 1)
           writeData(wb, sheet = sheet_name_2, x = district_rr_national, startCol = 1, startRow = 3)
         }
       )
@@ -213,12 +217,13 @@ reportingRateServer <- function(id, cache) {
         id = 'download_districts',
         filename = paste0('district_low_reporting_rate_', input$year),
         data = district_low_rr,
+        i18n = i18n,
         excel_write_function = function(wb) {
           low_districts <- district_low_rr()
 
-          sheet_name_1 <- "Districts Low Reporting Rating"
+          sheet_name_1 <- i18n$t("title_districts_low_reporting")
           addWorksheet(wb, sheet_name_1)
-          writeData(wb, sheet = sheet_name_1, x = paste0('Table 3 - Districts with Reporting Rate < ', input$threshold, ' for', input$indicator, ' in ', input$year), startCol = 1, startRow = 1)
+          writeData(wb, sheet = sheet_name_1, x = str_glue(i18n$t("table_district_reporting_year")), startCol = 1, startRow = 1)
           writeData(wb, sheet = sheet_name_1, x = low_districts, startCol = 1, startRow = 3)
         }
       )
@@ -227,8 +232,9 @@ reportingRateServer <- function(id, cache) {
         'reporting_rate',
         cache = cache,
         objects = pageObjectsConfig(input),
-        md_title = 'Reporting Rate',
-        md_file = 'quality_checks_reporting_rate.md'
+        md_title = i18n$t("title_reporting"),
+        md_file = 'quality_checks_reporting_rate.md',
+        i18n = i18n
       )
     }
   )

@@ -1,19 +1,19 @@
 source('modules/setup/national_rates.R')
 source('modules/setup/file_upload.R')
 
-setupUI <- function(id) {
+setupUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('analysis_setup'), 'Analysis Setup', include_buttons = FALSE),
+    contentHeader(ns('analysis_setup'), i18n$t("title_setup"), include_buttons = FALSE),
     contentBody(
-      nationalRatesUI(ns('national_rates')),
-      fileUploadUI(ns('file_uploads'))
+      nationalRatesUI(ns('national_rates'), i18n),
+      fileUploadUI(ns('file_uploads'), i18n)
     )
   )
 }
 
-setupServer <- function(id, cache) {
+setupServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
@@ -21,12 +21,12 @@ setupServer <- function(id, cache) {
     module = function(input, output, session) {
 
       nationalRatesServer('national_rates', cache)
-      fileUploadServer('file_uploads', cache)
+      fileUploadServer('file_uploads', cache, i18n)
 
       contentHeaderServer(
         'analysis_setup',
         cache = cache,
-        md_title = 'Analysis Setup',
+        md_title = i18n$t("title_setup"),
         md_file = '5_upload_data.md'
       )
     }

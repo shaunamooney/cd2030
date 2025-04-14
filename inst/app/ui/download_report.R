@@ -1,17 +1,17 @@
-downloadReportUI <- function(id) {
+downloadReportUI <- function(id, i18n) {
   ns <- NS(id)
 
   tags$li(
     actionLink(
       inputId = ns('download'),
-      label = 'Download Report',
+      label = i18n$t("btn_download_report"),
       icon = icon('download')
     ),
     class = 'dropdown'
   )
 }
 
-downloadReportServer <- function(id, cache) {
+downloadReportServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
@@ -33,31 +33,32 @@ downloadReportServer <- function(id, cache) {
           # Show an error dialog if data is not available
           showModal(
             modalDialog(
-              title = 'Error',
-              'The necessary data for generating the report is not available. Please ensure that the data is uploaded and processed correctly.',
+              title = i18n$t("msg_error"),
+              i18n$t("error_download_report_no_data"),
               easyClose = TRUE,
-              footer = modalButton('OK')
+              footer = modalButton(i18n$t("btn_ok"))
             )
           )
         } else {
           ns <- NS(id)
           showModal(
             modalDialog(
-              title = 'Download Options',
+              title = i18n$t("title_download_options"),
               selectizeInput(
-                ns('type'), 'Report Type:',
-                choices = c('Full Report' = 'final_report', 'One Pager' = 'one_pager')
+                ns('type'), i18n$t("title_report_type"),
+                choices = set_names(c('final_report', 'one_pager'),
+                                    c(i18n$t("opt_full_report"), i18n$t("opt_one_pager")))
               ),
               footer = tagList(
-                modalButton('Cancel'),
-                reportButtonUI(ns('report'))
+                modalButton(i18n$t("btn_cancel")),
+                reportButtonUI(ns('report'), label = i18n$t("btn_generate_report"))
               )
             )
           )
         }
       })
 
-      reportButtonServer('report', cache, input$type)
+      reportButtonServer('report', cache, input$type, i18n)
 
     }
   )

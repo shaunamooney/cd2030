@@ -43,7 +43,7 @@ compute_indicator_numerator <- function(.data, admin_level = c('national', 'admi
                        district = c('adminlevel_1', 'district', 'year'))
 
   # Extract indicators from `indicator_groups` attribute
-  all_indicators <- get_all_indicators(.data)
+  all_indicators <- get_all_indicators()
 
   # Check for missing required columns
   missing_columns <- setdiff(all_indicators, colnames(.data))

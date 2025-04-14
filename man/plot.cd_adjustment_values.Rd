@@ -4,15 +4,7 @@
 \alias{plot.cd_adjustment_values}
 \title{Plot Adjusted vs. Unadjusted Data for Health Indicators}
 \usage{
-\method{plot}{cd_adjustment_values}(
-  x,
-  indicator = c("ideliv", "penta1", "bcg", "measles1", "anc1", "measles2", "opv1",
-    "opv2", "opv3", "penta2", "penta3", "pcv1", "pcv2", "pcv3", "rota1", "rota2", "ipv1",
-    "ipv2"),
-  title = NULL,
-  legend_labels = NULL,
-  ...
-)
+\method{plot}{cd_adjustment_values}(x, indicator = NULL, title = NULL, legend_labels = NULL, ...)
 }
 \arguments{
 \item{x}{A data frame containing the \code{year} column and columns for the raw

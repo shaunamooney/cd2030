@@ -1,8 +1,8 @@
-outlierDetectionUI <- function(id) {
+outlierDetectionUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('outlier_detection'), 'Outlier Detection'),
+    contentHeader(ns('outlier_detection'), i18n$t("title_outlier"), i18n = i18n),
     contentBody(
       box(
         title = 'Outlier Options',
@@ -10,32 +10,34 @@ outlierDetectionUI <- function(id) {
         solidHeader = TRUE,
         width = 12,
         fluidRow(
-          column(3, selectizeInput(ns('year'), label = 'Year', choice = NULL)),
-          column(3, selectizeInput(ns('admin_level'), label = 'Admin Level',
+          column(3, selectizeInput(ns('year'), label = i18n$t("title_year"), choice = NULL)),
+          column(3, selectizeInput(ns('admin_level'), label = i18n$t("title_admin_level"),
                                    choice = c('Admin Level 1' = 'adminlevel_1',
                                               'District' = 'district'))),
-          column(3, selectizeInput(ns('indicator'), label = 'Indicator', choice = NULL))
+          column(3, selectizeInput(ns('indicator'),
+                                   label = i18n$t("title_indicator"),
+                                   choice = c('Select Indicator' = '', list_vaccines())))
         )
       ),
       tabBox(
-        title = tags$span(icon('chart-line'), 'Indicators with Outliers'),
+        title = tags$span(icon('chart-line'), i18n$t("title_indicators_with_outlier")),
         width = 12,
 
-        tabPanel(title = 'Heat Map', fluidRow(
-          column(12, withSpinner(plotlyOutput(ns('district_outlier_heatmap')))),
+        tabPanel(title = i18n$t("title_heat_map"), fluidRow(
+          column(12, plotCustomOutput(ns('district_outlier_heatmap'))),
           column(4, downloadButtonUI(ns('download_data')))
         )),
 
-        tabPanel(title = 'Vaccine Bar Graph', fluidRow(
+        tabPanel(title = i18n$t("title_vaccine_bar_graph"), fluidRow(
           column(12, plotCustomOutput(ns('vaccine_bar_graph')))
         )),
 
-        tabPanel(title = 'Region Bar Graph', fluidRow(
+        tabPanel(title = i18n$t("title_region_bar_graph"), fluidRow(
           column(12, plotCustomOutput(ns('region_bar_graph')))
         ))
       ),
       box(
-        title = 'Districts with Outliers',
+        title = i18n$t("title_district_outliers"),
         status = 'success',
         collapsible = TRUE,
         width = 6,
@@ -45,7 +47,7 @@ outlierDetectionUI <- function(id) {
         )
       ),
       box(
-        title = 'Districts Trends',
+        title = i18n$t("title_district_trends"),
         status = 'success',
         collapsible = TRUE,
         width = 6,
@@ -58,7 +60,7 @@ outlierDetectionUI <- function(id) {
   )
 }
 
-outlierDetectionServer <- function(id, cache) {
+outlierDetectionServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
@@ -68,11 +70,6 @@ outlierDetectionServer <- function(id, cache) {
       data <- reactive({
         req(cache())
         cache()$countdown_data
-      })
-
-      vaccines_indicator <- reactive({
-        req(cache())
-        cache()$vaccine_indicators
       })
 
       outlier_summary <- reactive({
@@ -107,13 +104,6 @@ outlierDetectionServer <- function(id, cache) {
       observe({
         req(data())
 
-        vaccs <- vaccines_indicator()
-        updateSelectizeInput(session, 'indicator', choices = c('Select Indicator' = '', vaccs))
-      })
-
-      observe({
-        req(data())
-
         years <- data() %>%
           distinct(year) %>%
           arrange(desc(year)) %>%
@@ -131,7 +121,9 @@ outlierDetectionServer <- function(id, cache) {
           arrange(!!sym(input$admin_level)) %>%
           pull(!!sym(input$admin_level))
 
-        updateSelectizeInput(session, 'district', choices = c('Select' = '', region))
+        admin <- if (input$admin_level == 'district') i18n$t("opt_district") else i18n$t("opt_admin_level_1")
+
+        updateSelectizeInput(session, 'district', label = admin, choices = c('Select' = '', region))
       })
 
 
@@ -167,7 +159,7 @@ outlierDetectionServer <- function(id, cache) {
           )
       })
 
-      output$district_outlier_heatmap <- renderPlotly({
+      output$district_outlier_heatmap <- renderCustomPlot({
         req(outlier_summary())
         plot(outlier_summary(), 'heat_map', input$indicator)
       })
@@ -193,19 +185,20 @@ outlierDetectionServer <- function(id, cache) {
         id = 'download_data',
         filename = 'checks_outlier_detection',
         data = data,
+        i18n = i18n,
         excel_write_function = function(wb) {
           completeness_rate <- data() %>% calculate_outliers_summary()
           district_completeness_rate <- data() %>% calculate_district_outlier_summary()
 
-          sheet_name_1 <- 'Outliers'
+          sheet_name_1 <- i18n$t("title_outliers")
           addWorksheet(wb, sheet_name_1)
-          writeData(wb, sheet = sheet_name_1, x = 'Table 2a: Percentage of monthly values that are not extreme outliers, by year', startCol = 1, startRow = 1)
+          writeData(wb, sheet = sheet_name_1, x = i18n$t("table_outliers"), startCol = 1, startRow = 1)
           writeData(wb, sheet = sheet_name_1, x = completeness_rate, startCol = 1, startRow = 3)
 
           # Check if sheet exists; if not, add it
-          sheet_name_2 <- 'Outliers (districts)'
+          sheet_name_2 <- i18n$t("sheet_district_outliers")
           addWorksheet(wb, sheet_name_2)
-          writeData(wb, sheet = sheet_name_2, x = 'Table 2b: Percentage of districts with no extreme outliers, by year', startRow = 1, startCol = 1)
+          writeData(wb, sheet = sheet_name_2, x = i18n$t("table_district_outliers"), startRow = 1, startCol = 1)
           writeData(wb, sheet = sheet_name_2, x = district_completeness_rate, startCol = 1, startRow = 3)
         }
       )
@@ -214,23 +207,25 @@ outlierDetectionServer <- function(id, cache) {
         id = 'download_outliers',
         filename = paste0('checks_outlier_districts_', input$indicator, '_', input$year),
         data = outlier_districts,
+        i18n = i18n,
         excel_write_function = function(wb) {
           district_outliers_sum <- outlier_districts()
 
-          sheet_name_1 <- 'Districts with Extreme Outliers'
+          sheet_name_1 <- i18n$t("title_district_extreme_outlier")
           addWorksheet(wb, sheet_name_1)
-          writeData(wb, sheet = sheet_name_1, x = paste0('Districts with extreme outliers for ', input$indicator, ' in ', input$year), startCol = 1, startRow = 1)
+          writeData(wb, sheet = sheet_name_1, x = str_glue(i18n$t("title_district_extreme_outlier_gen")), startCol = 1, startRow = 1)
           writeData(wb, sheet = sheet_name_1, x = district_outliers_sum, startCol = 1, startRow = 3)
         },
-        label = 'Download Outliers'
+        label = i18n$t("btn_download_outlier")
       )
 
       contentHeaderServer(
         'outlier_detection',
         cache = cache,
         objects = pageObjectsConfig(input),
-        md_title = 'Outlier Detection',
-        md_file = 'quality_checks_outlier_detection.md'
+        md_title = i18n$t("title_outlier"),
+        md_file = 'quality_checks_outlier_detection.md',
+        i18n = i18n
       )
     }
   )

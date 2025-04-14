@@ -6,8 +6,7 @@
 \usage{
 list_outlier_units(
   .data,
-  indicator = c("opv1", "opv2", "opv3", "penta1", "penta2", "penta3", "measles1",
-    "measles2", "pcv1", "pcv2", "pcv3", "bcg", "rota1", "rota2", "ipv1", "ipv2"),
+  indicator,
   admin_level = c("adminlevel_1", "district")
 )
 }
@@ -31,8 +30,6 @@ A \code{cd_outlier_list} object (a tibble) with the following columns:
 \item MAD (\verb{<indicator>_mad})
 \item Outlier flag (\verb{<indicator>_outlier5std})
 }
-
-This output is compatible with \code{plot.cd_outlier_list()} for diagnostics.
 }
 \description{
 This function summarizes a single immunization indicator by month and administrative level,
@@ -45,4 +42,14 @@ suitable for plotting or time-series review at subnational levels.
 \item Calculates median and MAD (Median Absolute Deviation) for outlier detection.
 \item Flags outliers when values exceed ±5×MAD from the median.
 }
+}
+\examples{
+\dontrun{
+  # Detect monthly outliers in Penta1 at district level
+  outliers <- list_outlier_units(cd_data, indicator = "penta1", admin_level = "district")
+
+  # Plot flagged points in a specific region
+  plot(outliers, region = "Nakuru")
+}
+
 }

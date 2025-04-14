@@ -150,14 +150,12 @@ calculate_inequality <- function(.data,
 #'
 #' @export
 filter_inequality <- function(.data,
-                              indicator = c('anc1', 'bcg', 'measles1', 'measles2', 'opv1', 'opv2', 'opv3',
-                                            'pcv1', 'pcv2', 'pcv3', 'penta1', 'penta2', 'penta3',
-                                            'rota1', 'rota2', 'ipv1', 'ipv2', 'dropout_penta13', 'dropout_penta3mcv1'),
+                              indicator,
                               denominator = c('dhis2', 'anc1', 'penta1'),
                               ...) {
 
   # check_cd_inequality(.data)
-  indicator <- arg_match(indicator)
+  indicator <- arg_match(indicator, list_vaccine_indicators())
   denominator <- arg_match(denominator)
   population <- get_population_column(indicator, denominator)
 

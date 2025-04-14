@@ -22,16 +22,14 @@
 #'
 #' @export
 plot.cd_inequality <- function(x,
-                               indicator = c('anc1', 'bcg', 'measles1', 'measles2', 'opv1', 'opv2', 'opv3',
-                                             'pcv1', 'pcv2', 'pcv3', 'penta1', 'penta2', 'penta3',
-                                             'rota1', 'rota2', 'ipv1', 'ipv2', 'dropout_penta13', 'dropout_penta3mcv1'),
+                               indicator,
                                denominator = c('dhis2', 'anc1', 'penta1'),
                                ...) {
 
   year = nat = madm = NULL
 
   admin_level <- attr(x, 'admin_level')
-  indicator <- arg_match(indicator)
+  indicator <- arg_match(indicator, list_vaccine_indicators())
   denominator <- arg_match(denominator)
   data <- filter_inequality(x, indicator, denominator)
 

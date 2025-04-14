@@ -20,16 +20,16 @@ load_excel_data(
 2019).}
 
 \item{admin_sheet_name}{A string. The name of the sheet containing administrative
-data. Default is "Admin_data".}
+data. Default is \code{"Admin_data"}.}
 
 \item{population_sheet_name}{A string. The name of the sheet containing population
-data. Default is "Population_data".}
+data. Default is \code{"Population_data"}.}
 
 \item{reporting_sheet_name}{A string. The name of the sheet containing reporting
-completeness data. Default is "Reporting_completeness".}
+completeness data. Default is \code{"Reporting_completeness"}.}
 
 \item{service_sheet_names}{A vector of strings. The names of the sheets containing
-service data. Default is \code{c("Service_data_1", "Service_data_2", "Service_data_3", "Vaccine_stock_data")}.}
+service data. Default is \code{c("Service_data_1", "Service_data_2", "Service_data_3")}.}
 }
 \value{
 A tibble of class \code{cd_data}, containing cleaned and processed data.

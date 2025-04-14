@@ -22,8 +22,6 @@
 #'   percentage of non-outliers. Additionally, the function aggregates the non-outlier
 #'   rates across all indicators, as well as vaccination-only and tracer-only indicators,
 #'   providing an overall data quality summary.
-#' - **Rounding**: Percentages of non-outliers are rounded to two decimal places for
-#'   accuracy and presentation clarity.
 #'
 #' @return
 #' A `cd_outliers_summary` object (tibble) with:
@@ -35,8 +33,6 @@
 #'   # Check for extreme outliers in indicator data
 #'   calculate_outliers_summary(data)
 #' }
-#'
-#' # Output: Percentage of monthly values that are not extreme outliers, by year
 #'
 #' @export
 calculate_outliers_summary <- function(.data,
@@ -54,9 +50,9 @@ calculate_outliers_summary <- function(.data,
     district = c('adminlevel_1', 'district', 'year')
   )
 
-  vaccine_only <- get_indicator_groups(.data)$vacc
-  tracers <- get_vaccine_tracers(.data)
-  allindicators <- get_all_indicators(.data)
+  vaccine_only <- list_vaccines ()
+  tracers <- list_tracer_vaccines ()
+  allindicators <- get_all_indicators()
 
   data <- .data %>%
     add_outlier5std_column(allindicators) %>%
@@ -118,9 +114,9 @@ calculate_district_outlier_summary <- function(.data) {
 
   check_cd_data(.data)
 
-  vaccine_only <- get_indicator_groups(.data)$vacc
-  tracers <- get_vaccine_tracers(.data)
-  allindicators <- get_all_indicators(.data)
+  vaccine_only <- list_vaccines ()
+  tracers <- list_tracer_vaccines ()
+  allindicators <- get_all_indicators()
 
   data <- .data %>%
     add_outlier5std_column(allindicators) %>%
@@ -169,25 +165,21 @@ calculate_district_outlier_summary <- function(.data) {
 #'   - MAD (`<indicator>_mad`)
 #'   - Outlier flag (`<indicator>_outlier5std`)
 #'
-#' This output is compatible with `plot.cd_outlier_list()` for diagnostics.
-#'
 #' @examples
 #' \dontrun{
 #'   # Detect monthly outliers in Penta1 at district level
 #'   outliers <- list_outlier_units(cd_data, indicator = "penta1", admin_level = "district")
 #'
 #'   # Plot flagged points in a specific region
-#'   plot(outliers, region = "Nakuru
+#'   plot(outliers, region = "Nakuru")
+#' }
 #'
 #' @export
 list_outlier_units <- function(.data,
-                               indicator = c(
-                                 'opv1', 'opv2', 'opv3', 'penta1', 'penta2', 'penta3', 'measles1',
-                                 'measles2', 'pcv1', 'pcv2', 'pcv3', 'bcg', 'rota1', 'rota2', 'ipv1', 'ipv2'
-                               ),
+                               indicator,
                                admin_level = c('adminlevel_1', 'district')) {
   check_cd_data(.data)
-  indicator <- arg_match(indicator)
+  indicator <- arg_match(indicator, list_vaccines())
   admin_level <- arg_match(admin_level)
 
   admin_level_cols <- switch(

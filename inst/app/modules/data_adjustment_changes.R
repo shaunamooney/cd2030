@@ -1,16 +1,16 @@
-adjustmentChangesUI <- function(id) {
+adjustmentChangesUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('adjustment_changes'), 'Data Adjustment Changes'),
+    contentHeader(ns('adjustment_changes'), i18n$t("title_adjustment_changes"), i18n = i18n),
     contentBody(
       tabBox(
-        title = 'Visualize effects of changes',
+        title = i18n$t("title_visualize_changes"),
         id = 'visualize_changes',
         width = 12,
 
         tabPanel(
-          title = 'Live Births',
+          title = i18n$t("opt_live_births"),
           fluidRow(
             column(12, plotCustomOutput(ns('live_births'))),
             column(3, downloadButtonUI(ns('live_births_plot')))
@@ -18,7 +18,7 @@ adjustmentChangesUI <- function(id) {
         ),
 
         tabPanel(
-          title = 'Penta 1',
+          title = i18n$t("opt_penta1"),
           fluidRow(
             column(12, plotCustomOutput(ns('penta1'))),
             column(3, downloadButtonUI(ns('penta1_plot')))
@@ -26,7 +26,7 @@ adjustmentChangesUI <- function(id) {
         ),
 
         tabPanel(
-          title = 'BCG',
+          title = i18n$t("opt_bcg"),
           fluidRow(
             column(12, plotCustomOutput(ns('bcg'))),
             column(3, downloadButtonUI(ns('bcg_plot')))
@@ -34,7 +34,7 @@ adjustmentChangesUI <- function(id) {
         ),
 
         tabPanel(
-          title = 'Measles',
+          title = i18n$t("opt_measles"),
           fluidRow(
             column(12, plotCustomOutput(ns('measles1'))),
             column(3, downloadButtonUI(ns('measles1_plot')))
@@ -42,9 +42,11 @@ adjustmentChangesUI <- function(id) {
         ),
 
         tabPanel(
-          title = 'Custom Check',
+          title = i18n$t("opt_custom_check"),
           fluidRow(
-            column(3, selectizeInput(ns('indicator'), label = 'Indicator', choices = NULL))
+            column(3, selectizeInput(ns('indicator'),
+                                     label = i18n$t("title_indicator"),
+                                     choices = c('Select Indicator' = '', list_vaccines())))
           ),
           fluidRow(
             column(12, plotCustomOutput(ns('custom_check'))),
@@ -56,7 +58,7 @@ adjustmentChangesUI <- function(id) {
   )
 }
 
-adjustmentChangesServer <- function(id, cache) {
+adjustmentChangesServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
@@ -84,43 +86,32 @@ adjustmentChangesServer <- function(id, cache) {
           generate_adjustment_values(adjustment = 'custom', k_factors = k_factors())
       })
 
-      vaccines_indicator <- reactive({
-        req(cache())
-        cache()$vaccine_indicators
-      })
-
-      observe({
-        req(cache())
-        vaccs <- vaccines_indicator()
-        updateSelectizeInput(session, 'indicator', choices = c('Select Indicator' = '', vaccs))
-      })
-
       output$live_births <- renderCustomPlot({
         req(adjustments())
         plot(adjustments(),
              indicator = 'ideliv',
-             title = 'Figure 1c: Comparison of number of live births before and after adjustments for completness and outliers')
+             title = i18n$t("figure_live_births_outlier"))
       })
 
       output$penta1 <- renderCustomPlot({
         req(adjustments())
         plot(adjustments(),
              indicator = 'penta1',
-             title = 'Figure 1d: Comparison of number of penta1 vaccination before and after adjustments for completness and outliers')
+             title = i18n$t("figure_penta_outlier"))
       })
 
       output$bcg <- renderCustomPlot({
         req(adjustments())
         plot(adjustments(),
              indicator = 'bcg',
-             title = 'Figure 1e: Comparison of number of BCG vaccination before and after adjustments for completness and outliers')
+             title = i18n$t("figure_bcg_outlier"))
       })
 
       output$measles1 <- renderCustomPlot({
         req(adjustments())
         plot(adjustments(),
              indicator = 'measles1',
-             title = 'Figure 1f: Comparison of number of measles vaccination before and after adjustments for completness and outliers')
+             title = i18n$t("figure_mcv1_outlier"))
       })
 
       output$custom_check <- renderCustomPlot({
@@ -134,10 +125,11 @@ adjustmentChangesServer <- function(id, cache) {
         id = 'live_births_plot',
         filename = 'live_births_plot',
         data = adjustments,
+        i18n = i18n,
         plot_function = function() {
           plot(adjustments(),
                indicator = 'ideliv',
-               title = 'Figure 1c: Comparison of number of live births before and after adjustments for completness and outliers')
+               title = i18n$t("figure_live_births_outlier"))
         }
       )
 
@@ -145,10 +137,11 @@ adjustmentChangesServer <- function(id, cache) {
         id = 'penta1_plot',
         filename = 'penta1_plot',
         data = adjustments,
+        i18n = i18n,
         plot_function = function() {
           plot(adjustments(),
                indicator = 'penta1',
-               title = 'Figure 1d: Comparison of number of penta1 vaccination before and after adjustments for completness and outliers')
+               title = i18n$t("figure_penta_outlier"))
         }
       )
 
@@ -156,10 +149,11 @@ adjustmentChangesServer <- function(id, cache) {
         id = 'bcg_plot',
         filename = 'bcg_plot',
         data = adjustments,
+        i18n = i18n,
         plot_function = function() {
           plot(adjustments(),
                indicator = 'bcg',
-               title = 'Figure 1e: Comparison of number of BCG vaccination before and after adjustments for completness and outliers')
+               title = i18n$t("figure_bcg_outlier"))
         }
       )
 
@@ -167,10 +161,11 @@ adjustmentChangesServer <- function(id, cache) {
         id = 'measles1_plot',
         filename = 'measles1_plot',
         data = adjustments,
+        i18n = i18n,
         plot_function = function() {
           plot(adjustments(),
                indicator = 'measles1',
-               title = 'Figure 1f: Comparison of number of measles vaccination before and after adjustments for completness and outliers')
+               title = i18n$t("figure_mcv1_outlier"))
         }
       )
 
@@ -178,6 +173,7 @@ adjustmentChangesServer <- function(id, cache) {
         id = 'custom_check_plot',
         filename = paste0(input$indicator, '_plot'),
         data = adjustments,
+        i18n = i18n,
         plot_function = function() {
           plot(adjustments(),
                indicator = input$indicator)
@@ -188,8 +184,9 @@ adjustmentChangesServer <- function(id, cache) {
         'adjustment_changes',
         cache = cache,
         objects = pageObjectsConfig(input),
-        md_title = 'Data Adjustments Changes',
-        md_file = '2_reporting_rate.md'
+        md_title = i18n$t("title_adjustment_changes"),
+        md_file = '2_reporting_rate.md',
+        i18n = i18n
       )
     }
   )
