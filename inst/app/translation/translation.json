@@ -371,6 +371,16 @@
       "fr": "Échec du téléversement : format de fichier non pris en charge."
     },
     {
+      "key": "msg_cache_loading",
+      "en": "Loading from cache",
+      "fr": "Chargement depuis le cache"
+    },
+    {
+      "key": "msg_cache_loaded",
+      "en": "Upload successful: File loaded from cache",
+      "fr": "Téléversement réussi : Fichier chargé depuis le cache"
+    },
+    {
       "key": "msg_upload_success",
       "en": "Upload successful: File {file_name} is ready.",
       "fr": "Téléversement réussi : le fichier {file_name} est prêt."
@@ -389,6 +399,16 @@
       "key": "msg_awaiting_upload",
       "en": "Awaiting file upload...",
       "fr": "En attente du téléchargement du fichier..."
+    },
+    {
+      "key": "msg_files_uploaded",
+      "en": "Files uploaded.",
+      "fr": "Fichiers téléversés."
+    },
+    {
+      "key": "msg_survey_mapping_files_uploaded",
+      "en": "Survey mapping data is uploaded",
+      "fr": "Les données de cartographie de l’enquête sont téléversées"
     },
     {
       "key": "msg_waiting",
@@ -862,8 +882,8 @@
     },
     {
       "key": "msg_removed_year",
-      "en": "Data for the following years has been removed:",
-      "fr": "Les données des années suivantes ont été supprimées :"
+      "en": "Data for the following years has been removed: {years}",
+      "fr": "Les données des années suivantes ont été supprimées : {years}"
     },
     {
       "key": "title_factors",
@@ -1549,6 +1569,81 @@
     "key": "equity_assessment_custom_checks_5",
     "en": "How do these results link to immunization strategies like fixed post, mobile and outreach?",
     "fr": "Comment ces résultats sont-ils liés aux stratégies de vaccination telles que les postes fixes, mobiles et les activités de proximité ?"
-  }
+  },
+  {
+    "key": "msg_manual_mapping",
+    "en": "Manual Mapping of Survey Data",
+    "fr": "Cartographie manuelle des données d’enquête"
+  },
+  {
+    "key": "msg_cache_loaded_national",
+    "en": "Loaded national survey data from cache.",
+    "fr": "Données d’enquête nationale chargées depuis le cache."
+  },
+  {
+    "key": "msg_cache_loaded_regional",
+    "en": "Loaded regional survey data from cache.",
+    "fr": "Données d’enquête régionale chargées depuis le cache."
+  },
+  {
+    "key": "msg_cache_loaded_wealth_index",
+    "en": "Loaded wealth index quintile survey data from cache.",
+    "fr": "Données de quintiles de l’indice de richesse chargées depuis le cache."
+  },
+  {
+    "key": "msg_cache_loaded_area",
+    "en": "Loaded area survey data from cache.",
+    "fr": "Données d’enquête par zone chargées depuis le cache."
+  },
+  {
+    "key": "msg_cache_loaded_maternal_education",
+    "en": "Loaded maternal education survey data from cache.",
+    "fr": "Données d’éducation maternelle chargées depuis le cache."
+  },
+  {
+    "key": "msg_missing_required_files",
+    "en": "Missing required files: {files}",
+    "fr": "Fichiers requis manquants : {files}"
+  },
+  {
+    "key": "log_loaded_national_survey",
+    "en": "Loaded national survey data: {filename}.",
+    "fr": "Données d’enquête nationale chargées : {filename}."
+  },
+  {
+    "key": "log_loaded_regional_survey",
+    "en": "Loaded regional survey data: {filename}.",
+    "fr": "Données d’enquête régionale chargées : {filename}."
+  },
+  {
+    "key": "log_loaded_area_survey",
+    "en": "Loaded area survey data: {filename}.",
+    "fr": "Données d’enquête par zone chargées : {filename}."
+  },
+  {
+    "key": "log_loaded_maternal_education_survey",
+    "en": "Loaded maternal education survey data: {filename}.",
+    "fr": "Données d’éducation maternelle chargées : {filename}."
+  },
+  {
+    "key": "log_loaded_wealth_index_survey",
+    "en": "Loaded wealth index quintile survey data: {filename}.",
+    "fr": "Données de quintiles de l’indice de richesse chargées : {filename}."
+  },
+  {
+    "key": "log_unknown_file_pattern",
+    "en": "File '{filename}' does not match any known pattern.",
+    "fr": "Le fichier « {filename} » ne correspond à aucun modèle connu."
+  },
+  {
+    "key": "log_file_processing_error",
+    "en": "Error processing file {filename}: {error}",
+    "fr": "Erreur lors du traitement du fichier {filename} : {error}"
+  },
+  {
+  "key": "msg_download",
+  "en": "Download",
+  "fr": "Télécharger"
+}
   ]
 }

@@ -20,7 +20,7 @@ messageBoxServer <- function(id, i18n, default_message = 'msg_awaiting_upload', 
 
       # Store messages as a list. Each message is a list with "text" and "status".
       # The default is a single message.
-      messages_data <- reactiveVal(list(list(text = i18n$t(default_message), status = "info")))
+      messages_data <- reactiveVal(list(list(text = default_message, status = "info", parameters = NULL)))
 
       # Render the message box UI based on current status
       output$message_box <- renderUI({
@@ -38,25 +38,25 @@ messageBoxServer <- function(id, i18n, default_message = 'msg_awaiting_upload', 
               'margin-top: 10px;',
               'border-radius: 5px'
             ),
-            .x$text
+            str_glue_data(.x$parameters, i18n$t(.x$text))
           )
         }))
       })
 
-      update_message <- function(message, status) {
+      update_message <- function(message, status, parameters = NULL) {
         if (!status %in% names(status_colors)) {
           cd_abort('x' = i18n$t("error_invalid_status"))
         }
 
-        messages_data(list(list(text = message, status = status)))
+        messages_data(list(list(text = message, status = status, parameters = parameters)))
       }
 
-      add_message <- function(message, status) {
+      add_message <- function(message, status, parameters = NULL) {
         if (!status %in% names(status_colors)) {
           cd_abort(i18n$t("error_invalid_status"))
         }
         current <- messages_data()
-        new_message <- list(text = message, status = status)
+        new_message <- list(text = message, status = status, parameters = parameters)
         messages_data(c(current, list(new_message)))
       }
 
