@@ -17,6 +17,8 @@ from \code{.rds} files.
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
+\item{\code{language}}{Get the UI language.}
+
 \item{\code{cache_path}}{Get cache path.}
 
 \item{\code{countdown_data}}{Get countdown data.}
@@ -81,6 +83,7 @@ Update a field (with change tracking)}
 \item \href{#method-CacheConnection-append_page_note}{\code{CacheConnection$append_page_note()}}
 \item \href{#method-CacheConnection-get_notes}{\code{CacheConnection$get_notes()}}
 \item \href{#method-CacheConnection-reactive}{\code{CacheConnection$reactive()}}
+\item \href{#method-CacheConnection-set_language}{\code{CacheConnection$set_language()}}
 \item \href{#method-CacheConnection-set_cache_path}{\code{CacheConnection$set_cache_path()}}
 \item \href{#method-CacheConnection-set_countdown_data}{\code{CacheConnection$set_countdown_data()}}
 \item \href{#method-CacheConnection-set_adjusted_data}{\code{CacheConnection$set_adjusted_data()}}
@@ -219,6 +222,23 @@ Return a reactive wrapper (for Shiny).
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$reactive()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_language"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_language}{}}}
+\subsection{Method \code{set_language()}}{
+Set the language.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_language(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{A scalar string representing 2 digit string.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_cache_path"></a>}}

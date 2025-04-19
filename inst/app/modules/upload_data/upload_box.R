@@ -76,7 +76,7 @@ uploadBoxServer <- function(id, i18n) {
         },
         error = function(e) {
           clean_message <- clean_error_message(e)
-          messageBox$update_message('error_upload_failed', 'error', clean_message = clean_message)
+          messageBox$update_message('error_upload_failed', 'error', list(clean_message = clean_message))
           NULL
         })
       })

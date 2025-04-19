@@ -3,7 +3,7 @@ downloadButtonUI <- function(id) {
   uiOutput(ns('download_ui'))
 }
 
-downloadButtonServer <- function(id, filename, extension, content, data, i18n, label = 'msg_download', message = 'Downloading...') {
+downloadButtonServer <- function(id, filename, extension, content, data, i18n, label = 'msg_download', message = 'msg_downloading') {
   stopifnot(is.reactive(data))
   stopifnot(is.reactive(filename))
   stopifnot(is.reactive(extension))

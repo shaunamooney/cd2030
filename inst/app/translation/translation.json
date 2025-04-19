@@ -231,6 +231,31 @@
       "fr": "Téléchargement prêt"
     },
     {
+      "key": "msg_downloading",
+      "en": "Downloading...",
+      "fr": "Téléchargement en cours..."
+    },
+    {
+      "key": "sheet_penta3_derived_coverage",
+      "en": "Penta 3 Derived Coverage",
+      "fr": "Couverture dérivée Penta 3"
+    },
+    {
+      "key": "sheet_penta1_derived_coverage",
+      "en": "Penta 1 Derived Coverage",
+      "fr": "Couverture dérivée Penta 1"
+    },
+    {
+      "key": "sheet_measles1_derived_coverage",
+      "en": "Measles 1 Derived Coverage",
+      "fr": "Couverture dérivée Rougeole 1"
+    },
+    {
+      "key": "sheet_custom_derived_coverage",
+      "en": "{indicator} Derived Coverage",
+      "fr": "Couverture dérivée {indicator}"
+    },
+    {
       "key": "msg_report_generated",
       "en": "The report has been successfully generated. Click below to download it.",
       "fr": "Le rapport a été généré avec succès. Cliquez ci-dessous pour le télécharger."
@@ -1644,6 +1669,12 @@
   "key": "msg_download",
   "en": "Download",
   "fr": "Télécharger"
+},
+{
+  "key": "title_derived_coverage",
+  "en": "Derived Coverage",
+  "fr": "Couverture dérivée"
 }
+
   ]
 }

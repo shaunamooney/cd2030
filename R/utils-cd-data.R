@@ -67,10 +67,10 @@ list_vaccines  <- function() {
 #'
 #' @export
 list_vaccine_indicators <- function() {
-  c('anc1', 'bcg', 'dropout_measles12', 'dropout_penta13', 'dropout_penta1mcv1',
-    'dropout_penta3mcv1', 'instdeliveries', 'ipv1', 'ipv2', 'measles1', 'measles2',
+  c('anc1', 'bcg', 'instlivebirths', 'instdeliveries', 'ipv1', 'ipv2', 'measles1', 'measles2',
     'opv1', 'opv2', 'opv3', 'pcv1', 'pcv2', 'pcv3', 'penta1', 'penta2', 'penta3',
-    'rota1', 'rota2', 'undervax', 'zerodose')
+    'rota1', 'rota2', 'dropout_measles12', 'dropout_penta13', 'dropout_penta1mcv1',
+    'dropout_penta3mcv1', 'undervax', 'zerodose')
 }
 
 #' List Tracer Vaccines
@@ -119,4 +119,28 @@ get_named_indicators <- function() {
   out <- list_c(groups)
   names(out) <- rep(names(groups), lengths(groups))
   out
+}
+
+#' Get Population Denominator Column Based on Indicator Only
+#'
+#' @param indicator Character scalar. Indicator name (e.g., "penta1", "measles1")
+#' @param denominator Character scalar. The denominator for the indicator
+#'
+#' @return A string naming the corresponding population column
+#'
+#' @export
+get_population_column <- function(indicator, denominator) {
+  indicator <- arg_match(indicator, list_vaccine_indicators())
+  denominator <- arg_match(denominator, c('dhis2', 'anc1', 'penta1'))
+  population <- case_match(
+    indicator,
+    c('anc1', 'anc4') ~ 'totpreg',
+    c('bcg', 'instlivebirths', 'instdeliveries') ~ if_else(denominator == 'dhis2', 'totbirths', 'totlbirths'),
+    c('penta1', 'penta2', 'penta3', 'pcv1', 'pcv2', 'pcv3', 'rota1',
+      'rota2', 'ipv1', 'ipv2', 'opv1', 'opv2', 'opv3', "undervax","dropout_penta13","zerodose","dropout_penta3mcv1","dropout_penta1mcv1") ~ 'totinftpenta',
+    c('measles1', 'dropout_measles12') ~ 'totinftmeasles',
+    'measles2' ~ 'totmeasles2'
+  )
+  if (is.na(population)) return(NA)
+  return(paste(population, denominator, sep = '_'))
 }
