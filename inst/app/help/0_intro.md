@@ -1,58 +1,39 @@
 ### Overview
 
-The **Countdown to 2030 for Women’s, Children’s and Adolescents’ Health**, in co
-llaboration with the **Global Financing Facility for Women, Children and Adolescents (G
-FF)**, **UNICEF**, **WHO**, **WAHO**, and other partners, is working to strengthen 
-country-led progress and performance reviews. These include key health assessments 
-such as annual health sector reviews and midterm reviews of investment cases.
+The **Countdown to 2030 for Women’s, Children’s and Adolescents’ Health (CD2030)** initiative - implemented in collaboration  
+with the **Global Financing Facility (GFF)**, **UNICEF**, **WHO**, **WAHO**, and other partners - aims to strengthen  
+country-led progress and performance reviews.  
+These reviews include critical processes such as annual health sector reviews and midterm assessments of investment cases.  
+As part of this CD2030 initiative, there is the **Immunization Coverage and Inequalities** Project.
 
 ---
 
-### Immunization Coverage Monitoring
+### Immunization Coverage and Inequalities Project
 
-Immunization is among the most effective interventions to improve child survival 
-and development. Consistent, high-quality immunization coverage estimates are 
-essential to track the performance of immunization programs at both national and 
-subnational levels. Furthermore, **monitoring inequalities** is critical to 
-identify non-immunized populations and inform targeted program interventions.
+The **Immunization Coverage and Inequalities** Project focuses on enhancing **evidence generation**  
+and **analytical capacity** to **monitor immunization coverage** and address inequalities across 26 sub-Saharan African countries.  
+The project contributes to improved data use for policy and programming in support of the **2030 Global Immunization Agenda**  
+and the **Sustainable Development Goals (SDGs)**.  
 
----
-
-### Data Sources
-
-National immunization programs have a longstanding tradition of tracking 
-immunization coverage across district, regional, and national levels using a 
-variety of data sources, including:
-
-- **Population-based surveys** (e.g., DHS, MICS, socioeconomic, and special 
-  immunization coverage surveys) that provide disaggregated coverage statistics
-  by socioeconomic status, residence (urban/rural), subnational region, age, and
-  gender.
-- **Health facility and program data** that contribute to routine monitoring.
-
-These data sources help immunization programs understand the coverage landscape 
-and target interventions accordingly.
+**Key Objectives**  
+ - To support country analysts to develop a set of national and subnational estimates for key routine immunization indicators using various health data sources.  
+ - To strengthen the skills of the country teams in the analysis of the routine health facility data (national and subnational) as well as the household survey data.  
+ - Enrich country-led monitoring of progress by supporting the development and implementation of comparable methods to estimate coverage from  
+   health facility data and other sources.  
+ - To synthesize and interpret all results from DHS, and HMIS analysis, and make strategic recommendations using the results.  
+ - Harness the use of digital tools in generation of evidence for decision-making and policy advocacy.  
 
 ---
 
-### Package Goals and Objectives
+### cd2030 R Package
 
-The **cd2030** R package is designed to support the immunization programs of 
-ministries of health and national public health institutions in 
-**26 sub-Saharan African countries** under the Countdown to 2030 initiative. 
-The package aims to:
+To support this work, CD2030 has developed the ***cd2030*** R package in an effort to promote the accessibility and usability of immunization data.  
+The **cd2030** R package is a digital solution (developed in R environment) designed to streamline the analysis and reporting of immunization data.
 
-- **Strengthen vaccination coverage and equity analyses** at national and 
-  subnational levels.
-- Enable immunization programs to contribute effectively to 
-  **regional and global monitoring** efforts.
+The package is a central tool for immunization program managers, analysts and public health professionals offering the following features:  
+ - A **user-friendly interface** to manage, analyze and investigate immunization coverage and inequalities.  
+ - Functions and tools for **data manipulation**, **visualization**, and **statistical analysis**.  
+ - An **automated report generation** feature that provides both summaries and detailed immunization coverage and inequalities reports for policy information.  
+ - A **repository of functions** that can be customized to meet the specific needs of different countries and regions.  
 
-The long-term objective is to **build country capacity** for immunization analysis 
-so that these analyses and official estimates are increasingly country-driven and 
-robust.
-
----
-
-This package will play a crucial role in supporting immunization monitoring, 
-addressing coverage gaps, and ensuring that data-driven insights can guide policies
-to improve immunization access for all children.
+Complementing the **cd2030** R package, are other tools and resources such as the **CD2030 DHIS2 API** (For authorized, direct data extraction from the DHIS2 platform).
