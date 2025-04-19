@@ -173,7 +173,7 @@ ui <- dashboardPage(
       tags$link(rel = 'stylesheet', type = 'text/css', href = 'bootstrap-icons.css')
     ),
     tabItems(
-      tabItem(tabName = 'introduction', introductionUI('introduction')),
+      tabItem(tabName = 'introduction', introductionUI('introduction', i18n = i18n)),
       tabItem(tabName = 'upload_data', uploadDataUI('upload_data', i18n = i18n)),
       tabItem(tabName = 'reporting_rate', reportingRateUI('reporting_rate', i18n = i18n)),
       tabItem(tabName = 'data_completeness', dataCompletenessUI('data_completeness', i18n = i18n)),
@@ -201,7 +201,7 @@ ui <- dashboardPage(
 
 server <- function(input, output, session) {
 
-  introductionServer('introduction')
+  introductionServer('introduction', selected_language = reactive(input$selected_language))
   cache <- uploadDataServer('upload_data', i18n)
   observeEvent(c(cache(), cache()$language), {
     req(cache())
@@ -246,7 +246,7 @@ server <- function(input, output, session) {
   downloadReportServer('download_report', cache, i18n)
   saveCacheServe('save_cache', cache, i18n)
 
-  session$onSessionEnded(stopApp)
+  # session$onSessionEnded(stopApp)
 
   updateHeader <- function(country, i18n) {
 

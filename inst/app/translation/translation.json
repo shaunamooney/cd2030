@@ -16,6 +16,11 @@
       "fr": "Introduction"
     },
     {
+      "key": "title_intro_title",
+      "en": "Introduction: Countdown to 2030",
+      "fr": "Introduction : Compte à rebours vers 2030"
+    },
+    {
       "key": "title_load_data",
       "en": "Load Data",
       "fr": "Charger les données"
