@@ -89,7 +89,7 @@ calculate_inequality <- function(.data,
         denominator <-  str_extract(cur_column(), "[^_]+$")
         population <- get_population_column(indicator, denominator)
 
-        stats::weighted.mean(.x, get(paste('popshare', population, denominator, sep = '_')), na.rm = TRUE)
+        stats::weighted.mean(.x, get(paste('popshare', population, sep = '_')), na.rm = TRUE)
       },
       .names = "{ gsub('^diff', 'madmpop', .col) }"),
 
