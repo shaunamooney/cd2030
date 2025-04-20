@@ -41,7 +41,7 @@
 #'
 #' @export
 calculate_indicator_coverage <- function(.data,
-                                         admin_level = 'national',
+                                         admin_level = c('national', 'adminlevel_1', 'district'),
                                          un_estimates = NULL,
                                          sbr = 0.02,
                                          nmr = 0.025,
@@ -51,6 +51,7 @@ calculate_indicator_coverage <- function(.data,
                                          twin = 0.015,
                                          preg_loss = 0.03) {
   check_cd_data(.data)
+  admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level)
   country_iso <- attr(.data, 'iso3')
 
@@ -71,7 +72,7 @@ calculate_indicator_coverage <- function(.data,
 }
 
 calculate_populations <- function(.data,
-                                  admin_level = 'national',
+                                  admin_level = c('national', 'adminlevel_1', 'district'),
                                   un_estimates = NULL,
                                   sbr = 0.02,
                                   nmr = 0.025,
@@ -101,10 +102,10 @@ calculate_populations <- function(.data,
     totinftmeasles_anc1 = totmeasles2_anc1 = totpreg_penta1 =
     otinftmeasles_penta1 = totmeasles2_penta1 = NULL
 
-  group_vars <- get_admin_columns(admin_level)
-
   national_population <- prepare_population_metrics(.data, admin_level = admin_level, un_estimates = un_estimates)
   indicator_numerator <- compute_indicator_numerator(.data, admin_level = admin_level)
+
+  group_vars <- get_admin_columns(admin_level)
 
   output_data <- national_population %>%
     inner_join(indicator_numerator, by = c(group_vars, 'year')) %>%

@@ -68,7 +68,7 @@ regionInputServer <- function(id, cache, admin_level, i18n, selected_region = NU
           session,
           inputId = 'region',
           choices = NULL,
-          selected = selected_region,
+          selected = options_list[[1]]$value,
           label = label,
           options = list(
             options = options_list,

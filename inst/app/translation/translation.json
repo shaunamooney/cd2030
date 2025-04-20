@@ -1141,9 +1141,14 @@
       "fr": "Dénominateur sélectionné"
     },
     {
+      "key": "title_survey_data_year",
+      "en": "Survey Data Start Year",
+      "fr": "Année de début des données de l'enquête"
+    },
+    {
       "key": "title_survey_year",
-      "en": "Survey Start Year",
-      "fr": "Année de début de l'enquête"
+      "en": "Survey Year",
+      "fr": "Année de l'enquête"
     },
     {
       "key": "title_national_coverage_trend",
@@ -1264,6 +1269,11 @@
       "key": "msg_select_region",
       "en": "Select Region",
       "fr": "Sélectionnez une région"
+    },
+    {
+      "key": "title_survey_setup",
+      "en": "Survey Setup",
+      "fr": "Configuration de l'enquête"
     },
 	{
 		"key": "reporting_rate_reporting_rate_1",

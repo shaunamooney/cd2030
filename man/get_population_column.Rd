@@ -7,7 +7,7 @@
 get_population_column(indicator, denominator)
 }
 \arguments{
-\item{indicator}{Character scalar. Indicator name (e.g., "penta1", "measles1")}
+\item{indicator}{Character scalar. Indicator name (e.g., 'penta1', 'measles1')}
 
 \item{denominator}{Character scalar. The denominator for the indicator}
 }

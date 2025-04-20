@@ -33,12 +33,13 @@
 #'
 #' @export
 calculate_reporting_rate <- function(.data,
-                                     admin_level = 'national') {
+                                     admin_level = c('national', 'adminlevel_1', 'district')) {
 
   . = NULL
 
   check_cd_data(.data)
 
+  admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level)
   indicators <- paste0(get_indicator_group_names(), '_rr')
 

@@ -40,7 +40,7 @@
 #'
 #' @export
 prepare_population_metrics <- function(.data,
-                                       admin_level = 'national',
+                                       admin_level = c('national', 'adminlevel_1', 'district'),
                                        un_estimates = NULL) {
 
   totlivebirths_dhis2 = total_pop = under5_pop = under1_pop = live_births =
@@ -51,6 +51,7 @@ prepare_population_metrics <- function(.data,
   check_cd_data(.data)
 
   # Define grouping variables based on the administrative level
+  admin_level <- arg_match(admin_level)
   group_vars <- get_admin_columns(admin_level)
   group_vars <- c(group_vars, 'year')
 

@@ -142,13 +142,7 @@ ui <- dashboardPage(
                            tabName = 'denominator_selection',
                            icon = icon('filter'))
                ),
-      menuItem(i18n$t('title_national_analysis'),
-               tabName = 'national_analysis',
-               icon = icon('flag'),
-               menuSubItem(i18n$t('title_national_coverage'),
-                           tabName = 'national_coverage',
-                           icon = icon('map-marked-alt'))
-               ),
+      menuItem(i18n$t('title_national_coverage'), tabName = 'national_coverage', icon = icon('flag')),
       menuItem(i18n$t('title_subnational_analysis'),
                tabName = 'subnational_analysis',
                icon = icon('globe-africa'),

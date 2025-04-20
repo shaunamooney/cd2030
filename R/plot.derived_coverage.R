@@ -54,7 +54,7 @@ plot.cd_derived_coverage <- function(x, region = NULL, ...) {
   }
 
   # Determine upper y-axis limit using rounded max
-  max_val <- max(c(data$coverage_new, data$coverage_old), na.rm = TRUE)
+  max_val <- robust_max(c(data$coverage_new, data$coverage_old), fallback = 100)
   y_max <- ceiling(max_val / 10) * 10
 
   # Define custom legend labels

@@ -47,6 +47,7 @@ calculate_coverage  <- function(.data,
 
   year = NULL
 
+  admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level)
 
   # Validate inputs
@@ -195,5 +196,6 @@ check_district_column <- function(.data, admin_level, dhis2_data) {
       distinct(adminlevel_1, district) %>%
       left_join(.data, by = 'adminlevel_1', relationship = 'many-to-many')
   }
+
   .data
 }

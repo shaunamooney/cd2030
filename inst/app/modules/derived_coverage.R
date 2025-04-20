@@ -89,29 +89,34 @@ derivedCoverageServer <- function(id, cache, i18n) {
         cache()$un_estimates
       })
 
+      survey_year <- reactive({
+        req(cache())
+        cache()$survey_year
+      })
+
       populations <- reactive({
         req(data(), un_estimates(), admin_level())
         calculate_populations(data(), un_estimates = un_estimates(), admin_level = admin_level())
       })
 
       penta1_data <- reactive({
-        req(populations())
-        calculate_derived_coverage(populations(), 'penta1', 2021)
+        req(populations(), survey_year())
+        calculate_derived_coverage(populations(), 'penta1', survey_year())
       })
 
       penta3_data <- reactive({
-        req(populations())
-        calculate_derived_coverage(populations(), 'penta3', 2021)
+        req(populations(), survey_year())
+        calculate_derived_coverage(populations(), 'penta3', survey_year())
       })
 
       measles1_data <- reactive({
-        req(populations())
-        calculate_derived_coverage(populations(), 'measles1', 2021)
+        req(populations(), survey_year())
+        calculate_derived_coverage(populations(), 'measles1', survey_year())
       })
 
       custom_data <- reactive({
-        req(populations(), input$indicator)
-        calculate_derived_coverage(populations(), input$indicator, 2021)
+        req(populations(), survey_year(), input$indicator)
+        calculate_derived_coverage(populations(), input$indicator, survey_year())
       })
 
       output$region_ui <- renderUI({
@@ -123,21 +128,27 @@ derivedCoverageServer <- function(id, cache, i18n) {
 
       output$penta1 <- renderCustomPlot({
         req(penta1_data())
+        if (admin_level() != 'national') {
+          req(region())
+        }
         plot(penta1_data(), region = region())
       })
 
       output$penta3 <- renderCustomPlot({
         req(penta3_data())
+        if (admin_level() != 'national') req(region())
         plot(penta3_data(), region = region())
       })
 
       output$measles1 <- renderCustomPlot({
         req(measles1_data())
+        if (admin_level() != 'national') req(region())
         plot(measles1_data(), region = region())
       })
 
       output$custom <- renderCustomPlot({
         req(custom_data())
+        if (admin_level() != 'national') req(region())
         plot(custom_data(), region = region())
       })
 

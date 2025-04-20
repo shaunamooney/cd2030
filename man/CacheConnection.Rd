@@ -43,6 +43,10 @@ from \code{.rds} files.
 
 \item{\code{national_estimates}}{Gets national estimates.}
 
+\item{\code{survey_years}}{Get survey years.}
+
+\item{\code{survey_year}}{Gets survey year of survey estimates.}
+
 \item{\code{start_survey_year}}{Gets start survey year.}
 
 \item{\code{denominator}}{Gets denominator.}
@@ -93,6 +97,7 @@ Update a field (with change tracking)}
 \item \href{#method-CacheConnection-set_adjusted_flag}{\code{CacheConnection$set_adjusted_flag()}}
 \item \href{#method-CacheConnection-set_survey_estimates}{\code{CacheConnection$set_survey_estimates()}}
 \item \href{#method-CacheConnection-set_national_estimates}{\code{CacheConnection$set_national_estimates()}}
+\item \href{#method-CacheConnection-set_survey_year}{\code{CacheConnection$set_survey_year()}}
 \item \href{#method-CacheConnection-set_start_survey_year}{\code{CacheConnection$set_start_survey_year()}}
 \item \href{#method-CacheConnection-set_denominator}{\code{CacheConnection$set_denominator()}}
 \item \href{#method-CacheConnection-set_selected_admin_level_1}{\code{CacheConnection$set_selected_admin_level_1()}}
@@ -389,6 +394,23 @@ Set national estimates.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{value}}{Named list.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_survey_year"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_survey_year}{}}}
+\subsection{Method \code{set_survey_year()}}{
+Set year of survey estimates.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_survey_year(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Integer year.}
 }
 \if{html}{\out{</div>}}
 }

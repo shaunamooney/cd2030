@@ -12,11 +12,7 @@ subnationalCoverageUI <- function(id, i18n) {
         fluidRow(
           column(3, adminLevelInputUI(ns('admin_level'), i18n)),
           column(3, regionInputUI(ns('region'), i18n)),
-          column(3, denominatorInputUI(ns('denominator'), i18n)),
-          column(
-            3,
-            selectizeInput(ns('year'), label = i18n$t('title_survey_year'), choices = NULL)
-          )
+          column(3, denominatorInputUI(ns('denominator'), i18n))
         )
       ),
 
@@ -34,31 +30,20 @@ subnationalCoverageUI <- function(id, i18n) {
         )),
 
         tabPanel(title = i18n$t('title_penta3_mcv1_dropout'), fluidRow(
-          column(12, plotCustomOutput(ns(
-            'dropout_penta3mcv1'
-          ))), downloadCoverageUI(ns('dropout_penta3mcv1_download'))
+          column(12, plotCustomOutput(ns('dropout_penta3mcv1'))), downloadCoverageUI(ns('dropout_penta3mcv1_download'))
         )),
 
         tabPanel(title = i18n$t('title_penta13_dropout'), fluidRow(
-          column(12, plotCustomOutput(ns(
-            'dropout_penta13'
-          ))), downloadCoverageUI(ns('dropout_penta13_download'))
+          column(12, plotCustomOutput(ns('dropout_penta13'))), downloadCoverageUI(ns('dropout_penta13_download'))
         )),
 
         tabPanel(
           i18n$t('opt_custom_check'),
-          fluidRow(column(
-            3, selectizeInput(
-              ns('indicator'),
-              label = i18n$t('title_indicator'),
-              choices = c('Select' = '', list_vaccine_indicators())
-            )
-          )),
-          fluidRow(column(12, plotCustomOutput(
-            ns('custom_check')
-          )), downloadCoverageUI(ns(
-            'custom_download'
-          )))
+          fluidRow(
+            column(3, selectizeInput(ns('indicator'),
+                                     label = i18n$t('title_indicator'),
+                                     choices = c('Select' = '', list_vaccine_indicators())))),
+          fluidRow(column(12, plotCustomOutput(ns('custom_check'))), downloadCoverageUI(ns('custom_download')))
         )
       )
     )
@@ -86,13 +71,11 @@ subnationalCoverageServer <- function(id, cache, i18n) {
         req(cache(), cache()$un_estimates, cache()$wuenic_estimates, survey_data())
 
         rates <- cache()$national_estimates
-        filtered_survey_data <- survey_data() %>%
-          filter(year >= as.numeric(input$year))
 
         cache()$adjusted_data %>%
           calculate_coverage(
             admin_level = admin_level(),
-            survey_data = filtered_survey_data,
+            survey_data = survey_data(),
             wuenic_data = cache()$wuenic_estimates,
             sbr = rates$sbr,
             nmr = rates$nmr,
@@ -112,23 +95,6 @@ subnationalCoverageServer <- function(id, cache, i18n) {
         } else {
           cache()$set_selected_district(region())
         }
-      })
-
-      observe({
-        req(survey_data())
-
-        years <- survey_data() %>%
-          distinct(year) %>%
-          pull(year)
-
-        selected_year <- cache()$start_survey_year
-
-        updateSelectInput(session, 'year', choices = years, selected = selected_year)
-      })
-
-      observeEvent(input$year, {
-        req(cache())
-        cache()$set_start_survey_year(as.numeric(input$year))
       })
 
       output$measles1 <- renderCustomPlot({

@@ -28,12 +28,6 @@ nationalRatesUI <- function(id, i18n) {
                                          min = 0, max = 0.05, value = 0.02, step = 0.001)),
       column(3, offset = 0, numericInput(ns('penta1_mortality_rate'), i18n$t("title_anc1_to_penta1_mort_rate"),
                                          min = 0, max = 0.05, value = 0.025, step = 0.001))
-    ),
-    fluidRow(
-      column(3, offset = 1, numericInput(ns('anc1_prop'), i18n$t("title_anc1_survey"),
-                                         min = 0, max = 100, value = 0, step = 1)),
-      column(3, offset = 0, numericInput(ns('penta1_prop'), i18n$t("title_penta1_survey"),
-                                         min = 0, max = 100, value = 0, step = 1)),
     )
   )
 }
@@ -74,45 +68,6 @@ nationalRatesServer <- function(id, cache) {
         updateNumericInput(session, "stillbirth_rate", value = national_estimates$sbr)
         updateNumericInput(session, "penta1_mortality_rate", value = national_estimates$penta1_mort_rate)
       })
-
-      debounced_anc1 <- debounce(reactive(input$anc1_prop), millis = 200)
-      debounced_penta1 <- debounce(reactive(input$penta1_prop), millis = 200)
-
-      observe({
-        req(cache())
-
-        estimates <- cache()$survey_estimates
-        updateNumericInput(session, 'anc1_prop', value = unname(estimates['anc1']))
-        updateNumericInput(session, 'penta1_prop', value = unname(estimates['penta1']))
-      })
-
-      observeEvent(c(debounced_anc1(), debounced_penta1()), {
-        req(cache())
-
-        estimates <- c(
-          anc1 = as.numeric(debounced_anc1()),
-          penta1 = as.numeric(debounced_penta1())
-        )
-
-        cache()$set_survey_estimates(estimates)
-      })
-
-
-
-      # observeEvent(data(), {
-      #   start_year <- min(data()$year)
-      #   end_year <- max(data()$year)
-      #
-      #   if (!is.null(un_path())) {
-      #     un <- load_un_estimates(un_path(), country_iso(), start_year, end_year)
-      #     un_estimates(un)
-      #   }
-      #
-      #   if (!is.null(wuenic_path())) {
-      #     wuenic <- load_wuenic_data(wuenic_path(), country_iso())
-      #     wuenic_data(wuenic)
-      #   }
-      # })
     }
   )
 }

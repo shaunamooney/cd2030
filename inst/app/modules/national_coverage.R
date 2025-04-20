@@ -9,10 +9,7 @@ nationalCoverageUI <- function(id, i18n) {
         status = 'success',
         width = 12,
         solidHeader = TRUE,
-        fluidRow(
-          column(3, denominatorInputUI(ns('denominator'), i18n)),
-          column(3, selectizeInput(ns('year'), label = i18n$t("title_survey_year"), choices = NULL))
-        )
+        fluidRow(column(3, denominatorInputUI(ns('denominator'), i18n)))
       ),
 
       tabBox(
@@ -86,12 +83,10 @@ nationalCoverageServer <- function(id, cache, i18n) {
         req(cache(), cache()$un_estimates, survey_data(), cache()$wuenic_estimates)
 
         rates <- cache()$national_estimates
-        filtered_survey_data <- survey_data() %>%
-          filter(year >= as.numeric(input$year))
 
         cache()$adjusted_data %>%
           calculate_coverage(
-            survey_data = filtered_survey_data,
+            survey_data = survey_data(),
             wuenic_data = cache()$wuenic_estimates,
             un_estimates = cache()$un_estimates,
             sbr = rates$sbr,
@@ -102,22 +97,6 @@ nationalCoverageServer <- function(id, cache, i18n) {
             anc1survey = rates$anc1,
             dpt1survey = rates$penta1
           )
-      })
-
-      observe({
-        req(survey_data())
-
-        years <- survey_data() %>%
-          distinct(year) %>%
-          arrange(year) %>%
-          pull(year)
-
-        updateSelectInput(session, 'year', choices = years, selected = cache()$start_survey_year)
-      })
-
-      observeEvent(input$year, {
-        req(cache(), input$year)
-        cache()$set_start_survey_year(as.numeric(input$year))
       })
 
       output$measles1 <- renderCustomPlot({
