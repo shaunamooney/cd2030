@@ -123,7 +123,7 @@ get_named_indicators <- function() {
 
 #' Get Population Denominator Column Based on Indicator Only
 #'
-#' @param indicator Character scalar. Indicator name (e.g., "penta1", "measles1")
+#' @param indicator Character scalar. Indicator name (e.g., 'penta1', 'measles1')
 #' @param denominator Character scalar. The denominator for the indicator
 #'
 #' @return A string naming the corresponding population column
@@ -137,10 +137,42 @@ get_population_column <- function(indicator, denominator) {
     c('anc1', 'anc4') ~ 'totpreg',
     c('bcg', 'instlivebirths', 'instdeliveries') ~ if_else(denominator == 'dhis2', 'totbirths', 'totlbirths'),
     c('penta1', 'penta2', 'penta3', 'pcv1', 'pcv2', 'pcv3', 'rota1',
-      'rota2', 'ipv1', 'ipv2', 'opv1', 'opv2', 'opv3', "undervax","dropout_penta13","zerodose","dropout_penta3mcv1","dropout_penta1mcv1") ~ 'totinftpenta',
+      'rota2', 'ipv1', 'ipv2', 'opv1', 'opv2', 'opv3', 'undervax','dropout_penta13','zerodose','dropout_penta3mcv1','dropout_penta1mcv1') ~ 'totinftpenta',
     c('measles1', 'dropout_measles12') ~ 'totinftmeasles',
     'measles2' ~ 'totmeasles2'
   )
   if (is.na(population)) return(NA)
   return(paste(population, denominator, sep = '_'))
+}
+
+#' Get Grouping Columns by Administrative Level
+#'
+#' Returns the appropriate column(s) to use for grouping data based on the selected
+#' administrative level. This utility is commonly used in functions that need to dynamically
+#' group or filter data by administrative hierarchy.
+#'
+#' @param admin_level A character string specifying the administrative level.
+#'   Must be one of `"national"`, `"adminlevel_1"`, or `"district"`.
+#'
+#' @return A character vector of column names to group by, or `NULL` if `admin_level = "national"`.
+#'
+#' @examples
+#' get_admin_columns("national")
+#' #> NULL
+#'
+#' get_admin_columns("adminlevel_1")
+#' #> "adminlevel_1"
+#'
+#' get_admin_columns("district")
+#' #> c("adminlevel_1", "district")
+#'
+#' @export
+get_admin_columns <- function(admin_level) {
+  admin_level <- arg_match(admin_level, c('national', 'adminlevel_1', 'district'))
+  switch(
+    admin_level,
+    national = NULL,
+    adminlevel_1 = 'adminlevel_1',
+    district = c('adminlevel_1', 'district')
+  )
 }

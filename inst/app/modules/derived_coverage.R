@@ -10,12 +10,7 @@ derivedCoverageUI <- function(id, i18n) {
         solidHeader = TRUE,
         fluidRow(
           column(3, adminLevelInputUI(ns('admin_level'), i18n, include_national = TRUE)),
-          conditionalPanel(
-            condition = str_glue("input['{ns('admin_level')}'] != 'national'"),
-            column(3, selectizeInput(
-              ns('region'), label = i18n$t("opt_admin_level_1"), choices = NULL
-            ))
-          )
+          column(3, uiOutput(ns('region_ui')))
         )
       ),
       tabBox(
@@ -79,13 +74,15 @@ derivedCoverageServer <- function(id, cache, i18n) {
   moduleServer(
     id = id,
     module = function(input, output, session) {
+      ns <- session$ns
+
+      admin_level <- adminLevelInputServer('admin_level')
+      region <- regionInputServer('region', cache, admin_level, i18n)
 
       data <- reactive({
         req(cache())
         cache()$adjusted_data
       })
-
-      admin_level <- adminLevelInputServer('admin_level')
 
       un_estimates <- reactive({
         req(cache())
@@ -95,14 +92,6 @@ derivedCoverageServer <- function(id, cache, i18n) {
       populations <- reactive({
         req(data(), un_estimates(), admin_level())
         calculate_populations(data(), un_estimates = un_estimates(), admin_level = admin_level())
-      })
-
-      region <- reactive({
-        region <- if (admin_level() == 'national') {
-          NULL
-        } else {
-          input$region
-        }
       })
 
       penta1_data <- reactive({
@@ -125,17 +114,11 @@ derivedCoverageServer <- function(id, cache, i18n) {
         calculate_derived_coverage(populations(), input$indicator, 2021)
       })
 
-      observeEvent(admin_level(), {
-        req(admin_level() %in% c('adminlevel_1', 'district'), populations())
-
-        choices <- populations() %>%
-          distinct(!!sym(admin_level())) %>%
-          arrange(!!sym(admin_level())) %>%
-          pull(!!sym(admin_level()))
-
-        label <- if (admin_level() == 'adminlevel_1') 'Admin Level 1' else 'District'
-
-        updateSelectizeInput(session, 'region', choices = choices, label = label)
+      output$region_ui <- renderUI({
+        req(admin_level())
+        if (admin_level() != 'national') {
+          regionInputUI(ns('region'), i18n)
+        }
       })
 
       output$penta1 <- renderCustomPlot({
@@ -246,7 +229,6 @@ derivedCoverageServer <- function(id, cache, i18n) {
         md_file = '2_reporting_rate.md',
         i18n = i18n
       )
-
     }
   )
 }

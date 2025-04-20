@@ -28,19 +28,15 @@
 #' }
 #'
 #' @export
-compute_indicator_numerator <- function(.data, admin_level = c('national', 'adminlevel_1', 'district')) {
+compute_indicator_numerator <- function(.data, admin_level = 'national') {
 
   year = NULL
 
   # Validate inputs
   check_cd_data(.data)
-  admin_level <- arg_match(admin_level)
 
   # Define grouping variables based on admin_level
-  group_vars <- switch(admin_level,
-                       national = c('year'),
-                       adminlevel_1 = c('adminlevel_1', 'year'),
-                       district = c('adminlevel_1', 'district', 'year'))
+  group_vars <- get_admin_columns(admin_level)
 
   # Extract indicators from `indicator_groups` attribute
   all_indicators <- get_all_indicators()
@@ -55,6 +51,6 @@ compute_indicator_numerator <- function(.data, admin_level = c('national', 'admi
 
   # Summarize data
   .data %>%
-    summarise(across(all_of(all_indicators), sum, na.rm = TRUE), .by = all_of(group_vars)) %>%
+    summarise(across(all_of(all_indicators), sum, na.rm = TRUE), .by = c(group_vars, 'year')) %>%
     arrange(year)
 }

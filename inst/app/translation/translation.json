@@ -1260,6 +1260,11 @@
       "en": "Equity Analysis",
       "fr": "Analyse de l'équité"
     },
+    {
+      "key": "msg_select_region",
+      "en": "Select Region",
+      "fr": "Sélectionnez une région"
+    },
 	{
 		"key": "reporting_rate_reporting_rate_1",
 		"en": "Interpret the differences between the different admin1 units: are there any admin1s that stand out as more or less complete? What are some explanations?",

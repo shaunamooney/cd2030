@@ -34,12 +34,7 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
   dhis2_pop_col <- sym(dhis2_pop)
 
   # Determine grouping columns based on admin level
-  group_cols <- switch(
-    admin_level,
-    national = NULL,
-    adminlevel_1 = 'adminlevel_1',
-    district = c('adminlevel_1', 'district')
-  )
+  group_cols <- get_admin_columns(admin_level)
 
   # If subnational, aggregate to national level first
   nat_data <- if (!is.null(group_cols)) {

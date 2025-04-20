@@ -51,6 +51,7 @@ source('ui/download_report.R')
 source('ui/help_button.R')
 source('ui/message_box.R')
 source('ui/render-plot.R')
+source('ui/region-input.R')
 source('ui/report_button.R')
 source('ui/save_cache.R')
 

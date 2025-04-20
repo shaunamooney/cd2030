@@ -33,24 +33,17 @@
 #'
 #' @export
 calculate_reporting_rate <- function(.data,
-                                     admin_level = c('national', 'adminlevel_1', 'district')) {
+                                     admin_level = 'national') {
 
   . = NULL
 
   check_cd_data(.data)
-  admin_level <- arg_match(admin_level)
 
-  admin_level_cols <- switch(
-    admin_level,
-    national = 'year',
-    adminlevel_1 = c('adminlevel_1', 'year'),
-    district = c('adminlevel_1', 'district', 'year')
-  )
-
+  admin_level_cols <- get_admin_columns(admin_level)
   indicators <- paste0(get_indicator_group_names(), '_rr')
 
   reporting_rate <- .data %>%
-    summarise(across(all_of(indicators), mean, na.rm = TRUE), .by = admin_level_cols) %>%
+    summarise(across(all_of(indicators), mean, na.rm = TRUE), .by = c(admin_level_cols, 'year')) %>%
     mutate(mean_rr = rowMeans(select(., indicators), na.rm = TRUE)) %>%
     mutate(across(ends_with('_rr'), round, 0))
 

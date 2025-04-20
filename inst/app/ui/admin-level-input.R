@@ -2,7 +2,7 @@ adminLevelInputUI <- function(id, i18n, include_national = FALSE) {
   ns <- NS(id)
 
   choices <- c(
-    if (include_national) 'National' = 'national' else NULL,
+    if (include_national) c('National' = 'national') else NULL,
     'Admin Level 1' = 'adminlevel_1',
     'District' = 'district'
   )

@@ -50,7 +50,8 @@ outlierDetectionUI <- function(id, i18n) {
         collapsible = TRUE,
         width = 6,
         fluidRow(
-          column(6, selectizeInput(ns('district'), label = 'District', choice = NULL)),
+          # column(6, selectizeInput(ns('district'), label = 'District', choice = NULL)),
+          column(6, regionInputUI(ns('region'), i18n)),
           column(12, withSpinner(plotCustomOutput(ns('district_trend'))))
         )
       )
@@ -66,6 +67,7 @@ outlierDetectionServer <- function(id, cache, i18n) {
     module = function(input, output, session) {
 
       admin_level <- adminLevelInputServer('admin_level')
+      region <- regionInputServer('region', cache, admin_level, i18n)
 
       data <- reactive({
         req(cache())
@@ -79,26 +81,17 @@ outlierDetectionServer <- function(id, cache, i18n) {
           calculate_outliers_summary(admin_level())
       })
 
-      region_cols <- reactive({
-        req(admin_level())
-
-        switch (
-          admin_level(),
-          adminlevel_1 = 'adminlevel_1',
-          district = c('adminlevel_1', 'district')
-        )
-      })
-
       outlier_districts <- reactive({
         req(outlier_summary(), admin_level(), input$indicator, input$year)
 
         outlier_column <- paste0(input$indicator, '_outlier5std')
         selected_year <- as.numeric(input$year)
+        admin_level_cols <- get_admin_columns(admin_level())
 
         data() %>%
           add_outlier5std_column(input$indicator, admin_level()) %>%
           filter(if (selected_year == 0) TRUE else year == selected_year, !!sym(outlier_column) == 1) %>%
-          select(any_of(c('adminlevel_1', 'district')), year, month, any_of(c(input$indicator, paste0(input$indicator, '_med'), paste0(input$indicator, '_mad'))))
+          select(any_of(admin_level_cols), year, month, any_of(c(input$indicator, paste0(input$indicator, '_med'), paste0(input$indicator, '_mad'))))
       })
 
       observe({
@@ -111,21 +104,6 @@ outlierDetectionServer <- function(id, cache, i18n) {
 
         updateSelectizeInput(session, 'year', choices = c('All years' = 0, years))
       })
-
-      observe({
-        req(data(), admin_level())
-
-
-        region <- data() %>%
-          distinct(!!sym(admin_level())) %>%
-          arrange(!!sym(admin_level())) %>%
-          pull(!!sym(admin_level()))
-
-        admin <- if (admin_level() == 'district') i18n$t('opt_district') else i18n$t('opt_admin_level_1')
-
-        updateSelectizeInput(session, 'district', label = admin, choices = c('Select' = '', region))
-      })
-
 
       output$district_outlier_summary <- renderReactable({
         req(outlier_districts())
@@ -175,10 +153,10 @@ outlierDetectionServer <- function(id, cache, i18n) {
       })
 
       output$district_trend <- renderCustomPlot({
-        req(data(), input$district, input$indicator, admin_level())
+        req(data(), region(), input$indicator, admin_level())
 
         outlier_units <- list_outlier_units(data(), input$indicator, admin_level())
-        plot(outlier_units, input$district)
+        plot(outlier_units, region())
       })
 
       downloadExcel(
