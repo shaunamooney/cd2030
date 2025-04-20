@@ -11,9 +11,7 @@ dataCompletenessUI <- function(id, i18n) {
         width = 12,
         fluidRow(
           column(3, selectizeInput(ns('year'), label = i18n$t('title_year'), choice = NULL)),
-          column(3, selectizeInput(ns('admin_level'), label = i18n$t('title_admin_level'),
-                                   choice = c('Admin Level 1' = 'adminlevel_1',
-                                              'District' = 'district'))),
+          column(3, adminLevelInputUI(ns('admin_level'), i18n)),
           column(3, selectizeInput(ns('indicator'),
                                    label = i18n$t('title_indicator'),
                                    choice = c('Select Indicator' = '', list_vaccines())))
@@ -67,6 +65,8 @@ dataCompletenessServer <- function(id, cache, i18n) {
   moduleServer(
     id = id,
     module = function(input, output, session) {
+
+      admin_level <- adminLevelInputServer('admin_level')
 
       data <- reactive({
         req(cache())
@@ -149,7 +149,7 @@ dataCompletenessServer <- function(id, cache, i18n) {
             ggplot(dt, aes(x = district, y = indicator, fill = value)) +
               geom_tile(color = 'white') +
               scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
-              labs(title = NULL, y = 'Indicator', x = input$admin_level, fill = 'Value') +
+              labs(title = NULL, y = 'Indicator', x = admin_level(), fill = 'Value') +
               theme_minimal() +
               theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
           )
@@ -166,7 +166,7 @@ dataCompletenessServer <- function(id, cache, i18n) {
             ggplot(dt, aes(x = district, y = year, fill = value)) +
               geom_tile(color = 'white') +
               scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
-              labs(title = NULL, x = input$admin_level, y = 'Year', fill = 'Value') +
+              labs(title = NULL, x = admin_level(), y = 'Year', fill = 'Value') +
               theme_minimal() +
               theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
           )
@@ -192,13 +192,13 @@ dataCompletenessServer <- function(id, cache, i18n) {
 
         data() %>%
           add_missing_column(vaccine_only) %>%
-          summarise(across(starts_with('mis_'), ~ (1 - mean(.x, na.rm = TRUE))) * 100, .by = c(year, input$admin_level)) %>%
-          group_by(!!sym(input$admin_level)) %>%
-          select(year, any_of(input$admin_level), where(~ any(.x < 100, na.rm = TRUE))) %>%
+          summarise(across(starts_with('mis_'), ~ (1 - mean(.x, na.rm = TRUE))) * 100, .by = c(year, admin_level())) %>%
+          group_by(!!sym(admin_level())) %>%
+          select(year, any_of(admin_level()), where(~ any(.x < 100, na.rm = TRUE))) %>%
           pivot_longer(cols = starts_with('mis_'),
                        names_prefix = 'mis_',
                        names_to = 'indicator') %>%
-          mutate(facet_label = paste0(!!sym(input$admin_level), ': ', indicator)) %>%
+          mutate(facet_label = paste0(!!sym(admin_level()), ': ', indicator)) %>%
           ggplot(aes(y = value, x = year, colour = indicator)) +
           geom_line() +
           geom_point() +

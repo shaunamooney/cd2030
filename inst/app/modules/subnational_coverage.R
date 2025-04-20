@@ -10,11 +10,7 @@ subnationalCoverageUI <- function(id, i18n) {
         width = 12,
         solidHeader = TRUE,
         fluidRow(
-          column(3, selectizeInput(
-            ns('admin_level'),
-            label = i18n$t("title_admin_level"),
-            choices = c('Admin Level 1' = 'adminlevel_1', 'District' = 'district')
-          )),
+          column(3, adminLevelInputUI(ns('admin_level'), i18n)),
           column(3, selectizeInput(
             ns('region'), label = i18n$t("opt_admin_level_1"), choices = NULL
           )),
@@ -79,6 +75,7 @@ subnationalCoverageServer <- function(id, cache, i18n) {
     module = function(input, output, session) {
       ns <- session$ns
 
+      admin_level <- adminLevelInputServer('admin_level')
       denominator <- denominatorInputServer('denominator', cache)
 
       survey_data <- reactive({
@@ -95,7 +92,7 @@ subnationalCoverageServer <- function(id, cache, i18n) {
 
         cache()$adjusted_data %>%
           calculate_coverage(
-            admin_level = input$admin_level,
+            admin_level = admin_level(),
             survey_data = filtered_survey_data,
             wuenic_data = cache()$wuenic_estimates,
             sbr = rates$sbr,
@@ -115,22 +112,22 @@ subnationalCoverageServer <- function(id, cache, i18n) {
         data <- cache()$countdown_data
 
         # Extract distinct values if column_name is valid
-        admin_level <- data %>%
-          distinct(!!sym(input$admin_level)) %>%
-          arrange(!!sym(input$admin_level)) %>%
-          pull(!!sym(input$admin_level))
+        admin_level_list <- data %>%
+          distinct(!!sym(admin_level())) %>%
+          arrange(!!sym(admin_level())) %>%
+          pull(!!sym(admin_level()))
 
-        selected_region <- if (input$admin_level == 'adminlevel_1') {
+        selected_region <- if (admin_level() == 'adminlevel_1') {
           admin_level_1 <- cache()$selected_admin_level_1
           if (is.null(admin_level_1)) {
-            admin_level[1]
+            admin_level_list[1]
           } else {
             admin_level_1
           }
         } else {
           district <- cache()$selected_district
           if (is.null(district)) {
-            admin_level[1]
+            admin_level_list[1]
           } else {
             district
           }
@@ -140,15 +137,15 @@ subnationalCoverageServer <- function(id, cache, i18n) {
         updateSelectInput(
           session,
           'region',
-          choices = admin_level,
+          choices = admin_level_list,
           selected = selected_region,
-          label = if (input$admin_level == 'adminlevel_1') i18n$t("opt_admin_level_1") else i18n$t("opt_district")
+          label = if (admin_level() == 'adminlevel_1') i18n$t("opt_admin_level_1") else i18n$t("opt_district")
         )
       })
 
       observeEvent(input$region, {
         req(cache())
-        if (input$admin_level == 'adminlevel_1') {
+        if (admin_level() == 'adminlevel_1') {
           cache()$set_selected_admin_level_1(input$region)
         } else {
           cache()$set_selected_district(input$region)

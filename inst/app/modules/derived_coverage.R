@@ -9,11 +9,7 @@ derivedCoverageUI <- function(id, i18n) {
         width = 12,
         solidHeader = TRUE,
         fluidRow(
-          column(3, selectizeInput(
-            ns('admin_level'),
-            label = i18n$t("title_admin_level"),
-            choices = c('National' = 'national', 'Admin Level 1' = 'adminlevel_1', 'District' = 'district')
-          )),
+          column(3, adminLevelInputUI(ns('admin_level'), i18n, include_national = TRUE)),
           conditionalPanel(
             condition = str_glue("input['{ns('admin_level')}'] != 'national'"),
             column(3, selectizeInput(
@@ -89,18 +85,20 @@ derivedCoverageServer <- function(id, cache, i18n) {
         cache()$adjusted_data
       })
 
+      admin_level <- adminLevelInputServer('admin_level')
+
       un_estimates <- reactive({
         req(cache())
         cache()$un_estimates
       })
 
       populations <- reactive({
-        req(data(), un_estimates(), input$admin_level)
-        calculate_populations(data(), un_estimates = un_estimates(), admin_level = input$admin_level)
+        req(data(), un_estimates(), admin_level())
+        calculate_populations(data(), un_estimates = un_estimates(), admin_level = admin_level())
       })
 
       region <- reactive({
-        region <- if (input$admin_level == 'national') {
+        region <- if (admin_level() == 'national') {
           NULL
         } else {
           input$region
@@ -127,15 +125,15 @@ derivedCoverageServer <- function(id, cache, i18n) {
         calculate_derived_coverage(populations(), input$indicator, 2021)
       })
 
-      observeEvent(input$admin_level, {
-        req(input$admin_level %in% c('adminlevel_1', 'district'), populations())
+      observeEvent(admin_level(), {
+        req(admin_level() %in% c('adminlevel_1', 'district'), populations())
 
         choices <- populations() %>%
-          distinct(!!sym(input$admin_level)) %>%
-          arrange(!!sym(input$admin_level)) %>%
-          pull(!!sym(input$admin_level))
+          distinct(!!sym(admin_level())) %>%
+          arrange(!!sym(admin_level())) %>%
+          pull(!!sym(admin_level()))
 
-        label <- if (input$admin_level == 'adminlevel_1') 'Admin Level 1' else 'District'
+        label <- if (admin_level() == 'adminlevel_1') 'Admin Level 1' else 'District'
 
         updateSelectizeInput(session, 'region', choices = choices, label = label)
       })

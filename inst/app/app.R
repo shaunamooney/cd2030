@@ -39,6 +39,7 @@ pacman::p_load(
 
 source('modules/page_objects_config.R')
 
+source('ui/admin-level-input.R')
 source('ui/content_body.R')
 source('ui/content_header.R')
 source('ui/denominator-input.R')
@@ -119,10 +120,10 @@ ui <- dashboardPage(
                ),
       menuItem(i18n$t('btn_remove_years'), tabName = 'remove_years', icon = icon('trash')),
       menuItem(i18n$t('title_adjustment'),
-               tabName = 'data_adjustment',
+               tabName = 'data_adjustment_1',
                icon = icon('adjust'),
                menuSubItem(i18n$t('title_adjustment'),
-                           tabName = 'data_adjustment_1',
+                           tabName = 'data_adjustment',
                            icon = icon('adjust')),
                menuSubItem(i18n$t('title_adjustment_changes'),
                            tabName = 'data_adjustment_changes',

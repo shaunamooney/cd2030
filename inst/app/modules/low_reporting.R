@@ -10,9 +10,7 @@ lowReportingUI <- function(id, i18n) {
         width = 12,
         solidHeader = TRUE,
         fluidRow(
-          column(3, selectizeInput(ns('admin_level'), label = i18n$t("title_admin_level"),
-                                   choices = c('Admin Level 1' = 'adminlevel_1',
-                                               'District' = 'district'))),
+          column(3, adminLevelInputUI(ns('admin_level'), i18n)),
           column(3, denominatorInputUI(ns('denominator'), i18n))
         )
       ),
@@ -50,6 +48,7 @@ lowReportingServer <- function(id, cache, i18n) {
     module = function(input, output, session) {
 
       denominator <- denominatorInputServer('denominator', cache)
+      admin_level <- adminLevelInputServer('admin_level')
 
       data <- reactive({
         req(cache())
@@ -57,13 +56,13 @@ lowReportingServer <- function(id, cache, i18n) {
       })
 
       coverage_threshold <- reactive({
-        req(data(), input$admin_level)
-        calculate_threshold(cache()$adjusted_data, input$admin_level, 'coverage')
+        req(data(), admin_level())
+        calculate_threshold(cache()$adjusted_data, admin_level(), 'coverage')
       })
 
       dropout_threshold <- reactive({
-        req(data(), input$admin_level)
-        calculate_threshold(cache()$adjusted_data, input$admin_level, 'dropout')
+        req(data(), admin_level())
+        calculate_threshold(cache()$adjusted_data, admin_level(), 'dropout')
       })
 
       output$coverage <- renderCustomPlot({
