@@ -26,8 +26,7 @@ dhis2BoxUI <- function(id, i18n) {
       fluidRow(
         column(4, actionButton(ns('login'), i18n$t("btn_login"), icon = icon('sign-in-alt'),
                                style = 'background-color: #FFEB3B;font-weight: 500;width:100%;')),
-
-        column(12, uiOutput(ns('enhanced_feedback')))
+        column(12, messageBoxUI(ns('feedback')))
       ),
       fluidRow(
         column(4, downloadButtonUI(ns('master_file'))),
@@ -41,7 +40,7 @@ dhis2BoxServer <- function(id, i18n) {
     id = id,
     module = function(input, output, session) {
 
-      file_status <- reactiveVal(list(message = 'Waiting ...', color = 'gray'))
+      messageBox <- messageBoxServer('feedback', i18n = i18n)
 
       dhis2_data <- reactiveVal()
 
@@ -61,35 +60,23 @@ dhis2BoxServer <- function(id, i18n) {
       cache <- eventReactive(input$login, {
 
         if (input$country == '0' || length(input$country) == 0) {
-          file_status(list(
-            message = 'Error: Country must be selected',
-            color = 'red'
-          ))
+          messageBox$update_message('error_country', 'error')
           return(NULL)
         }
 
         if (input$username == '' || length(input$username) == 0) {
-          file_status(list(
-            message = 'Error: Username must be provided',
-            color = 'red'
-          ))
+          messageBox$update_message('error_username', 'error')
           return(NULL)
         }
 
         if (input$password == '' || length(input$password) == 0) {
-          file_status(list(
-            message = 'Error: Password must be provided',
-            color = 'red'
-          ))
+          messageBox$update_message('error_password', 'error')
           return(NULL)
         }
 
         # updateActionButton(session, 'login', disabled = TRUE)
 
-        file_status(list(
-          message = 'Connecting to DHIS2...',
-          color = 'blue'
-        ))
+        messageBox$update_message('msg_dhis2_connect', 'info')
 
         server <- countries_df() %>%
           filter(iso3 == input$country) %>%
@@ -98,10 +85,7 @@ dhis2BoxServer <- function(id, i18n) {
         merged_data <- tryCatch({
           khis_cred(username = input$username, password = input$password, server = server)
 
-          file_status(list(
-            message = 'Fetching data...',
-            color = 'blue'
-          ))
+          messageBox$update_message('msg_fetching_data', 'info')
 
           start_date <- input$date[1]
           end_date <- input$date[2]
@@ -110,10 +94,7 @@ dhis2BoxServer <- function(id, i18n) {
 
           khis_cred_clear()
 
-          file_status(list(
-            message = 'Saving data...',
-            color = 'blue'
-          ))
+          messageBox$update_message('msg_saving_data', 'info')
 
           dhis2_data(dt)
 
@@ -124,19 +105,13 @@ dhis2BoxServer <- function(id, i18n) {
             countdown_data = NULL
           )$reactive()
 
-          file_status(list(
-            message = 'Data successfully downloaded!',
-            color = 'green'
-          ))
+          messageBox$update_message('msg_download_success', 'success')
 
           return(cache_instance())
         },
         error = function(e) {
           clean_meesage <- clean_error_message(e)
-          file_status(list(
-            message = str_glue('Download Error: {clean_message}'),
-            color = 'red'
-          ))
+          messageBox$update_message('error_download_error', 'success', list(clean_message = clean_message))
 
           return(NULL)
         })
@@ -144,16 +119,6 @@ dhis2BoxServer <- function(id, i18n) {
         # updateActionButton(session, 'login', disabled = FALSE)
 
         return(merged_data)
-      })
-
-      output$enhanced_feedback <- renderUI({
-        status <- file_status()
-        tags$div(
-          style = paste('color:', status$color, '; font-weight: bold;',
-                        'border: 1px solid ', status$color, ';',
-                        'padding: 10px; margin-top: 10px; border-radius: 5px;'),
-          i18n$t(status$message)
-        )
       })
 
       downloadButtonServer(

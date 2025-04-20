@@ -66,7 +66,7 @@ dataAdjustmentServer <- function(id, cache, i18n) {
     module = function(input, output, session) {
 
       state <- reactiveValues(loaded = FALSE)
-      messageBox <- messageBoxServer('feedback', i18n = i18n, default_message = 'Dataset not adjusted')
+      messageBox <- messageBoxServer('feedback', i18n = i18n, default_message = 'msg_dataset_not_adjusted')
 
       data <- reactive({
         req(cache())
@@ -117,7 +117,7 @@ dataAdjustmentServer <- function(id, cache, i18n) {
 
       observeEvent(input$adjust_data, {
         req(cache())
-        messageBox$update_message(i18n$t('msg_adjusting'), 'info')
+        messageBox$update_message('msg_adjusting', 'info')
         cache()$set_adjusted_flag(FALSE)
         cache()$set_adjusted_flag(TRUE)
       })
@@ -130,9 +130,9 @@ dataAdjustmentServer <- function(id, cache, i18n) {
 
           cache()$set_adjusted_data(dt)
 
-          messageBox$update_message(i18n$t('msg_data_adjusted'), 'success')
+          messageBox$update_message('msg_data_adjusted', 'success')
         } else {
-          messageBox$update_message(i18n$t('msg_dataset_not_adjusted'), 'info')
+          messageBox$update_message('msg_dataset_not_adjusted', 'info')
         }
       })
 

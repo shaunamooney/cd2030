@@ -62,27 +62,19 @@ equityServer <- function(id, cache, i18n) {
     id = id,
     module = function(input, output, session) {
 
-      start_year <- reactive({
-        req(cache())
-        cache()$start_survey_year
-      })
-
       wiq <- reactive({
         req(cache())
-        cache()$wiq_survey %>%
-          filter(if (is.null(start_year())) TRUE else year >= start_year())
+        cache()$wiq_survey
       })
 
       meduc <- reactive({
         req(cache())
-        cache()$education_survey %>%
-          filter(if (is.null(start_year())) TRUE else year >= start_year())
+        cache()$education_survey
       })
 
       area <- reactive({
         req(cache())
-        cache()$area_survey %>%
-          filter(if (is.null(start_year())) TRUE else year >= start_year())
+        cache()$area_survey
       })
 
       penta3_equiplot <- reactive({

@@ -6,7 +6,7 @@
 \usage{
 load_excel_data(
   path,
-  start_year = 2019,
+  start_year = NULL,
   admin_sheet_name = "Admin_data",
   population_sheet_name = "Population_data",
   reporting_sheet_name = "Reporting_completeness",
@@ -17,7 +17,7 @@ load_excel_data(
 \item{path}{A string. The path to the Excel file to be loaded.}
 
 \item{start_year}{An integer. The minimum year to filter the data (default is
-2019).}
+NULL).}
 
 \item{admin_sheet_name}{A string. The name of the sheet containing administrative
 data. Default is \code{"Admin_data"}.}

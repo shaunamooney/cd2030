@@ -35,20 +35,13 @@
 #' }
 #'
 #' @export
-calculate_outliers_summary <- function(.data,
-                                       admin_level = c('national', 'adminlevel_1', 'district')) {
+calculate_outliers_summary <- function(.data, admin_level = c('national', 'adminlevel_1', 'district')) {
 
   year = . = NULL
 
   check_cd_data(.data)
   admin_level <- arg_match(admin_level)
-
-  admin_level_cols <- switch(
-    admin_level,
-    national = 'year',
-    adminlevel_1 = c('adminlevel_1', 'year'),
-    district = c('adminlevel_1', 'district', 'year')
-  )
+  admin_level_cols <- get_admin_columns(admin_level)
 
   vaccine_only <- list_vaccines ()
   tracers <- list_tracer_vaccines ()
@@ -57,7 +50,8 @@ calculate_outliers_summary <- function(.data,
   data <- .data %>%
     add_outlier5std_column(allindicators) %>%
     summarise(
-      across(ends_with('_outlier5std'), mean, na.rm = TRUE), .by = admin_level_cols
+      across(ends_with('_outlier5std'), mean, na.rm = TRUE),
+      .by = c(admin_level_cols, 'year')
     ) %>%
     mutate(
       mean_out_all = rowMeans(select(., ends_with('_outlier5std')), na.rm = TRUE),
@@ -182,12 +176,7 @@ list_outlier_units <- function(.data,
   indicator <- arg_match(indicator, list_vaccines())
   admin_level <- arg_match(admin_level)
 
-  admin_level_cols <- switch(
-    admin_level,
-    adminlevel_1 = 'adminlevel_1',
-    district = c('adminlevel_1', 'district')
-  )
-
+  admin_level_cols <- get_admin_columns(admin_level)
   admin_level_cols <- c(admin_level_cols, 'year', 'month')
 
   x <- .data %>%

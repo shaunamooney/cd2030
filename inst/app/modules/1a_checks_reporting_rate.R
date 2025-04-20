@@ -11,10 +11,7 @@ reportingRateUI <- function(id, i18n) {
         width = 12,
         fluidRow(
           column(3, numericInput(ns('threshold'), label = i18n$t("title_performance_threshold"), value = 90)),
-          # TODO: to include translation
-          column(3, selectInput(ns('admin_level'), label = i18n$t("title_admin_level"),
-                                   choices = c('Admin Level 1' = 'adminlevel_1',
-                                               'District' = 'district'))),
+          column(3, adminLevelInputUI(ns('admin_level'), i18n)),
           # TODO: to include translation
           column(3, selectInput(ns('indicator'),
                                    label = i18n$t("title_indicator"),
@@ -70,6 +67,7 @@ reportingRateServer <- function(id, cache, i18n) {
     module = function(input, output, session) {
 
       state <- reactiveValues(loaded = FALSE)
+      admin_level <- adminLevelInputServer('admin_level')
 
       data <- reactive({
         req(cache())
@@ -89,10 +87,10 @@ reportingRateServer <- function(id, cache, i18n) {
       })
 
       subnational_rr <- reactive({
-        req(data(), input$indicator, input$admin_level, threshold())
+        req(data(), input$indicator, admin_level(), threshold())
 
         data() %>%
-          calculate_reporting_rate(input$admin_level) %>%
+          calculate_reporting_rate(admin_level()) %>%
           select(any_of(c('adminlevel_1', 'district', 'year', input$indicator)))
       })
 
