@@ -4,6 +4,13 @@ denominatorSelectionUI <- function(id, i18n) {
   tagList(
     contentHeader(ns('denominator_selection'), i18n$t("title_denominator_selection"), i18n = i18n),
     contentBody(
+      box(
+        title = i18n$t("title_analysis_options"),
+        status = 'success',
+        width = 12,
+        solidHeader = TRUE,
+        fluidRow(column(3, denominatorInputUI(ns('denominator'), i18n)))
+      ),
       tabBox(
         title = i18n$t("title_denominator_selection"),
         width = 12,
@@ -42,6 +49,8 @@ denominatorSelectionServer <- function(id, cache, i18n) {
     id = id,
     module = function(input, output, session) {
 
+      denominatorInputServer('denominator', cache, allowInput = TRUE)
+
       data <- reactive({
         req(cache())
         cache()$adjusted_data
@@ -66,14 +75,6 @@ denominatorSelectionServer <- function(id, cache, i18n) {
                                        anc1survey = rates$anc1,
                                        dpt1survey = rates$penta1)
       })
-
-      # observe({
-      #   req(data())
-      #
-      #   inds <- list_vaccines ()
-      #
-      #   updateSelectizeInput(session, 'indicator', choices = inds)
-      # })
 
       output$penta3 <- renderCustomPlot({
         req(indicator_coverage())

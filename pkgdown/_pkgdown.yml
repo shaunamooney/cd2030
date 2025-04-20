@@ -94,10 +94,12 @@ reference:
     - calculate_indicator_coverage
     - calculate_indicator_threshold_coverage
     - calculate_threshold
+    - calculate_derived_coverage
     - plot_line_graph
     - plot_absolute_differences
     - plot.cd_indicator_coverage
     - plot.cd_population_metrics
+    - plot.cd_derived_coverage
     - tbl_sum.cd_indicator_coverage
     - tbl_sum.cd_national_denominators
 
@@ -137,6 +139,8 @@ reference:
     - get_indicator_groups
     - get_indicator_group_names
     - get_named_indicators
+    - get_population_column
+    - get_admin_columns
     - list_tracer_vaccines
     - list_vaccines
     - list_vaccine_indicators

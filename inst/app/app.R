@@ -39,8 +39,10 @@ pacman::p_load(
 
 source('modules/page_objects_config.R')
 
+source('ui/admin-level-input.R')
 source('ui/content_body.R')
 source('ui/content_header.R')
+source('ui/denominator-input.R')
 source('ui/documentation_button.R')
 source('ui/download/download_button.R')
 source('ui/download/download_coverage.R')
@@ -49,6 +51,7 @@ source('ui/download_report.R')
 source('ui/help_button.R')
 source('ui/message_box.R')
 source('ui/render-plot.R')
+source('ui/region-input.R')
 source('ui/report_button.R')
 source('ui/save_cache.R')
 
@@ -59,6 +62,7 @@ source('modules/consistency_check.R')
 source('modules/data_adjustment_changes.R')
 source('modules/data_adjustment.R')
 source('modules/data_completeness.R')
+source('modules/derived_coverage.R')
 source('modules/denominator_assessment.R')
 source('modules/denominator_selection.R')
 source('modules/equity.R')
@@ -74,7 +78,7 @@ source('modules/subnational_mapping.R')
 source('modules/upload_data.R')
 source('modules/low_reporting.R')
 
-i18n <- init_i18n(translation_json_path = "translation/translation.json")
+i18n <- init_i18n(translation_json_path = 'translation/translation.json')
 i18n$set_translation_language('fr')
 
 ui <- dashboardPage(
@@ -84,75 +88,78 @@ ui <- dashboardPage(
     usei18n(i18n),
     selectInput(
       inputId = 'selected_language',
-      label = i18n$t("change_language"),
+      label = i18n$t('change_language'),
       choices = c('English' = 'en', 'French' = 'fr'),
       selected = i18n$get_key_translation()
     ),
     sidebarMenu(
       id = 'tabs',
-      menuItem(i18n$t("title_intro"), tabName = 'introduction', icon = icon('info-circle')),
-      menuItem(i18n$t("title_load_data"), tabName = 'upload_data', icon = icon('upload')),
-      menuItem(i18n$t("title_quality"),
+      menuItem(i18n$t('title_intro'), tabName = 'introduction', icon = icon('info-circle')),
+      menuItem(i18n$t('title_load_data'), tabName = 'upload_data', icon = icon('upload')),
+      menuItem(i18n$t('title_quality'),
                tabName = 'quality_checks',
                icon = icon('check-circle'),
                startExpanded  = TRUE,
-               menuSubItem(i18n$t("title_reporting"),
+               menuSubItem(i18n$t('title_reporting'),
                            tabName = 'reporting_rate',
                            icon = icon('chart-bar')),
-               menuSubItem(i18n$t("title_outlier"),
+               menuSubItem(i18n$t('title_outlier'),
                            tabName = 'outlier_detection',
                            icon = icon('exclamation-triangle')),
-               menuSubItem(i18n$t("title_consistency"),
+               menuSubItem(i18n$t('title_consistency'),
                            tabName = 'consistency_check',
                            icon = icon('tasks')),
-               menuSubItem(i18n$t("title_completeness"),
+               menuSubItem(i18n$t('title_completeness'),
                            tabName = 'data_completeness',
                            icon = icon('check-square')),
-               menuSubItem(i18n$t("title_calculate_ratios"),
+               menuSubItem(i18n$t('title_calculate_ratios'),
                            tabName = 'calculate_ratios',
                            icon = icon('percent')),
-               menuSubItem(i18n$t("title_overall"),
+               menuSubItem(i18n$t('title_overall'),
                            tabName = 'overall_score',
                            icon = icon('star'))
                ),
-      menuItem(i18n$t("btn_remove_years"), tabName = 'remove_years', icon = icon('trash')),
-      menuItem(i18n$t("title_adjustment"), tabName = 'data_adjustment', icon = icon('adjust')),
-      menuItem(i18n$t("title_adjustment_changes"), tabName = 'data_adjustment_changes', icon = icon('adjust')),
-      menuItem(i18n$t("title_setup"), tabName = 'setup', icon = icon('sliders-h')),
-      menuItem(i18n$t("title_denominator_selection"),
+      menuItem(i18n$t('btn_remove_years'), tabName = 'remove_years', icon = icon('trash')),
+      menuItem(i18n$t('title_adjustment'),
+               tabName = 'data_adjustment_1',
+               icon = icon('adjust'),
+               menuSubItem(i18n$t('title_adjustment'),
+                           tabName = 'data_adjustment',
+                           icon = icon('adjust')),
+               menuSubItem(i18n$t('title_adjustment_changes'),
+                           tabName = 'data_adjustment_changes',
+                           icon = icon('adjust'))
+      ),
+      menuItem(i18n$t('title_setup'), tabName = 'setup', icon = icon('sliders-h')),
+      menuItem(i18n$t('title_derived_coverage'), tabName = 'derived_coverage', icon = icon('chart-line')),
+      menuItem(i18n$t('title_denominator_selection'),
                tabName = 'denom_assess',
                icon = icon('calculator'),
-               menuSubItem(i18n$t("title_denominator_assessment"),
+               menuSubItem(i18n$t('title_denominator_assessment'),
                            tabName = 'denominator_assessment',
                            icon = icon('calculator')),
-               menuSubItem(i18n$t("title_denominator_selection"),
+               menuSubItem(i18n$t('title_denominator_selection'),
                            tabName = 'denominator_selection',
                            icon = icon('filter'))
                ),
-      menuItem(i18n$t("title_national_analysis"),
-               tabName = 'national_analysis',
-               icon = icon('flag'),
-               menuSubItem(i18n$t("title_national_coverage"),
-                           tabName = 'national_coverage',
-                           icon = icon('map-marked-alt'))
-               ),
-      menuItem(i18n$t("title_subnational_analysis"),
+      menuItem(i18n$t('title_national_coverage'), tabName = 'national_coverage', icon = icon('flag')),
+      menuItem(i18n$t('title_subnational_analysis'),
                tabName = 'subnational_analysis',
-               icon = icon('flag'),
-               menuSubItem(i18n$t("title_subnational_coverage"),
+               icon = icon('globe-africa'),
+               menuSubItem(i18n$t('title_subnational_coverage'),
                            tabName = 'subnational_coverage',
                            icon = icon('map-marked')),
-               menuSubItem(i18n$t("title_subnational_inequality"),
+               menuSubItem(i18n$t('title_subnational_inequality'),
                            tabName = 'subnational_inequality',
                            icon = icon('balance-scale-right')),
-               menuSubItem(i18n$t("title_vaccination_coverage"),
+               menuSubItem(i18n$t('title_vaccination_coverage'),
                            tabName = 'low_reporting',
                            icon = icon('user-slash')),
-               menuSubItem(i18n$t("title_subnational_mapping"),
+               menuSubItem(i18n$t('title_subnational_mapping'),
                            tabName = 'subnational_mapping',
                            icon = icon('map'))
                ),
-      menuItem(i18n$t("title_equity_assessment"), tabName = 'equity_assessment', icon = icon('balance-scale'))
+      menuItem(i18n$t('title_equity_assessment'), tabName = 'equity_assessment', icon = icon('balance-scale'))
     )
   ),
   body = dashboardBody(
@@ -160,10 +167,10 @@ ui <- dashboardPage(
     tags$head(
       tags$link(rel = 'stylesheet', type = 'text/css', href = 'styles.css'),
       tags$link(rel = 'stylesheet', type = 'text/css', href = 'rmd-styles.css'),
-      tags$link(rel = "stylesheet", type = 'text/css', href = "bootstrap-icons.css")
+      tags$link(rel = 'stylesheet', type = 'text/css', href = 'bootstrap-icons.css')
     ),
     tabItems(
-      tabItem(tabName = 'introduction', introductionUI('introduction')),
+      tabItem(tabName = 'introduction', introductionUI('introduction', i18n = i18n)),
       tabItem(tabName = 'upload_data', uploadDataUI('upload_data', i18n = i18n)),
       tabItem(tabName = 'reporting_rate', reportingRateUI('reporting_rate', i18n = i18n)),
       tabItem(tabName = 'data_completeness', dataCompletenessUI('data_completeness', i18n = i18n)),
@@ -175,6 +182,7 @@ ui <- dashboardPage(
       tabItem(tabName = 'data_adjustment', dataAjustmentUI('data_adjustment', i18n = i18n)),
       tabItem(tabName = 'data_adjustment_changes', adjustmentChangesUI('data_adjustment_changes', i18n = i18n)),
       tabItem(tabName = 'setup', setupUI('setup', i18n = i18n)),
+      tabItem(tabName = 'derived_coverage', derivedCoverageUI('derived_coverage', i18n = i18n)),
       tabItem(tabName = 'denominator_assessment', denominatorAssessmentUI('denominator_assessment', i18n = i18n)),
       tabItem(tabName = 'denominator_selection', denominatorSelectionUI('denominator_selection', i18n = i18n)),
       tabItem(tabName = 'national_coverage', nationalCoverageUI('national_coverage', i18n = i18n)),
@@ -190,7 +198,7 @@ ui <- dashboardPage(
 
 server <- function(input, output, session) {
 
-  introductionServer('introduction')
+  introductionServer('introduction', selected_language = reactive(input$selected_language))
   cache <- uploadDataServer('upload_data', i18n)
   observeEvent(c(cache(), cache()$language), {
     req(cache())
@@ -223,6 +231,7 @@ server <- function(input, output, session) {
   dataAdjustmentServer('data_adjustment', cache, i18n)
   adjustmentChangesServer('data_adjustment_changes', cache, i18n)
   setupServer('setup', cache, i18n)
+  derivedCoverageServer('derived_coverage', cache, i18n)
   denominatorAssessmentServer('denominator_assessment', cache, i18n)
   denominatorSelectionServer('denominator_selection', cache, i18n)
   nationalCoverageServer('national_coverage', cache, i18n)
@@ -234,13 +243,13 @@ server <- function(input, output, session) {
   downloadReportServer('download_report', cache, i18n)
   saveCacheServe('save_cache', cache, i18n)
 
-  session$onSessionEnded(stopApp)
+  # session$onSessionEnded(stopApp)
 
   updateHeader <- function(country, i18n) {
 
     header_title <- div(
       class = 'navbar-header',
-      h4(HTML(paste0(country, ' &mdash; ', i18n$t("title_countdown"))), class = 'navbar-brand')
+      h4(HTML(paste0(country, ' &mdash; ', i18n$t('title_countdown'))), class = 'navbar-brand')
     )
 
     # Dynamically update the header

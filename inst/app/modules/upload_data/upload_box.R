@@ -2,12 +2,12 @@ uploadBoxUI <- function(id, i18n) {
   ns <- NS(id)
 
   box(
-    title = i18n$t("title_upload_data"),
+    title = i18n$t('title_upload_data'),
     status = 'success',
     solidHeader = TRUE,
     width = 12,
     fluidRow(
-      column(3, h4(icon('upload'), i18n$t("btn_upload"))),
+      column(3, h4(icon('upload'), i18n$t('btn_upload'))),
       column(2, offset = 7, helpButtonUI(ns('upload_data'), name = i18n$t('btn_help')), align = 'right')
     ),
     fluidRow(
@@ -15,8 +15,8 @@ uploadBoxUI <- function(id, i18n) {
         12,
         fileInput(
           inputId = ns('hfd_file'),
-          label = i18n$t("btn_upload_hfd_data"),
-          buttonLabel = i18n$t("btn_browse_or_drop"),
+          label = i18n$t('btn_upload_hfd_data'),
+          buttonLabel = i18n$t('btn_browse_or_drop'),
           placeholder = 'Supported formats: .xls, .xlsx, .dta, .rds',
           accept = c('.xls', '.xlsx', '.dta', '.rds')
         ),
@@ -46,7 +46,7 @@ uploadBoxServer <- function(id, i18n) {
 
         valid_types <- c('xls', 'xlsx', 'dta', 'rds')
         if (!file_type %in% valid_types) {
-          messageBox$update_message(i18n$t("error_upload_failed_unsupported_format"), 'error')
+          messageBox$update_message('error_upload_failed_unsupported_format', 'error')
           return(NULL)
         }
 
@@ -65,7 +65,7 @@ uploadBoxServer <- function(id, i18n) {
             NULL
           }
 
-          messageBox$update_message(str_glue(i18n$t("msg_upload_success")), 'success')
+          messageBox$update_message('msg_upload_success', 'success', list(file_name = file_name))
 
           cache_instance <- init_CacheConnection(
             countdown_data = dt,
@@ -76,7 +76,7 @@ uploadBoxServer <- function(id, i18n) {
         },
         error = function(e) {
           clean_message <- clean_error_message(e)
-          messageBox$update_message(str_glue(i18n$t("error_upload_failed")), 'error')
+          messageBox$update_message('error_upload_failed', 'error', list(clean_message = clean_message))
           NULL
         })
       })
@@ -90,12 +90,12 @@ uploadBoxServer <- function(id, i18n) {
           haven::write_dta(cache()$countdown_data, file)
         },
         data = cache,
-        label = "btn_download_master_dataset"
+        label = 'btn_download_master_dataset'
       )
 
       helpButtonServer(
         id = 'upload_data',
-        title = i18n$t("title_upload_data"),
+        title = i18n$t('title_upload_data'),
         md_file = 'load_data_upload_files.md'
       )
 

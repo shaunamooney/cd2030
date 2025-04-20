@@ -52,6 +52,7 @@ calculate_indicator_coverage <- function(.data,
                                          preg_loss = 0.03) {
   check_cd_data(.data)
   admin_level <- arg_match(admin_level)
+  admin_level_cols <- get_admin_columns(admin_level)
   country_iso <- attr(.data, 'iso3')
 
   output_data <- calculate_populations(.data,
@@ -60,7 +61,7 @@ calculate_indicator_coverage <- function(.data,
                                        sbr = sbr, nmr = nmr, pnmr = pnmr,
                                        anc1survey = anc1survey, dpt1survey = dpt1survey,
                                        twin = twin, preg_loss = preg_loss) %>%
-    select(any_of(c('year', 'adminlevel_1', 'district')), starts_with('cov_'))
+    select(any_of(c(admin_level_cols, 'year')), starts_with('cov_'))
 
   new_tibble(
     output_data,
@@ -104,16 +105,10 @@ calculate_populations <- function(.data,
   national_population <- prepare_population_metrics(.data, admin_level = admin_level, un_estimates = un_estimates)
   indicator_numerator <- compute_indicator_numerator(.data, admin_level = admin_level)
 
-  admin_level <- arg_match(admin_level)
-
-  group_vars <- switch(admin_level,
-                       national = 'year',
-                       adminlevel_1 = c('adminlevel_1', 'year'),
-                       district = c('adminlevel_1', 'district', 'year')
-  )
+  group_vars <- get_admin_columns(admin_level)
 
   output_data <- national_population %>%
-    inner_join(indicator_numerator, by = group_vars) %>%
+    inner_join(indicator_numerator, by = c(group_vars, 'year')) %>%
     mutate(
       # DHIS2 Estimates
       totpreg_dhis2 = totlivebirths_dhis2 * (1 - 0.5* twin)/((1 - sbr)*(1 - preg_loss)),

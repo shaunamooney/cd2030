@@ -49,17 +49,14 @@ prepare_population_metrics <- function(.data,
 
   # Validate inputs
   check_cd_data(.data)
-  check_un_estimates_data(un_estimates, admin_level)
-
-  admin_level <- arg_match(admin_level)
 
   # Define grouping variables based on the administrative level
-  group_vars <- switch(
-    admin_level,
-    national = c('year'),
-    adminlevel_1 = c('adminlevel_1', 'year'),
-    district = c('adminlevel_1', 'district', 'year')
-  )
+  admin_level <- arg_match(admin_level)
+  group_vars <- get_admin_columns(admin_level)
+  group_vars <- c(group_vars, 'year')
+
+  check_un_estimates_data(un_estimates, admin_level)
+
 
   # Required columns for DHIS-2 data
   columns <- c('district', 'adminlevel_1', 'year', 'total_pop', 'under5_pop',
@@ -112,6 +109,6 @@ prepare_population_metrics <- function(.data,
     combined_data,
     class = 'cd_population_metrics',
     admin_level = admin_level,
-    country <- attr(.data, 'country')
+    country = attr_or_abort(.data, 'country')
   )
 }

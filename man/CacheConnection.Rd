@@ -17,6 +17,8 @@ from \code{.rds} files.
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
+\item{\code{language}}{Get the UI language.}
+
 \item{\code{cache_path}}{Get cache path.}
 
 \item{\code{countdown_data}}{Get countdown data.}
@@ -40,6 +42,10 @@ from \code{.rds} files.
 \item{\code{survey_estimates}}{Gets survey estimates.}
 
 \item{\code{national_estimates}}{Gets national estimates.}
+
+\item{\code{survey_years}}{Get survey years.}
+
+\item{\code{survey_year}}{Gets survey year of survey estimates.}
 
 \item{\code{start_survey_year}}{Gets start survey year.}
 
@@ -81,6 +87,7 @@ Update a field (with change tracking)}
 \item \href{#method-CacheConnection-append_page_note}{\code{CacheConnection$append_page_note()}}
 \item \href{#method-CacheConnection-get_notes}{\code{CacheConnection$get_notes()}}
 \item \href{#method-CacheConnection-reactive}{\code{CacheConnection$reactive()}}
+\item \href{#method-CacheConnection-set_language}{\code{CacheConnection$set_language()}}
 \item \href{#method-CacheConnection-set_cache_path}{\code{CacheConnection$set_cache_path()}}
 \item \href{#method-CacheConnection-set_countdown_data}{\code{CacheConnection$set_countdown_data()}}
 \item \href{#method-CacheConnection-set_adjusted_data}{\code{CacheConnection$set_adjusted_data()}}
@@ -90,6 +97,7 @@ Update a field (with change tracking)}
 \item \href{#method-CacheConnection-set_adjusted_flag}{\code{CacheConnection$set_adjusted_flag()}}
 \item \href{#method-CacheConnection-set_survey_estimates}{\code{CacheConnection$set_survey_estimates()}}
 \item \href{#method-CacheConnection-set_national_estimates}{\code{CacheConnection$set_national_estimates()}}
+\item \href{#method-CacheConnection-set_survey_year}{\code{CacheConnection$set_survey_year()}}
 \item \href{#method-CacheConnection-set_start_survey_year}{\code{CacheConnection$set_start_survey_year()}}
 \item \href{#method-CacheConnection-set_denominator}{\code{CacheConnection$set_denominator()}}
 \item \href{#method-CacheConnection-set_selected_admin_level_1}{\code{CacheConnection$set_selected_admin_level_1()}}
@@ -219,6 +227,23 @@ Return a reactive wrapper (for Shiny).
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$reactive()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_language"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_language}{}}}
+\subsection{Method \code{set_language()}}{
+Set the language.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_language(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{A scalar string representing 2 digit string.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_cache_path"></a>}}
@@ -369,6 +394,23 @@ Set national estimates.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{value}}{Named list.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_survey_year"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_survey_year}{}}}
+\subsection{Method \code{set_survey_year()}}{
+Set year of survey estimates.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_survey_year(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Integer year.}
 }
 \if{html}{\out{</div>}}
 }

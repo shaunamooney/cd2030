@@ -6,8 +6,8 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = TRUE,
         prompts = list(
-          'Interpret the differences between the different admin1 units: are there any admin1s that stand out as more or less complete? What are some explanations?',
-          'Interpret the differences between different years: are there any years that stand out as being more or less complete? What are some explanations?'
+          'reporting_rate_reporting_rate_1',
+          'reporting_rate_reporting_rate_2'
         )
       )
     ),
@@ -17,10 +17,10 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = TRUE,
         prompts = list(
-          'Make a statement about the presence of outliers in the immunization data: are there many or few, is the number of outliers increasing or decreasing?',
-          'Interpret the differences between the different regions and years: are there any regions that have more outliers? Are there any years that have more outliers? What are some explanations (e.g. campaigns or catch-up activities with older kids that may have been recorded incorrectly)?',
-          'Interpret the differences between the outliers across different vaccines and regions: are there any vaccines that stand out as having more or less outliers? What are some explanations?',
-          'Interpret the example outliers: are they likely to be errors or is there an explanation for why they may be true values?'
+          'outlier_detection_outlier_detection_1',
+          'outlier_detection_outlier_detection_2',
+          'outlier_detection_outlier_detection_3',
+          'outlier_detection_outlier_detection_4'
         )
       )
     ),
@@ -59,8 +59,8 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = TRUE,
         prompts = list(
-          'Interpret the differences between the different vaccines: are there any vaccines that stand out as more or less complete? What are some explanations?',
-          'Interpret the differences between the different regions: are there any regions that stand out as more or less complete? What are some explanations (e.g. stockout)?'
+          'data_completeness_data_completeness_1',
+          'data_completeness_data_completeness_2'
         )
       )
     ),
@@ -83,25 +83,19 @@ pageObjectsConfig <- function(input) {
         parameters = list(),
         always_include = TRUE,
         single_entry = TRUE,
-        prompts = list(
-          'Consider the effect of the adjustment on the number of DTP1 doses administered, and mention the difference in the number, as well as the percent increase in 2023; highlight the year with the greatest impact if there is one; interpret if the impact of the adjustment on coverage rates is large or small'
-        )
+        prompts = list('adjustment_changes_penta1_1')
       ),
       'BCG' = list(
         parameters = list(),
         always_include = TRUE,
         single_entry = TRUE,
-        prompts = list(
-          'Consider the effect of the adjustment on the number of BCG doses administered, and mention the difference in the number, as well as the percent increase in 2023; highlight the year with the greatest impact if there is one; interpret if the impact of the adjustment on coverage rates is large or small'
-        )
+        prompts = list('adjustment_changes_bcg_1')
       ),
       'Measles 1' = list(
         parameters = list(),
         always_include = TRUE,
         single_entry = TRUE,
-        prompts = list(
-          'Consider the effect of the adjustment on the number of Measles doses administered, and mention the difference in the number, as well as the percent increase in 2023; highlight the year with the greatest impact if there is one; interpret if the impact of the adjustment on coverage rates is large or small'
-        )
+        prompts = list('adjustment_changes_measles1_1')
       ),
       'Custom Check' = list(
         parameters = list(
@@ -109,9 +103,33 @@ pageObjectsConfig <- function(input) {
         ),
         always_include = FALSE,
         single_entry = FALSE,
-        prompts = list(
-          'Consider the effect of the adjustment on the number of doses administered, and mention the difference in the number, as well as the percent increase in 2023; highlight the year with the greatest impact if there is one; interpret if the impact of the adjustment on coverage rates is large or small'
-        )
+        prompts = list('adjustment_changes_custom_check_1')
+      )
+    ),
+    derived_coverage = list(
+      'Penta 1' = list(
+        parameters = list(),
+        always_include = TRUE,
+        single_entry = TRUE,
+        prompts = list()
+      ),
+      'Penta 3' = list(
+        parameters = list(),
+        always_include = TRUE,
+        single_entry = TRUE,
+        prompts = list()
+      ),
+      'Measles 1' = list(
+        parameters = list(),
+        always_include = TRUE,
+        single_entry = TRUE,
+        prompts = list()
+      ),
+      'Custom' = list(
+        parameters = list(input$indicator),
+        always_include = FALSE,
+        single_entry = FALSE,
+        prompts = list()
       )
     ),
     denominator_assessment = list(
@@ -119,33 +137,21 @@ pageObjectsConfig <- function(input) {
         parameters = list(),
         always_include = TRUE,
         single_entry = TRUE,
-        prompts = list('How do the estimates of total population differ compared to the UN projection?')
+        prompts = list('denominator_assessment_total_population_1')
       ),
       'Births' = list(
         parameters = list(),
         always_include = TRUE,
         single_entry = TRUE,
-        prompts = list('How do the estimates of births differ compared to the UN projection?')
+        prompts = list('denominator_assessment_births_1')
       )
     ),
     denominator_selection = list(
-      'Penta 3' = list(
+      'Denominator Selection' = list(
         parameters = list(),
         always_include = TRUE,
         single_entry = TRUE,
-        prompts = list('What is the selected denominator for the key vaccination indicators and why?  Note that one best denominator should be selected to be applied for all immunization data.')
-      ),
-      'Measles 1' = list(
-        parameters = list(),
-        always_include = TRUE,
-        single_entry = TRUE,
-        prompts = list('What is the selected denominator for the key vaccination indicators and why?  Note that one best denominator should be selected to be applied for all immunization data.')
-      ),
-      'BCG' = list(
-        parameters = list(),
-        always_include = TRUE,
-        single_entry = TRUE,
-        prompts = list('What is the selected denominator for the key vaccination indicators and why?  Note that one best denominator should be selected to be applied for all immunization data.')
+        prompts = list('denominator_selection_1')
       )
     ),
     national_coverage = list(
@@ -154,8 +160,8 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = TRUE,
         prompts = list(
-          'First address data quality: Are the levels and trends plausible? Is there good consistency between the facility and survey data?',
-          'Then, interpret the data if there is sufficient confidence in the observed levels and trends. How does the coverage compare to global targets to reach 90% coverage? Is this a positive trend? Are there explanations for the observed levels and trends?'
+          'national_coverage_measles1_1',
+          'national_coverage_measles1_2'
         )
       ),
       'Penta 3' = list(
@@ -163,8 +169,8 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = TRUE,
         prompts = list(
-          'First address data quality: Are the levels and trends plausible? Is there good consistency between the facility and survey data?',
-          'Then, interpret the data if there is sufficient confidence in the observed levels and trends. How does the coverage compare to global targets to reach 90% coverage? Is this a positive trend? Are there explanations for the observed levels and trends?'
+          'national_coverage_penta3_1',
+          'national_coverage_penta3_2'
         )
       ),
       'Penta1 to Penta3 Dropout' = list(
@@ -172,8 +178,8 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = TRUE,
         prompts = list(
-          'Are the dropout rates similar to the survey data? What is the dropout in surveys among those with cards vs those without?',
-          'Is dropout improving, staying the same or getting worse?'
+          'national_coverage_penta1_to_penta3_dropout_1',
+          'national_coverage_penta1_to_penta3_dropout_2'
         )
       ),
       'Penta3 to Measles 1 Dropout' = list(
@@ -181,8 +187,8 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = TRUE,
         prompts = list(
-          'Are the dropout rates similar to the survey data? What is the dropout in surveys among those with cards vs those without?',
-          'Is dropout improving, staying the same or getting worse?'
+          'national_coverage_penta3_to_measles1_dropout_1',
+          'national_coverage_penta3_to_measles1_dropout_2'
         )
       ),
       'Custom Checks' = list(
@@ -192,8 +198,8 @@ pageObjectsConfig <- function(input) {
         always_include = FALSE,
         single_entry = FALSE,
         prompts = list(
-          'First address data quality: Are the levels and trends plausible? Is there good consistency between the facility and survey data?',
-          'Then, interpret the data if there is sufficient confidence in the observed levels and trends. How does the coverage compare to global targets to reach 90% coverage? Is this a positive trend? Are there explanations for the observed levels and trends?'
+          'national_coverage_custom_checks_1',
+          'national_coverage_custom_checks_2'
         )
       )
     ),
@@ -205,8 +211,8 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = FALSE,
         prompts = list(
-          'Are there regions that have especially high or especially low Measles1 coverage?',
-          'Comment on the variation between highest-coverage and lowest-coverage regions and districts.'
+          'subnational_coverage_measles1_1',
+          'subnational_coverage_measles1_2'
         )
       ),
       'Penta 3' = list(
@@ -216,8 +222,8 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = FALSE,
         prompts = list(
-          'Are there regions that have especially high or especially low Penta3 coverage?',
-          'Comment on the variation between highest-coverage and lowest-coverage regions and districts.'
+          'subnational_coverage_penta3_1',
+          'subnational_coverage_penta3_2'
         )
       ),
       'Penta1 to Penta3 Dropout' = list(
@@ -227,8 +233,8 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = FALSE,
         prompts = list(
-          'Are there regions that have especially high or especially low Penta dropout rates? How do they compare to regions with high or low Penta coverage?',
-          'Comment on the variation between highest-dropout and lowest-dropout regions and districts.'
+          'subnational_coverage_penta1_to_penta3_dropout_1',
+          'subnational_coverage_penta1_to_penta3_dropout_2'
         )
       ),
       'Penta3 to Measles 1 Dropout' = list(
@@ -238,8 +244,8 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = FALSE,
         prompts = list(
-          'Are there regions that have especially high or especially low Penta measles dropout rates? How do they compare to regions with high or low Penta coverage?',
-          'Comment on the variation between highest-dropout and lowest-dropout regions and districts.'
+          'subnational_coverage_penta3_to_measles1_dropout_1',
+          'subnational_coverage_penta3_to_measles1_dropout_2'
         )
       ),
       'Custom Checks' = list(
@@ -250,8 +256,8 @@ pageObjectsConfig <- function(input) {
         always_include = FALSE,
         single_entry = FALSE,
         prompts = list(
-          'Are there regions that have especially high or especially low coverage?',
-          'Comment on the variation between highest-coverage and lowest-coverage regions and districts.'
+          'subnational_coverage_custom_checks_1',
+          'subnational_coverage_custom_checks_2'
         )
       )
     ),
@@ -263,8 +269,8 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = FALSE,
         prompts = list(
-          'Are there regions that have especially high or especially low Measles1 coverage?',
-          'Comment on the variation between highest-coverage and lowest-coverage regions and districts.'
+          'subnational_inequality_measles1_1',
+          'subnational_inequality_measles1_2'
         )
       ),
       'Penta 3' = list(
@@ -274,8 +280,8 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = FALSE,
         prompts = list(
-          'Are there regions that have especially high or especially low Penta3 coverage?',
-          'Comment on the variation between highest-coverage and lowest-coverage regions and districts.'
+          'subnational_inequality_penta3_1',
+          'subnational_inequality_penta3_2'
         )
       ),
       'Penta1 to Penta3 Dropout' = list(
@@ -285,8 +291,8 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = FALSE,
         prompts = list(
-          'Are there regions that have especially high or especially low Penta dropout rates? How do they compare to regions with high or low Penta coverage?',
-          'Comment on the variation between highest-dropout and lowest-dropout regions and districts.'
+          'subnational_inequality_penta1_to_penta3_dropout_1',
+          'subnational_inequality_penta1_to_penta3_dropout_2'
         )
       ),
       'Penta3 to Measles 1 Dropout' = list(
@@ -296,8 +302,8 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = FALSE,
         prompts = list(
-          'Are there regions that have especially high or especially low Penta measles dropout rates? How do they compare to regions with high or low Penta coverage?',
-          'Comment on the variation between highest-dropout and lowest-dropout regions and districts.'
+          'subnational_inequality_penta3_to_measles1_dropout_1',
+          'subnational_inequality_penta3_to_measles1_dropout_2'
         )
       ),
       'Custom Checks' = list(
@@ -308,8 +314,8 @@ pageObjectsConfig <- function(input) {
         always_include = FALSE,
         single_entry = FALSE,
         prompts = list(
-          'Are there regions that have especially high or especially low coverage?',
-          'Comment on the variation between highest-coverage and lowest-coverage regions and districts.'
+          'subnational_inequality_custom_checks_1',
+          'subnational_inequality_custom_checks_2'
         )
       )
     ),
@@ -320,7 +326,10 @@ pageObjectsConfig <- function(input) {
         ),
         always_include = TRUE,
         single_entry = FALSE,
-        prompts = list()
+        prompts = list(
+          'subnational_coverage_measles1_1',
+          'subnational_coverage_measles1_2'
+        )
       ),
       'Penta 3' = list(
         parameters = list(
@@ -328,7 +337,10 @@ pageObjectsConfig <- function(input) {
         ),
         always_include = TRUE,
         single_entry = FALSE,
-        prompts = list()
+        prompts = list(
+          'subnational_coverage_penta3_1',
+          'subnational_coverage_penta3_2'
+        )
       ),
       'Penta1 to Penta3 Dropout' = list(
         parameters = list(
@@ -336,7 +348,10 @@ pageObjectsConfig <- function(input) {
         ),
         always_include = TRUE,
         single_entry = FALSE,
-        prompts = list()
+        prompts = list(
+          'subnational_coverage_penta1_to_penta3_dropout_1',
+          'subnational_coverage_penta1_to_penta3_dropout_2'
+        )
       ),
       'Penta3 to Measles 1 Dropout' = list(
         parameters = list(
@@ -344,7 +359,10 @@ pageObjectsConfig <- function(input) {
         ),
         always_include = TRUE,
         single_entry = FALSE,
-        prompts = list()
+        prompts = list(
+          'subnational_coverage_penta3_to_measles1_dropout_1',
+          'subnational_coverage_penta3_to_measles1_dropout_2'
+        )
       ),
       'Custom Checks' = list(
         parameters = list(
@@ -353,7 +371,10 @@ pageObjectsConfig <- function(input) {
         ),
         always_include = FALSE,
         single_entry = FALSE,
-        prompts = list()
+        prompts = list(
+          'subnational_coverage_custom_checks_1',
+          'subnational_coverage_custom_checks_2'
+        )
       )
     ),
     low_reporting = list(
@@ -364,9 +385,9 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = FALSE,
         prompts = list(
-         'Reflect on the percent of districts that are meeting performance targets for coverage: has it increased or decreased over time? Does it vary between different vaccines? ',
-         'Do these results using the adjusted data and alternative denominator align with performance indicators in the DHIS2 data? If they are different, why?',
-         'Then, make the same reflections for the percent of districts that are meeting performance targets for dropout.'
+         'low_reporting_coverage_1',
+         'low_reporting_coverage_2',
+         'low_reporting_coverage_3'
         )
       ),
       'Dropout' = list(
@@ -376,9 +397,9 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = FALSE,
         prompts = list(
-          'Reflect on the percent of districts that are meeting performance targets for coverage: has it increased or decreased over time? Does it vary between different vaccines? ',
-          'Do these results using the adjusted data and alternative denominator align with performance indicators in the DHIS2 data? If they are different, why?',
-          'Then, make the same reflections for the percent of districts that are meeting performance targets for dropout.'
+          'low_reporting_dropout_1',
+          'low_reporting_dropout_2',
+          'low_reporting_dropout_3'
         )
       )
     ),
@@ -390,11 +411,11 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = FALSE,
         prompts = list(
-          'Residence: are the gaps between the urban and rural areas large, have they changed over time? What pattern of inequality (bottom, linear, top)?',
-          'Region:  Are the gaps between regions large? Have they changed over time?',
-          'Wealth: are the gaps between the rich and poor large, have they changed over time? What pattern of inequality (bottom, linear, top)?',
-          'Education: are the gaps in coverage by mother’s education large, have they changed over time?',
-          'How do these results link to immunization strategies like fixed post, mobile and outreach?'
+          'equity_assessment_measles1_1',
+          'equity_assessment_measles1_2',
+          'equity_assessment_measles1_3',
+          'equity_assessment_measles1_4',
+          'equity_assessment_measles1_5'
         )
       ),
       'Penta 3' = list(
@@ -404,11 +425,11 @@ pageObjectsConfig <- function(input) {
         always_include = TRUE,
         single_entry = FALSE,
         prompts = list(
-          'Residence: are the gaps between the urban and rural areas large, have they changed over time? What pattern of inequality (bottom, linear, top)?',
-          'Region:  Are the gaps between regions large? Have they changed over time?',
-          'Wealth: are the gaps between the rich and poor large, have they changed over time? What pattern of inequality (bottom, linear, top)?',
-          'Education: are the gaps in coverage by mother’s education large, have they changed over time?',
-          'How do these results link to immunization strategies like fixed post, mobile and outreach?'
+          'equity_assessment_penta3_1',
+          'equity_assessment_penta3_2',
+          'equity_assessment_penta3_3',
+          'equity_assessment_penta3_4',
+          'equity_assessment_penta3_1'
         )
       ),
       'Custom Checks' = list(
@@ -419,11 +440,11 @@ pageObjectsConfig <- function(input) {
         always_include = FALSE,
         single_entry = FALSE,
         prompts = list(
-          'Residence: are the gaps between the urban and rural areas large, have they changed over time? What pattern of inequality (bottom, linear, top)?',
-          'Region:  Are the gaps between regions large? Have they changed over time?',
-          'Wealth: are the gaps between the rich and poor large, have they changed over time? What pattern of inequality (bottom, linear, top)?',
-          'Education: are the gaps in coverage by mother’s education large, have they changed over time?',
-          'How do these results link to immunization strategies like fixed post, mobile and outreach?'
+          'equity_assessment_custom_checks_1',
+          'equity_assessment_custom_checks_2',
+          'equity_assessment_custom_checks_3',
+          'equity_assessment_custom_checks_4',
+          'equity_assessment_custom_checks_5'
         )
       )
     )

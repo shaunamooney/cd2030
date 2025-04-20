@@ -48,6 +48,7 @@ calculate_coverage  <- function(.data,
   year = NULL
 
   admin_level <- arg_match(admin_level)
+  admin_level_cols <- get_admin_columns(admin_level)
 
   # Validate inputs
   check_cd_data(.data)
@@ -62,11 +63,11 @@ calculate_coverage  <- function(.data,
 
   # Prepare DHIS2 data
   dhis2_data <- coverage %>%
-    select(year, any_of(c('adminlevel_1', 'district')), matches('^cov_'))
+    select(year, any_of(admin_level_cols), matches('^cov_'))
 
   # Prepare survey data
   survey_data <- survey_data %>%
-    select(year, any_of(c('adminlevel_1', 'district')), matches('^ll_|^ul|^r_')) %>%
+    select(year, any_of(admin_level_cols), matches('^ll_|^ul|^r_')) %>%
     join_subnational_map(admin_level, subnational_map) %>%
     check_district_column(admin_level, dhis2_data)
 
@@ -74,16 +75,11 @@ calculate_coverage  <- function(.data,
   wuenic_data <- wuenic_data %>%
     select(year, matches('^cov_'))
 
-  join_keys <- switch(
-    admin_level,
-    national = 'year',
-    adminlevel_1 = c('year', 'adminlevel_1'),
-    district = c('year', 'adminlevel_1', 'district')
-  )
+  join_keys <- get_admin_columns(admin_level)
 
   # Join and Transform data
   combined_data <- dhis2_data %>%
-    full_join(survey_data, by = join_keys, relationship = 'many-to-many') %>%
+    full_join(survey_data, by = c(join_keys, 'year'), relationship = 'many-to-many') %>%
     left_join(wuenic_data, by = 'year') %>%
     select(-any_of(c('admin_level_1')))
 
@@ -200,5 +196,6 @@ check_district_column <- function(.data, admin_level, dhis2_data) {
       distinct(adminlevel_1, district) %>%
       left_join(.data, by = 'adminlevel_1', relationship = 'many-to-many')
   }
+
   .data
 }

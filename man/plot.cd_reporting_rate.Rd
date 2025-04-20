@@ -18,15 +18,15 @@ calculation function containing subnational reporting rate data.}
 
 \item{plot_type}{A character string specifying the plot type. Options:
 \itemize{
-\item \code{"heat_map"}: Creates a tile map of reporting rates across years and units.
-\item \code{"bar"}: Creates bar plots faceted by region/district showing year-wise trends.
+\item \code{'heat_map'}: Creates a tile map of reporting rates across years and units.
+\item \code{'bar'}: Creates bar plots faceted by region/district showing year-wise trends.
 }}
 
 \item{indicator}{A character. The indicator to visualize. Must be one of:
 \itemize{
-\item \code{"anc_rr"}: Reporting rate for antenatal care visits
-\item \code{"idelv_rr"}: Reporting rate for institutional deliveries
-\item \code{"vacc_rr"}: Reporting rate for vaccination services
+\item \code{'anc_rr'}: Reporting rate for antenatal care visits
+\item \code{'idelv_rr'}: Reporting rate for institutional deliveries
+\item \code{'vacc_rr'}: Reporting rate for vaccination services
 }}
 
 \item{threshold}{Numeric. The threshold for categorizing high, medium, and low reporting
@@ -44,7 +44,7 @@ at subnational administrative levels using either heat maps or bar plots.
 \details{
 The plot adapts based on:
 \itemize{
-\item \code{plot_type = "heat_map"}:
+\item \code{plot_type = 'heat_map'}:
 \itemize{
 \item Classifies reporting rates into three bands:
 \itemize{
@@ -54,7 +54,7 @@ The plot adapts based on:
 }
 \item Labels are overlaid on each tile.
 }
-\item \code{plot_type = "bar"}:
+\item \code{plot_type = 'bar'}:
 \itemize{
 \item Displays reporting rates as filled bars, faceted by district or adminlevel_1.
 \item Colors are scaled using a gradient from red to green.
@@ -66,10 +66,10 @@ This function only supports subnational data. National-level objects will trigge
 \examples{
 \dontrun{
   # Example: Plot heat map of vaccination reporting rates
-  plot(cd_reporting_rate_obj, plot_type = "heat_map", indicator = "vacc_rr")
+  plot(cd_reporting_rate_obj, plot_type = 'heat_map', indicator = 'vacc_rr')
 
   # Example: Plot bar charts for institutional delivery reporting
-  plot(cd_reporting_rate_obj, plot_type = "bar", indicator = "idelv_rr")
+  plot(cd_reporting_rate_obj, plot_type = 'bar', indicator = 'idelv_rr')
 }
 
 }
