@@ -2,29 +2,27 @@ dataCompletenessUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('data_completeness'), i18n$t("title_completeness"), i18n = i18n),
+    contentHeader(ns('data_completeness'), i18n$t('title_completeness'), i18n = i18n),
     contentBody(
       box(
-        title = i18n$t("title_completeness_options"),
+        title = i18n$t('title_completeness_options'),
         status = 'success',
         solidHeader = TRUE,
         width = 12,
         fluidRow(
-          column(3, selectizeInput(ns('year'), label = i18n$t("title_year"), choice = NULL)),
-          column(3, selectizeInput(ns('admin_level'), label = i18n$t("title_admin_level"),
-                                   choice = c('Admin Level 1' = 'adminlevel_1',
-                                              'District' = 'district'))),
+          column(3, selectizeInput(ns('year'), label = i18n$t('title_year'), choice = NULL)),
+          column(3, adminLevelInputUI(ns('admin_level'), i18n)),
           column(3, selectizeInput(ns('indicator'),
-                                   label = i18n$t("title_indicator"),
+                                   label = i18n$t('title_indicator'),
                                    choice = c('Select Indicator' = '', list_vaccines())))
         )
       ),
       tabBox(
-        title = tags$span(icon('chart-line'), i18n$t("title_completeness_indicators")),
+        title = tags$span(icon('chart-line'), i18n$t('title_completeness_indicators')),
         width = 12,
 
         tabPanel(
-          title = i18n$t("title_heat_map"),
+          title = i18n$t('title_heat_map'),
           fluidRow(
             column(12, withSpinner(plotlyOutput(ns('district_missing_heatmap')))),
             column(4, align = 'right', downloadButtonUI(ns('download_data')))
@@ -32,22 +30,22 @@ dataCompletenessUI <- function(id, i18n) {
         ),
 
         tabPanel(
-          title = i18n$t("title_complete_vaccines"),
+          title = i18n$t('title_complete_vaccines'),
           fluidRow(
-            column(12, h5(i18n$t("title_districts_with_complete_data"))),
+            column(12, h5(i18n$t('title_districts_with_complete_data'))),
             column(12, reactableOutput(ns('complete_vaccines')))
           )
         ),
 
         tabPanel(
-          title = i18n$t("title_incomplete_vaccines_by_region"),
+          title = i18n$t('title_incomplete_vaccines_by_region'),
           fluidRow(
             column(12, plotCustomOutput(ns('incomplete_region')))
           )
         )
       ),
       box(
-        title = i18n$t("title_districts_with_missing_data"),
+        title = i18n$t('title_districts_with_missing_data'),
         status = 'success',
         width = 6,
         fluidRow(
@@ -67,6 +65,8 @@ dataCompletenessServer <- function(id, cache, i18n) {
   moduleServer(
     id = id,
     module = function(input, output, session) {
+
+      admin_level <- adminLevelInputServer('admin_level')
 
       data <- reactive({
         req(cache())
@@ -149,7 +149,7 @@ dataCompletenessServer <- function(id, cache, i18n) {
             ggplot(dt, aes(x = district, y = indicator, fill = value)) +
               geom_tile(color = 'white') +
               scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
-              labs(title = NULL, y = 'Indicator', x = input$admin_level, fill = 'Value') +
+              labs(title = NULL, y = 'Indicator', x = admin_level(), fill = 'Value') +
               theme_minimal() +
               theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
           )
@@ -166,7 +166,7 @@ dataCompletenessServer <- function(id, cache, i18n) {
             ggplot(dt, aes(x = district, y = year, fill = value)) +
               geom_tile(color = 'white') +
               scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
-              labs(title = NULL, x = input$admin_level, y = 'Year', fill = 'Value') +
+              labs(title = NULL, x = admin_level(), y = 'Year', fill = 'Value') +
               theme_minimal() +
               theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
           )
@@ -192,13 +192,13 @@ dataCompletenessServer <- function(id, cache, i18n) {
 
         data() %>%
           add_missing_column(vaccine_only) %>%
-          summarise(across(starts_with('mis_'), ~ (1 - mean(.x, na.rm = TRUE))) * 100, .by = c(year, input$admin_level)) %>%
-          group_by(!!sym(input$admin_level)) %>%
-          select(year, any_of(input$admin_level), where(~ any(.x < 100, na.rm = TRUE))) %>%
+          summarise(across(starts_with('mis_'), ~ (1 - mean(.x, na.rm = TRUE))) * 100, .by = c(year, admin_level())) %>%
+          group_by(!!sym(admin_level())) %>%
+          select(year, any_of(admin_level()), where(~ any(.x < 100, na.rm = TRUE))) %>%
           pivot_longer(cols = starts_with('mis_'),
                        names_prefix = 'mis_',
                        names_to = 'indicator') %>%
-          mutate(facet_label = paste0(!!sym(input$admin_level), ': ', indicator)) %>%
+          mutate(facet_label = paste0(!!sym(admin_level()), ': ', indicator)) %>%
           ggplot(aes(y = value, x = year, colour = indicator)) +
           geom_line() +
           geom_point() +
@@ -224,18 +224,18 @@ dataCompletenessServer <- function(id, cache, i18n) {
           completeness_rate <- data() %>% calculate_completeness_summary()
           district_completeness_rate <- data() %>% calculate_district_completeness_summary()
 
-          sheet_name_1 <- i18n$t("title_missing")
+          sheet_name_1 <- i18n$t('title_missing')
           addWorksheet(wb, sheet_name_1)
-          writeData(wb, sheet = sheet_name_1, x = i18n$t("table_complete_monthly"), startCol = 1, startRow = 1)
+          writeData(wb, sheet = sheet_name_1, x = i18n$t('table_complete_monthly'), startCol = 1, startRow = 1)
           writeData(wb, sheet = sheet_name_1, x = completeness_rate, startCol = 1, startRow = 3)
 
           # Check if sheet exists; if not, add it
-          sheet_name_2 <- i18n$t("sheet_districts_missing")
+          sheet_name_2 <- i18n$t('sheet_districts_missing')
           addWorksheet(wb, sheet_name_2)
-          writeData(wb, sheet = sheet_name_2, x = i18n$t("table_districts_missing"), startRow = 1, startCol = 1)
+          writeData(wb, sheet = sheet_name_2, x = i18n$t('table_districts_missing'), startRow = 1, startCol = 1)
           writeData(wb, sheet = sheet_name_2, x = district_completeness_rate, startCol = 1, startRow = 3)
         },
-        label = i18n$t("btn_download_districts")
+        label = 'btn_download_districts'
       )
 
       downloadExcel(
@@ -246,19 +246,19 @@ dataCompletenessServer <- function(id, cache, i18n) {
         excel_write_function = function(wb) {
           district_incompletes_sum <- incomplete_district()
 
-          sheet_name_1 <- i18n$t("title_districts_with_missing_data_1")
+          sheet_name_1 <- i18n$t('title_districts_with_missing_data_1')
           addWorksheet(wb, sheet_name_1)
-          writeData(wb, sheet = sheet_name_1, x = str_glue(i18n$t("title_districts_with_missing_indicator")), startCol = 1, startRow = 1)
+          writeData(wb, sheet = sheet_name_1, x = str_glue(i18n$t('title_districts_with_missing_indicator')), startCol = 1, startRow = 1)
           writeData(wb, sheet = sheet_name_1, x = district_incompletes_sum, startCol = 1, startRow = 3)
         },
-        label = i18n$t("btn_download_districts")
+        label = 'btn_download_districts'
       )
 
       contentHeaderServer(
         'data_completeness',
         cache = cache,
         objects = pageObjectsConfig(input),
-        md_title = i18n$t("title_completeness"),
+        md_title = i18n$t('title_completeness'),
         md_file = 'quality_checks_data_completeness.md',
         i18n = i18n
       )

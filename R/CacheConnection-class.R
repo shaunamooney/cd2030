@@ -252,6 +252,10 @@ CacheConnection <- R6::R6Class(
     #' @param value Named list.
     set_national_estimates = function(value) private$setter('national_estimates', value, is.list),
 
+    #' @description Set year of survey estimates.
+    #' @param value Integer year.
+    set_survey_year = function(value) private$setter('survey_year', value, is_scalar_integerish),
+
     #' @description Set start year of surveys.
     #' @param value Integer year.
     set_start_survey_year = function(value) private$setter('start_survey_year', value, is_scalar_integerish),
@@ -396,7 +400,6 @@ CacheConnection <- R6::R6Class(
     #' @field national_estimates Gets national estimates.
     national_estimates = function(value) {
       if (missing(value)) {
-        private$depend('survey_estimates')
         private$depend('national_estimates')
         survey <- self$survey_estimates
         return(c(
@@ -413,6 +416,19 @@ CacheConnection <- R6::R6Class(
       }
       private$update_field('national_estimates', value)
     },
+
+    #' @field survey_years Get survey years.
+    survey_years = function(value) {
+      survey <- private$getter('national_survey', value)
+      if (is.null(survey)) return(NULL)
+      survey %>%
+        distinct(year) %>%
+        arrange(year) %>%
+        pull(year)
+    },
+
+    #' @field survey_year Gets survey year of survey estimates.
+    survey_year = function(value) private$getter('survey_year', value),
 
     #' @field start_survey_year Gets start survey year.
     start_survey_year = function(value) private$getter('start_survey_year', value),
@@ -436,19 +452,44 @@ CacheConnection <- R6::R6Class(
     wuenic_estimates = function(value) private$getter('wuenic_estimates', value),
 
     #' @field national_survey Gets national survey.
-    national_survey = function(value) private$getter('national_survey', value),
+    national_survey = function(value) {
+      survey <- private$getter('national_survey', value)
+      if (is.null(survey)) return(NULL)
+
+      private$filter_survey(survey)
+    },
 
     #' @field regional_survey Gets regional survey.
-    regional_survey = function(value) private$getter('regional_survey', value),
+    regional_survey = function(value) {
+      survey <- private$getter('regional_survey', value)
+      if (is.null(survey)) return(NULL)
+
+      private$filter_survey(survey)
+    },
 
     #' @field wiq_survey Gets WIQ survey.
-    wiq_survey = function(value) private$getter('wiq_survey', value),
+    wiq_survey = function(value) {
+      survey <- private$getter('wiq_survey', value)
+      if (is.null(survey)) return(NULL)
+
+      private$filter_survey(survey)
+    },
 
     #' @field area_survey Gets area survey.
-    area_survey = function(value) private$getter('area_survey', value),
+    area_survey = function(value) {
+      survey <- private$getter('area_survey', value)
+      if (is.null(survey)) return(NULL)
+
+      private$filter_survey(survey)
+    },
 
     #' @field education_survey Gets  education survey.
-    education_survey = function(value) private$getter('education_survey', value),
+    education_survey = function(value) {
+      survey <- private$getter('education_survey', value)
+      if (is.null(survey)) return(NULL)
+
+      private$filter_survey(survey)
+    },
 
     #' @field survey_mapping Gets survey mapping.
     survey_mapping = function(value) private$getter('survey_mapping', value),
@@ -466,6 +507,7 @@ CacheConnection <- R6::R6Class(
       excluded_years = numeric(),
       k_factors = c(anc = 0, idelv = 0, vacc = 0),
       adjusted_flag = FALSE,
+      survey_year = NULL,
       survey_estimates = c(anc1 = 98, penta1 = 97, penta3 = 89),
       national_estimates  = list(
         nmr = NA_real_, pnmr = NA_real_, twin_rate = NA_real_,preg_loss = NA_real_,
@@ -514,6 +556,13 @@ CacheConnection <- R6::R6Class(
       }
 
       cd_abort(c('x' = '{.field field_name} is readonly'))
+    },
+
+    filter_survey = function(survey) {
+      check_required(survey)
+      start_year <- self$start_survey_year
+      survey %>%
+        filter(if (is.null(start_year)) TRUE else year >= start_year)
     },
 
     setter = function(field_name, value, validation_exp = NULL) {

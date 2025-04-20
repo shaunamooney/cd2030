@@ -56,7 +56,7 @@ removeYearsServer <- function(id, cache, i18n) {
 
       messageBox <- messageBoxServer('remove_feedback',
                                      i18n = i18n,
-                                     default_message = 'No years have been removed yet.')
+                                     default_message = 'msg_no_years_removed')
 
       data <- reactive({
         req(cache())
@@ -84,10 +84,9 @@ removeYearsServer <- function(id, cache, i18n) {
         if (length(excluded_years()) > 0) {
           updateSelectInput(session, 'year_to_remove', selected = excluded_years())
           list_years <- paste(excluded_years(), collapse = ', ')
-          template <- i18n$t("msg_removed_year")
-          messageBox$update_message(str_glue('{template} {list_years}'), 'success')
+          messageBox$update_message('msg_removed_year',  'success', list(years = list_years))
         } else {
-          messageBox$update_message(i18n$t('msg_no_years_removed'), 'info')
+          messageBox$update_message('msg_no_years_removed', 'info')
         }
       })
 

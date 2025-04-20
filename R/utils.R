@@ -12,6 +12,17 @@ check_file_path <- function(path, call = caller_env()) {
   invisible(TRUE)
 }
 
+check_cd_population_metrics <- function(.data, arg = caller_arg(.data), call = caller_env()) {
+
+  check_required(.data, arg = arg, call = call)
+
+  if (!inherits(.data, 'cd_population_metrics')) {
+    cd_abort(c('x' = 'The data object must be of class {.field cd_population_metrics}.'), call = call)
+  }
+
+  invisible(TRUE)
+}
+
 check_cd_indicator_coverage <- function(.data, arg = caller_arg(.data), call = caller_env()) {
 
   check_required(.data, arg = arg, call = call)

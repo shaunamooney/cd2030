@@ -9,13 +9,7 @@ nationalCoverageUI <- function(id, i18n) {
         status = 'success',
         width = 12,
         solidHeader = TRUE,
-        fluidRow(
-          column(3, selectizeInput(ns('denominator'), label = i18n$t("title_denominator"),
-                                   choices = c('DHIS2' = 'dhis2',
-                                               'ANC 1' = 'anc1',
-                                               'Penta 1' = 'penta1'))),
-          column(3, selectizeInput(ns('year'), label = i18n$t("title_survey_year"), choices = NULL))
-        )
+        fluidRow(column(3, denominatorInputUI(ns('denominator'), i18n)))
       ),
 
       tabBox(
@@ -78,6 +72,8 @@ nationalCoverageServer <- function(id, cache, i18n) {
     id = id,
     module = function(input, output, session) {
 
+      denominator <- denominatorInputServer('denominator', cache)
+
       survey_data <- reactive({
         req(cache())
         cache()$national_survey
@@ -87,12 +83,10 @@ nationalCoverageServer <- function(id, cache, i18n) {
         req(cache(), cache()$un_estimates, survey_data(), cache()$wuenic_estimates)
 
         rates <- cache()$national_estimates
-        filtered_survey_data <- survey_data() %>%
-          filter(year >= as.numeric(input$year))
 
         cache()$adjusted_data %>%
           calculate_coverage(
-            survey_data = filtered_survey_data,
+            survey_data = survey_data(),
             wuenic_data = cache()$wuenic_estimates,
             un_estimates = cache()$un_estimates,
             sbr = rates$sbr,
@@ -103,37 +97,6 @@ nationalCoverageServer <- function(id, cache, i18n) {
             anc1survey = rates$anc1,
             dpt1survey = rates$penta1
           )
-      })
-
-      denominator <- reactive({
-        req(cache())
-        cache()$denominator
-      })
-
-      observe({
-        req(survey_data())
-
-        years <- survey_data() %>%
-          distinct(year) %>%
-          arrange(year) %>%
-          pull(year)
-
-        updateSelectInput(session, 'year', choices = years, selected = cache()$start_survey_year)
-      })
-
-      observe({
-        req(cache())
-        updateSelectInput(session, 'denominator', selected = denominator())
-      })
-
-      observeEvent(input$year, {
-        req(cache(), input$year)
-        cache()$set_start_survey_year(as.numeric(input$year))
-      })
-
-      observeEvent(input$denominator, {
-        req(cache())
-        cache()$set_denominator(input$denominator)
       })
 
       output$measles1 <- renderCustomPlot({
@@ -164,7 +127,7 @@ nationalCoverageServer <- function(id, cache, i18n) {
       downloadCoverageServer(
         id = 'measles1_download',
         data = coverage,
-        filename = paste0('measles1_survey_', input$denominator),
+        filename = paste0('measles1_survey_', denominator()),
         indicator = reactive('measles1'),
         denominator = denominator,
         data_fn = filter_coverage,
@@ -175,7 +138,7 @@ nationalCoverageServer <- function(id, cache, i18n) {
       downloadCoverageServer(
         id = 'penta3_download',
         data = coverage,
-        filename = paste0('penta3_survey_', input$denominator),
+        filename = paste0('penta3_survey_', denominator()),
         indicator = reactive('penta3'),
         denominator = denominator,
         data_fn = filter_coverage,
@@ -186,7 +149,7 @@ nationalCoverageServer <- function(id, cache, i18n) {
       downloadCoverageServer(
         id = 'dropout_penta13_download',
         data = coverage,
-        filename = paste0('dropout_penta13_survey_', input$denominator),
+        filename = paste0('dropout_penta13_survey_', denominator()),
         indicator = reactive('dropout_penta13'),
         denominator = denominator,
         data_fn = filter_coverage,
@@ -197,7 +160,7 @@ nationalCoverageServer <- function(id, cache, i18n) {
       downloadCoverageServer(
         id = 'dropout_penta3mcv1_download',
         data = coverage,
-        filename = paste0('dropout_penta3mcv1_survey_', input$denominator),
+        filename = paste0('dropout_penta3mcv1_survey_', denominator()),
         indicator = reactive('dropout_penta3mcv1'),
         denominator = denominator,
         data_fn = filter_coverage,
@@ -208,7 +171,7 @@ nationalCoverageServer <- function(id, cache, i18n) {
       downloadCoverageServer(
         id = 'custom_download',
         data = coverage,
-        filename = paste0(input$indicator, '_survey_', input$denominator),
+        filename = paste0(input$indicator, '_survey_', denominator()),
         indicator = reactive(input$indicator),
         denominator = denominator,
         data_fn = filter_coverage,

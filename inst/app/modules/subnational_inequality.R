@@ -10,13 +10,8 @@ subnationalInequalityUI <- function(id, i18n) {
         width = 12,
         solidHeader = TRUE,
         fluidRow(
-          column(3, selectizeInput(ns('admin_level'), label = i18n$t("title_admin_level"),
-                                   choices = c('Admin Level 1' = 'adminlevel_1',
-                                               'District' = 'district'))),
-          column(3, selectizeInput(ns('denominator'), label = i18n$t("title_denominator"),
-                                   choices = c('DHIS2' = 'dhis2',
-                                               'ANC 1' = 'anc1',
-                                               'Penta 1' = 'penta1')))
+          column(3, adminLevelInputUI(ns('admin_level'), i18n)),
+          column(3, denominatorInputUI(ns('denominator'), i18n))
         )
       ),
 
@@ -79,19 +74,17 @@ subnationalInequalityServer <- function(id, cache, i18n) {
     id = id,
     module = function(input, output, session) {
 
-      denominator <- reactive({
-        req(cache())
-        cache()$denominator
-      })
+      denominator <- denominatorInputServer('denominator', cache)
+      admin_level <- adminLevelInputServer('admin_level')
 
       inequalities <- reactive({
-        req(cache(), cache()$un_estimates, input$admin_level)
+        req(cache(), cache()$un_estimates, admin_level())
 
         rates <- cache()$national_estimates
 
         calculate_inequality(
           .data = cache()$adjusted_data,
-          admin_level = input$admin_level,
+          admin_level = admin_level(),
           un_estimates = cache()$un_estimates,
           sbr = rates$sbr,
           nmr = rates$nmr,
@@ -101,16 +94,6 @@ subnationalInequalityServer <- function(id, cache, i18n) {
           twin = rates$twin_rate,
           preg_loss = rates$preg_loss
         )
-      })
-
-      observe({
-        req(cache())
-        updateSelectInput(session, 'denominator', selected = cache()$denominator)
-      })
-
-      observeEvent(input$denominator, {
-        req(cache())
-        cache()$set_denominator(input$denominator)
       })
 
       output$measles1 <- renderCustomPlot({
@@ -141,7 +124,7 @@ subnationalInequalityServer <- function(id, cache, i18n) {
       downloadCoverageServer(
         id = 'measles1_download',
         data = inequalities,
-        filename = paste0('measles1_', input$level, '_inequality_', denominator()),
+        filename = paste0('measles1_', admin_level(), '_inequality_', denominator()),
         indicator = reactive('measles1'),
         denominator = denominator,
         data_fn = filter_inequality,
@@ -152,7 +135,7 @@ subnationalInequalityServer <- function(id, cache, i18n) {
       downloadCoverageServer(
         id = 'penta3_download',
         data = inequalities,
-        filename = paste0('penta3_', input$level, '_inequality_', denominator()),
+        filename = paste0('penta3_', admin_level(), '_inequality_', denominator()),
         indicator = reactive('penta3'),
         denominator =denominator,
         data_fn = filter_inequality,
@@ -163,7 +146,7 @@ subnationalInequalityServer <- function(id, cache, i18n) {
       downloadCoverageServer(
         id = 'dropout_penta13_download',
         data = inequalities,
-        filename = paste0('dropout_penta13_', input$level, '_inequality_', denominator()),
+        filename = paste0('dropout_penta13_', admin_level(), '_inequality_', denominator()),
         indicator = reactive('dropout_penta13'),
         denominator = denominator,
         data_fn = filter_inequality,
@@ -174,7 +157,7 @@ subnationalInequalityServer <- function(id, cache, i18n) {
       downloadCoverageServer(
         id = 'dropout_penta3mcv1_download',
         data = inequalities,
-        filename = paste0('dropout_penta3mcv1_', input$level, '_inequality_', denominator()),
+        filename = paste0('dropout_penta3mcv1_', admin_level(), '_inequality_', denominator()),
         indicator = reactive('dropout_penta3mcv1'),
         denominator = denominator,
         data_fn = filter_inequality,
@@ -185,7 +168,7 @@ subnationalInequalityServer <- function(id, cache, i18n) {
       downloadCoverageServer(
         id = 'custom_download',
         data = inequalities,
-        filename = paste0(input$indicator, '_', input$level, '_inequality_', denominator()),
+        filename = paste0(input$indicator, '_', admin_level(), '_inequality_', denominator()),
         indicator = reactive(input$indicator),
         denominator = denominator,
         data_fn = filter_inequality,

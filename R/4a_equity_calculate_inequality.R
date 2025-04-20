@@ -89,7 +89,7 @@ calculate_inequality <- function(.data,
         denominator <-  str_extract(cur_column(), "[^_]+$")
         population <- get_population_column(indicator, denominator)
 
-        stats::weighted.mean(.x, get(paste('popshare', population, denominator, sep = '_')), na.rm = TRUE)
+        stats::weighted.mean(.x, get(paste('popshare', population, sep = '_')), na.rm = TRUE)
       },
       .names = "{ gsub('^diff', 'madmpop', .col) }"),
 
@@ -157,10 +157,9 @@ filter_inequality <- function(.data,
   # check_cd_inequality(.data)
   indicator <- arg_match(indicator, list_vaccine_indicators())
   denominator <- arg_match(denominator)
-  population <- get_population_column(indicator, denominator)
 
+  pop_col <- get_population_column(indicator, denominator)
   dhis_col <- paste('cov', indicator, denominator, sep = '_')
-  pop_col <- paste(population, denominator, sep = '_')
 
   .data %>%
     select(year, any_of(c('adminlevel_1', 'district')), ends_with(dhis_col), ends_with(pop_col)) %>%
@@ -169,15 +168,3 @@ filter_inequality <- function(.data,
     rename_with(~ str_remove(.x, paste0('_', pop_col)), ends_with(pop_col))
 }
 
-get_population_column <- function(indicator, denominator) {
-  population <- case_match(
-    indicator,
-    c('anc1', 'anc4') ~ 'totpreg',
-    c('bcg', 'instlivebirths', 'instdeliveries') ~ if_else(denominator == 'dhis2', 'totbirths', 'totlbirths'),
-    c('penta1', 'penta2', 'penta3', 'pcv1', 'pcv2', 'pcv3', 'rota1',
-      'rota2', 'ipv1', 'ipv2', 'opv1', 'opv2', 'opv3', "undervax","dropout_penta13","zerodose","dropout_penta3mcv1","dropout_penta1mcv1") ~ 'totinftpenta',
-    c('measles1', 'dropout_measles12') ~ 'totinftmeasles',
-    'measles2' ~ 'totmeasles2'
-  )
-  return(population)
-}
