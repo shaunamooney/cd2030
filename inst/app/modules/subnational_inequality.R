@@ -13,10 +13,7 @@ subnationalInequalityUI <- function(id, i18n) {
           column(3, selectizeInput(ns('admin_level'), label = i18n$t("title_admin_level"),
                                    choices = c('Admin Level 1' = 'adminlevel_1',
                                                'District' = 'district'))),
-          column(3, selectizeInput(ns('denominator'), label = i18n$t("title_denominator"),
-                                   choices = c('DHIS2' = 'dhis2',
-                                               'ANC 1' = 'anc1',
-                                               'Penta 1' = 'penta1')))
+          column(3, denominatorInputUI(ns('denominator'), i18n))
         )
       ),
 
@@ -79,10 +76,7 @@ subnationalInequalityServer <- function(id, cache, i18n) {
     id = id,
     module = function(input, output, session) {
 
-      denominator <- reactive({
-        req(cache())
-        cache()$denominator
-      })
+      denominator <- denominatorInputServer('denominator', cache)
 
       inequalities <- reactive({
         req(cache(), cache()$un_estimates, input$admin_level)
@@ -101,16 +95,6 @@ subnationalInequalityServer <- function(id, cache, i18n) {
           twin = rates$twin_rate,
           preg_loss = rates$preg_loss
         )
-      })
-
-      observe({
-        req(cache())
-        updateSelectInput(session, 'denominator', selected = cache()$denominator)
-      })
-
-      observeEvent(input$denominator, {
-        req(cache())
-        cache()$set_denominator(input$denominator)
       })
 
       output$measles1 <- renderCustomPlot({

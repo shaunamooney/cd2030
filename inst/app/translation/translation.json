@@ -1137,8 +1137,8 @@
     },
     {
       "key": "title_denominator",
-      "en": "Denominator",
-      "fr": "Dénominateur"
+      "en": "Selected Denominator",
+      "fr": "Dénominateur sélectionné"
     },
     {
       "key": "title_survey_year",
@@ -1331,17 +1331,7 @@
 		"fr": "Comment les estimations du nombre de naissances diffèrent-elles des projections de l'ONU ?"
 	  },
 	  {
-		"key": "denominator_selection_penta3_1",
-		"en": "What is the selected denominator for the key vaccination indicators and why?  Note that one best denominator should be selected to be applied for all immunization data.",
-		"fr": "Quel est le dénominateur sélectionné pour les principaux indicateurs de vaccination et pourquoi ? Un seul dénominateur optimal doit être utilisé pour toutes les données de vaccination."
-	  },
-	  {
-		"key": "denominator_selection_measles1_1",
-		"en": "What is the selected denominator for the key vaccination indicators and why?  Note that one best denominator should be selected to be applied for all immunization data.",
-		"fr": "Quel est le dénominateur sélectionné pour les principaux indicateurs de vaccination et pourquoi ? Un seul dénominateur optimal doit être utilisé pour toutes les données de vaccination."
-	  },
-	  {
-		"key": "denominator_selection_bcg_1",
+		"key": "denominator_selection_1",
 		"en": "What is the selected denominator for the key vaccination indicators and why?  Note that one best denominator should be selected to be applied for all immunization data.",
 		"fr": "Quel est le dénominateur sélectionné pour les principaux indicateurs de vaccination et pourquoi ? Un seul dénominateur optimal doit être utilisé pour toutes les données de vaccination."
 	  },

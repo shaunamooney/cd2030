@@ -1,119 +1,112 @@
 subnationalCoverageUI <- function(id, i18n) {
   ns <- NS(id)
 
-  tagList(contentHeader(ns('subnational_coverage'), i18n$t("title_subnational_coverage"), i18n = i18n),
-          contentBody(
-            box(
-              title = i18n$t("title_analysis_options"),
-              status = 'success',
-              width = 12,
-              solidHeader = TRUE,
-              fluidRow(
-                column(3, selectizeInput(
-                  ns('admin_level'),
-                  label = i18n$t("title_admin_level"),
-                  choices = c('Admin Level 1' = 'adminlevel_1', 'District' = 'district')
-                )),
-                column(3, selectizeInput(
-                  ns('region'), label = i18n$t("opt_admin_level_1"), choices = NULL
-                )),
-                column(3, selectizeInput(
-                  ns('denominator'),
-                  label = i18n$t("title_denominator"),
-                  choices = c(
-                    'DHIS2' = 'dhis2',
-                    'ANC 1' = 'anc1',
-                    'Penta 1' = 'penta1'
-                  )
-                )),
-                column(
-                  3,
-                  selectizeInput(ns('year'), label = i18n$t("title_survey_year"), choices = NULL)
-                )
-              )
-            ),
+  tagList(
+    contentHeader(ns('subnational_coverage'), i18n$t("title_subnational_coverage"), i18n = i18n),
+    contentBody(
+      box(
+        title = i18n$t("title_analysis_options"),
+        status = 'success',
+        width = 12,
+        solidHeader = TRUE,
+        fluidRow(
+          column(3, selectizeInput(
+            ns('admin_level'),
+            label = i18n$t("title_admin_level"),
+            choices = c('Admin Level 1' = 'adminlevel_1', 'District' = 'district')
+          )),
+          column(3, selectizeInput(
+            ns('region'), label = i18n$t("opt_admin_level_1"), choices = NULL
+          )),
+          column(3, denominatorInputUI(ns('denominator'), i18n)),
+          column(
+            3,
+            selectizeInput(ns('year'), label = i18n$t("title_survey_year"), choices = NULL)
+          )
+        )
+      ),
 
-            tabBox(
-              title = i18n$t("title_subnational_coverage_trend"),
-              id = 'national_trend',
-              width = 12,
+      tabBox(
+        title = i18n$t("title_subnational_coverage_trend"),
+        id = 'national_trend',
+        width = 12,
 
-              tabPanel(title = i18n$t("opt_mcv1"), fluidRow(
-                column(12, plotCustomOutput(ns('measles1'))), downloadCoverageUI(ns('measles1_download'))
-              )),
+        tabPanel(title = i18n$t("opt_mcv1"), fluidRow(
+          column(12, plotCustomOutput(ns('measles1'))), downloadCoverageUI(ns('measles1_download'))
+        )),
 
-              tabPanel(title = i18n$t("opt_penta3"), fluidRow(
-                column(12, plotCustomOutput(ns('penta3'))), downloadCoverageUI(ns('penta3_download'))
-              )),
+        tabPanel(title = i18n$t("opt_penta3"), fluidRow(
+          column(12, plotCustomOutput(ns('penta3'))), downloadCoverageUI(ns('penta3_download'))
+        )),
 
-              tabPanel(title = i18n$t("title_penta3_mcv1_dropout"), fluidRow(
-                column(12, plotCustomOutput(ns(
-                  'dropout_penta3mcv1'
-                ))), downloadCoverageUI(ns('dropout_penta3mcv1_download'))
-              )),
+        tabPanel(title = i18n$t("title_penta3_mcv1_dropout"), fluidRow(
+          column(12, plotCustomOutput(ns(
+            'dropout_penta3mcv1'
+          ))), downloadCoverageUI(ns('dropout_penta3mcv1_download'))
+        )),
 
-              tabPanel(title = i18n$t("title_penta13_dropout"), fluidRow(
-                column(12, plotCustomOutput(ns(
-                  'dropout_penta13'
-                ))), downloadCoverageUI(ns('dropout_penta13_download'))
-              )),
+        tabPanel(title = i18n$t("title_penta13_dropout"), fluidRow(
+          column(12, plotCustomOutput(ns(
+            'dropout_penta13'
+          ))), downloadCoverageUI(ns('dropout_penta13_download'))
+        )),
 
-              tabPanel(
-                i18n$t("opt_custom_check"),
-                fluidRow(column(
-                  3, selectizeInput(
-                    ns('indicator'),
-                    label = i18n$t("title_indicator"),
-                    choices = c('Select' = '', list_vaccine_indicators())
-                  )
-                )),
-                fluidRow(column(12, plotCustomOutput(
-                  ns('custom_check')
-                )), downloadCoverageUI(ns(
-                  'custom_download'
-                )))
-              )
+        tabPanel(
+          i18n$t("opt_custom_check"),
+          fluidRow(column(
+            3, selectizeInput(
+              ns('indicator'),
+              label = i18n$t("title_indicator"),
+              choices = c('Select' = '', list_vaccine_indicators())
             )
-          ))
+          )),
+          fluidRow(column(12, plotCustomOutput(
+            ns('custom_check')
+          )), downloadCoverageUI(ns(
+            'custom_download'
+          )))
+        )
+      )
+    )
+  )
 }
 
 subnationalCoverageServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
-  moduleServer(id = id, module = function(input, output, session) {
+  moduleServer(
+    id = id,
+    module = function(input, output, session) {
+      ns <- session$ns
 
-    survey_data <- reactive({
-      req(cache())
-      cache()$regional_survey
-    })
+      denominator <- denominatorInputServer('denominator', cache)
 
-    coverage <- reactive({
-      req(cache(), cache()$un_estimates, cache()$wuenic_estimates,
-        survey_data())
-
-      rates <- cache()$national_estimates
-      filtered_survey_data <- survey_data() %>%
-        filter(year >= as.numeric(input$year))
-
-      cache()$adjusted_data %>%
-        calculate_coverage(
-          admin_level = input$admin_level,
-          survey_data = filtered_survey_data,
-          wuenic_data = cache()$wuenic_estimates,
-          sbr = rates$sbr,
-          nmr = rates$nmr,
-          pnmr = rates$pnmr,
-          twin = rates$twin_rate,
-          preg_loss = rates$preg_loss,
-          anc1survey = rates$anc1,
-          dpt1survey = rates$penta1,
-          subnational_map = cache()$survey_mapping
-        )
+      survey_data <- reactive({
+        req(cache())
+        cache()$regional_survey
       })
 
-      denominator <- reactive({
-        req(cache())
-        cache()$denominator
+      coverage <- reactive({
+        req(cache(), cache()$un_estimates, cache()$wuenic_estimates, survey_data())
+
+        rates <- cache()$national_estimates
+        filtered_survey_data <- survey_data() %>%
+          filter(year >= as.numeric(input$year))
+
+        cache()$adjusted_data %>%
+          calculate_coverage(
+            admin_level = input$admin_level,
+            survey_data = filtered_survey_data,
+            wuenic_data = cache()$wuenic_estimates,
+            sbr = rates$sbr,
+            nmr = rates$nmr,
+            pnmr = rates$pnmr,
+            twin = rates$twin_rate,
+            preg_loss = rates$preg_loss,
+            anc1survey = rates$anc1,
+            dpt1survey = rates$penta1,
+            subnational_map = cache()$survey_mapping
+          )
       })
 
       observe({
@@ -174,19 +167,9 @@ subnationalCoverageServer <- function(id, cache, i18n) {
         updateSelectInput(session, 'year', choices = years, selected = selected_year)
       })
 
-      observe({
-        req(cache())
-        updateSelectInput(session, 'denominator', selected = denominator())
-      })
-
       observeEvent(input$year, {
         req(cache())
         cache()$set_start_survey_year(as.numeric(input$year))
-      })
-
-      observeEvent(input$denominator, {
-        req(cache())
-        cache()$set_denominator(input$denominator)
       })
 
       output$measles1 <- renderCustomPlot({

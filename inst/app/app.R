@@ -41,6 +41,7 @@ source('modules/page_objects_config.R')
 
 source('ui/content_body.R')
 source('ui/content_header.R')
+source('ui/denominator-input.R')
 source('ui/documentation_button.R')
 source('ui/download/download_button.R')
 source('ui/download/download_coverage.R')

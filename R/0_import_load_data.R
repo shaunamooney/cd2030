@@ -5,7 +5,7 @@
 #'
 #' @param path A string. The path to the Excel file to be loaded.
 #' @param start_year An integer. The minimum year to filter the data (default is
-#'   2019).
+#'   NULL).
 #' @param admin_sheet_name A string. The name of the sheet containing administrative
 #'   data. Default is `"Admin_data"`.
 #' @param population_sheet_name A string. The name of the sheet containing population
@@ -30,7 +30,7 @@
 #'
 #' @export
 load_excel_data <- function(path,
-                            start_year = 2019,
+                            start_year = NULL,
                             admin_sheet_name = 'Admin_data',
                             population_sheet_name = 'Population_data',
                             reporting_sheet_name = 'Reporting_completeness',
@@ -235,12 +235,11 @@ new_countdown <- function(.data, class = NULL, call = caller_env()) {
 #' }
 #'
 #' @noRd
-read_and_clean_sheet <- function(path, sheet_name, sheet_ids, start_year, call = caller_env()) {
+read_and_clean_sheet <- function(path, sheet_name, sheet_ids, start_year = NULL, call = caller_env()) {
 
   check_file_path(path, call = call)
   check_required(sheet_name, call = call)
   check_required(sheet_ids, call = call)
-  check_required(start_year, call = call)
 
   # Columns that are required to have data
   # required_columns <- c('district', 'year', 'month', 'first_admin_level', 'total_number_health_facilities')
@@ -258,7 +257,7 @@ read_and_clean_sheet <- function(path, sheet_name, sheet_ids, start_year, call =
         across(any_of('year'), ~ as.integer(.)), # Convert year column to integer
         across(-any_of(required_columns), ~ suppressWarnings(as.numeric(.))) # Convert other columns to numeric
       ) %>%
-      filter(if_any(matches('year'), ~ year >= start_year)),
+      filter(if_any(matches('year'), ~ is.null(start_year) || .x >= start_year)),
     error = function(e) {
       clean_message <- clean_error_message(e)
       cd_abort(c('x' = paste0(clean_message), ' in ', sheet_name), call = call)

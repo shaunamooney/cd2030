@@ -147,23 +147,11 @@ pageObjectsConfig <- function(input) {
       )
     ),
     denominator_selection = list(
-      'Penta 3' = list(
+      'Denominator Selection' = list(
         parameters = list(),
         always_include = TRUE,
         single_entry = TRUE,
-        prompts = list('denominator_selection_penta3_1')
-      ),
-      'Measles 1' = list(
-        parameters = list(),
-        always_include = TRUE,
-        single_entry = TRUE,
-        prompts = list('denominator_selection_measles1_1')
-      ),
-      'BCG' = list(
-        parameters = list(),
-        always_include = TRUE,
-        single_entry = TRUE,
-        prompts = list('denominator_selection_bcg_1')
+        prompts = list('denominator_selection_1')
       )
     ),
     national_coverage = list(
