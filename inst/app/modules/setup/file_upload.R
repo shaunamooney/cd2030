@@ -9,6 +9,8 @@ fileUploadUI <- function(id, i18n) {
     title = i18n$t('title_upload_survey'),
     status = 'success',
     solidHeader = TRUE,
+    collapsible = TRUE,
+    collapsed = TRUE,
     width = 12,
 
     fluidRow(
@@ -105,6 +107,7 @@ fileUploadServer <- function(id, cache, i18n) {
           un_message_box$update_message('msg_upload_success', 'success', list(file_name = file_name))
         },
         error = function(e) {
+          print(e)
           un_message_box$update_message('error_upload_failed_unsupported_format', 'error')
         })
       })

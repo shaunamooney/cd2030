@@ -461,10 +461,36 @@ CacheConnection <- R6::R6Class(
     mapping_years = function(value) private$getter('selected_mapping_years', value),
 
     #' @field un_estimates Gets UN estimates.
-    un_estimates = function(value) private$getter('un_estimates', value),
+    # un_estimates = function(value) private$getter('un_estimates', value),
+    un_estimates = function(value) {
+      if (missing(value)) {
+        private$depend('un_estimates')
+        if (is.null(private$.in_memory_data$un_estimates)) {
+          end_year <- max(self$countdown_data$year, na.rm = TRUE)
+          start_year <- min(self$countdown_data$year, na.rm = TRUE)
+          private$.in_memory_data$un_estimates <- create_un_estimates(un_estimates,
+                                                                      self$country_iso,
+                                                                      start_year,
+                                                                      end_year)
+        }
+        return(private$.in_memory_data$un_estimates)
+      }
+      cd_abort(c('x' = '{.field un_estimates} is readonly.'))
+    },
 
     #' @field wuenic_estimates Gets WUENIC estimates.
-    wuenic_estimates = function(value) private$getter('wuenic_estimates', value),
+    # wuenic_estimates = function(value) private$getter('wuenic_estimates', value),
+    wuenic_estimates = function(value) {
+      if (missing(value)) {
+        private$depend('wuenic_estimates')
+        if (is.null(private$.in_memory_data$wuenic_estimates)) {
+          private$.in_memory_data$wuenic_estimates <- create_wuenic_estimates(wuenic_estimates,
+                                                                              self$country_iso)
+        }
+        return(private$.in_memory_data$wuenic_estimates)
+      }
+      cd_abort(c('x' = '{.field wuenic_estimates} is readonly.'))
+    },
 
     #' @field national_survey Gets national survey.
     national_survey = function(value) {

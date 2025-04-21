@@ -54,7 +54,6 @@ calculateRatiosServer <- function(id, cache, i18n) {
         req(cache())
 
         estimates <- survey_estimates()
-        print(estimates)
         if (is.null(cache()$survey_source) || cache()$survey_source == 'setup') {
           updateNumericInput(session, 'anc1_coverage', value = unname(estimates["anc1"]))
           updateNumericInput(session, 'penta1_coverage', value = unname(estimates["penta1"]))
