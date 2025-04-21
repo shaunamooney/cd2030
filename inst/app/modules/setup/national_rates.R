@@ -18,14 +18,14 @@ nationalRatesUI <- function(id, i18n) {
                                          min = 0, max = 0.05, value = 0.025, step = 0.001)),
       column(3, offset = 0, numericInput(ns('post_neonatal_mortality_rate'), i18n$t("title_pnmr"),
                                          min = 0, max = 0.05, value = 0.024, step = 0.001)),
-      column(3, offset = 0, numericInput(ns('twin_rate'), i18n$t("title_twin_rate"),
-                                         min = 0, max = 0.05, value = 0.015, step = 0.001))
+      column(3, offset = 0, numericInput(ns('stillbirth_rate'), i18n$t("title_still_birth_rate"),
+                                         min = 0, max = 0.05, value = 0.02, step = 0.001))
     ),
     fluidRow(
       column(3, offset = 1, numericInput(ns('pregnancy_loss'), i18n$t("title_pregnancy_loss"),
                                          min = 0, max = 0.05, value = 0.03, step = 0.001)),
-      column(3, offset = 0, numericInput(ns('stillbirth_rate'), i18n$t("title_still_birth_rate"),
-                                         min = 0, max = 0.05, value = 0.02, step = 0.001)),
+      column(3, offset = 0, numericInput(ns('twin_rate'), i18n$t("title_twin_rate"),
+                                         min = 0, max = 0.05, value = 0.015, step = 0.001)),
       column(3, offset = 0, numericInput(ns('penta1_mortality_rate'), i18n$t("title_anc1_to_penta1_mort_rate"),
                                          min = 0, max = 0.05, value = 0.025, step = 0.001))
     )
@@ -48,12 +48,14 @@ nationalRatesServer <- function(id, cache) {
         # Check if any value in national_estimates is NA
         if (any(is.na(national_estimates))) {
           # Use input values (defaults already set in inputs) and save to cache
+         default_national_estimates <- cache()$default_national_estimates
+
          estimates <- list(
-            nmr = as.numeric(input$neonatal_mortality_rate),
-            pnmr = as.numeric(input$post_neonatal_mortality_rate),
+           sbr = default_national_estimates$sbr,
+            nmr = default_national_estimates$nmr,
+            pnmr = default_national_estimates$pnmr,
             twin_rate = as.numeric(input$twin_rate),
             preg_loss = as.numeric(input$pregnancy_loss),
-            sbr = as.numeric(input$stillbirth_rate),
             penta1_mort_rate = as.numeric(input$penta1_mortality_rate)
           )
 

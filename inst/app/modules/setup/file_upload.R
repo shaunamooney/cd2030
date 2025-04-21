@@ -9,6 +9,8 @@ fileUploadUI <- function(id, i18n) {
     title = i18n$t('title_upload_survey'),
     status = 'success',
     solidHeader = TRUE,
+    collapsible = TRUE,
+    collapsed = TRUE,
     width = 12,
 
     fluidRow(
@@ -99,12 +101,16 @@ fileUploadServer <- function(id, cache, i18n) {
 
         tryCatch({
           start_year <- min(data()$year)
-          end_year <- max(data()$year)
-          un <- load_un_estimates(input$un_data$datapath, country_iso(), start_year, end_year)
+          end_year <- robust_max(data()$year, 2024)
+          un <- load_un_estimates(path = input$un_data$datapath,
+                                  country_iso = country_iso(),
+                                  start_year = start_year,
+                                  end_year = end_year)
           cache()$set_un_estimates(un)
           un_message_box$update_message('msg_upload_success', 'success', list(file_name = file_name))
         },
         error = function(e) {
+          print(e)
           un_message_box$update_message('error_upload_failed_unsupported_format', 'error')
         })
       })
@@ -138,7 +144,8 @@ fileUploadServer <- function(id, cache, i18n) {
         file_name <- input$wuenic_data$name
 
         tryCatch({
-          wuenic <- load_wuenic_data(input$wuenic_data$datapath, country_iso())
+          wuenic <- load_wuenic_data(path = input$wuenic_data$datapath,
+                                     country_iso = country_iso())
           cache()$set_wuenic_estimates(wuenic)
           wuenic_message_box$update_message('msg_upload_success', 'success', list(file_name = file_name))
         },
@@ -190,11 +197,11 @@ fileUploadServer <- function(id, cache, i18n) {
         req(cache(), input$directory_select)
 
         required_files <- c(
-          'all_data.dta',               # National data
-          'gregion_data.dta',           # Regional data
-          'area_data.wide.dta',         # Area data
-          'meduc_data.wide.dta',        # Maternal education data
-          'wiq_data.wide.dta'           # Wealth index quintile data
+          'all_data.dta',          # National data
+          'gregion_data.dta',      # Regional data
+          'area_data.dta',         # Area data
+          'meduc_data.dta',        # Maternal education data
+          'wiq_data.dta'           # Wealth index quintile data
         )
         country <- gsub(' ', '_', country())
         required_files <- gsub('data', country, required_files)
@@ -229,23 +236,23 @@ fileUploadServer <- function(id, cache, i18n) {
             )
 
             if (grepl('^all_', .x$name)) {
-              survdata <- load_survey_data(file_path, country_iso())
+              survdata <- load_survey_data(path = file_path, country_iso = country_iso())
               cache()$set_national_survey(survdata)
               new_log <- 'log_loaded_national_survey'
             } else if (grepl('^gregion_', .x$name)) {
-              gregion <- load_survey_data(file_path, country_iso(), admin_level = 'adminlevel_1')
+              gregion <- load_survey_data(path = file_path, country_iso = country_iso(), admin_level = 'adminlevel_1')
               cache()$set_regional_survey(gregion)
               new_log <- 'log_loaded_regional_survey'
             } else if (grepl('^area_', .x$name)) {
-              area <- load_equity_data(file_path)
+              area <- load_equity_data(path = file_path, country_iso = country_iso())
               cache()$set_area_survey(area)
               new_log <- 'log_loaded_area_survey'
             } else if (grepl('^meduc_', .x$name)) {
-              educ <- load_equity_data(file_path)
+              educ <- load_equity_data(path = file_path, country_iso = country_iso())
               cache()$set_education_survey(educ)
               new_log <- 'log_loaded_maternal_education_survey'
             } else if (grepl('^wiq_', .x$name)) {
-              wiq <- load_equity_data(file_path)
+              wiq <- load_equity_data(path = file_path, country_iso = country_iso())
               cache()$set_wiq_survey(wiq)
               new_log <- 'log_loaded_wealth_index_survey'
             } else {
@@ -287,7 +294,8 @@ fileUploadServer <- function(id, cache, i18n) {
         survey_map = survey_map,
         title = i18n$t('msg_manual_mapping'),
         show_col = 'adminlevel_1',
-        type = 'survey_mapping'
+        type = 'survey_mapping',
+        i18n = i18n
       )
 
       map_data <- reactive({
@@ -316,7 +324,8 @@ fileUploadServer <- function(id, cache, i18n) {
         survey_map = map_map,
         title = 'Manual Mapping of Map Data',
         show_col = 'NAME_1',
-        type = 'map_mapping'
+        type = 'map_mapping',
+        i18n = i18n
       )
     }
   )

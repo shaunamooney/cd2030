@@ -53,7 +53,7 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
     mutate(!!dhis2_pop_col := !!dhis2_pop_col * 1000)
 
   # Ensure base year is not earlier than first year in data
-  base_year <- max(base_year,  min(nat_data$year, na.rm = TRUE), na.rm = TRUE)
+  base_year <- robust_max(c(base_year,  min(nat_data$year, na.rm = TRUE)), 2024)
 
   # Extract base year values for national denominator and population
   base_row <- nat_data %>%

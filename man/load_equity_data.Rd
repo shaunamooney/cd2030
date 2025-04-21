@@ -2,18 +2,20 @@
 % Please edit documentation in R/load_survey_data.R
 \name{load_equity_data}
 \alias{load_equity_data}
-\title{Load and Process Country-Specific Survey Equity Data}
+\title{Load and Filter Equity Data}
 \usage{
-load_equity_data(path)
+load_equity_data(path = NULL, .data = NULL, country_iso)
 }
 \arguments{
-\item{path}{Character. File path to the survey data file (DTA format).}
+\item{path}{Optional. File path to a \code{.dta} file.}
+
+\item{.data}{Optional. A preloaded data frame.}
+
+\item{country_iso}{Character. ISO3 country code to filter by.}
 }
 \value{
-A tibble containing cleaned and processed survey data.
+A tibble of class \code{cd_equity_data}.
 }
 \description{
-\code{load_equity_data} loads and processes survey data from a specified file path.
-It performs data cleaning, renaming, and standardization while allowing for
-the alignment of state codes.
+Loads survey equity data, removes unnecessary variables, and filters by country.
 }

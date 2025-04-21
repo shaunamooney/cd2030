@@ -33,7 +33,8 @@ pacman::p_load(
   shiny.i18n,
   stringr ,
   officer,
-  officedown
+  officedown,
+  waiter
   # update = TRUE
 )
 
@@ -164,6 +165,41 @@ ui <- dashboardPage(
   ),
   body = dashboardBody(
     useShinyjs(),
+
+    useWaiter(),
+    useHostess(),
+
+    waiterShowOnLoad(
+      color = '#f2f8ee',
+      html = tagList(
+        hostess_loader(
+          'loader',
+          preset = 'bubble',
+          text_color = '#7bc148',
+          class = 'label-center',
+          center_page = TRUE,
+          stroke_color  = "#7bc148"
+        ),
+        br(),
+        tagAppendAttributes(
+          style = 'margin-left: -75px',
+          p(
+            style = "color: #000000; font-weight: bold;",
+            sample(
+              c(
+                'We are loading the app. Fetching stardust...',
+                'The app is almost ready. Summoning unicorns...',
+                'Hold on, the app is being loaded! Chasing rainbows...',
+                'We are loading the app: teaching squirrels to water ski...',
+                'App is loading! Counting clouds...'
+                ),
+              1
+            )
+          )
+        )
+      )
+    ),
+
     tags$head(
       tags$link(rel = 'stylesheet', type = 'text/css', href = 'styles.css'),
       tags$link(rel = 'stylesheet', type = 'text/css', href = 'rmd-styles.css'),
@@ -197,6 +233,8 @@ ui <- dashboardPage(
 )
 
 server <- function(input, output, session) {
+  hostess <- Hostess$new('loader', infinite = TRUE)
+  hostess$start()
 
   introductionServer('introduction', selected_language = reactive(input$selected_language))
   cache <- uploadDataServer('upload_data', i18n)
@@ -244,6 +282,11 @@ server <- function(input, output, session) {
   saveCacheServe('save_cache', cache, i18n)
 
   # session$onSessionEnded(stopApp)
+
+  onFlushed(function() {
+    hostess$close()
+    waiter_hide()
+  }, once = TRUE)
 
   updateHeader <- function(country, i18n) {
 
