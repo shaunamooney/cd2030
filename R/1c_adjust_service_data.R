@@ -147,7 +147,7 @@ adjust_service_data <- function(.data,
         all_of(all_indicators),
         ~ {
           med <- round(median(if_else(!is.na(.), ., NA_real_), na.rm = TRUE), 0)
-          max_med <- if (all(is.na(med))) NA_real_ else max(med, na.rm = TRUE)
+          max_med <- robust_max(med)
           if_else(
             is.na(.) & !is.na(max_med),
             max_med,

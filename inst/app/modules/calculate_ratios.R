@@ -54,9 +54,11 @@ calculateRatiosServer <- function(id, cache, i18n) {
         req(cache())
 
         estimates <- survey_estimates()
-        updateNumericInput(session, 'anc1_coverage', value = unname(estimates["anc1"]))
-        updateNumericInput(session, 'penta1_coverage', value = unname(estimates["penta1"]))
-        updateNumericInput(session, 'penta3_coverage', value = unname(estimates["penta3"]))
+        if (is.null(cache()$survey_source) || cache()$survey_source == 'setup') {
+          updateNumericInput(session, 'anc1_coverage', value = unname(estimates["anc1"]))
+          updateNumericInput(session, 'penta1_coverage', value = unname(estimates["penta1"]))
+          updateNumericInput(session, 'penta3_coverage', value = unname(estimates["penta3"]))
+        }
       })
 
       debounced_anc1 <- debounce(reactive(input$anc1_coverage), millis = 500)
@@ -73,6 +75,7 @@ calculateRatiosServer <- function(id, cache, i18n) {
           penta3 = as.numeric(input$penta3_coverage)
         )
         cache()$set_survey_estimates(estimates)
+        cache()$set_survey_source('ratios')
       })
 
       output$ratios_plot <- renderCustomPlot({

@@ -42,7 +42,7 @@ plot.cd_ratios_summary <-  function(x, ...) {
   years <- x %>% distinct(year) %>% pull(year)
   base_colors <- c('darkgreen', 'darkgoldenrod3', 'firebrick4', 'springgreen3', 'darkolivegreen3', 'steelblue2')
 
-  extra_needed <- max(0, length(years) - length(base_colors))
+  extra_needed <- robust_max(c(0, length(years) - length(base_colors)))
   extra_colors <- if (extra_needed > 0) {
     scales::hue_pal()(extra_needed)
   } else {
