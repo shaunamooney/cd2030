@@ -30,19 +30,36 @@ surveySetupServer <- function(id, cache, i18n) {
       observe({
         req(cache())
         estimates <- cache()$survey_estimates
-        updateNumericInput(session, 'anc1_prop', value = unname(estimates['anc1']))
-        updateNumericInput(session, 'penta1_prop', value = unname(estimates['penta1']))
+
+        if (any(is.na(estimates))) {
+          default_estimates <- cache()$default_national_estimates
+
+          cache()$set_survey_estimates(
+            c(anc1 = default_estimates$anc1 * 100,
+              penta1 = default_estimates$penta1 * 100,
+              penta3 = 89
+            )
+          )
+        }
+
+        if (is.null(cache()$survey_source) || cache()$survey_source == 'ratios') {
+          updateNumericInput(session, 'anc1_prop', value = unname(estimates['anc1']))
+          updateNumericInput(session, 'penta1_prop', value = unname(estimates['penta1']))
+        }
       })
 
       observeEvent(c(input$anc1_prop, input$penta1_prop), {
         req(cache())
 
-        estimates <- c(
+        estimates <- cache()$survey_estimates
+        new_estimates <- c(
           anc1 = as.numeric(input$anc1_prop),
-          penta1 = as.numeric(input$penta1_prop)
+          penta1 = as.numeric(input$penta1_prop),
+          penta3 = unname(estimates['penta3'])
         )
 
-        cache()$set_survey_estimates(estimates)
+        cache()$set_survey_estimates(new_estimates)
+        cache()$set_survey_source('setup')
       })
 
       observeEvent(input$survey_start_year, {

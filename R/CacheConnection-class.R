@@ -239,11 +239,8 @@ CacheConnection <- R6::R6Class(
     #' @description Set survey estimates.
     #' @param value Named numeric vector.
     set_survey_estimates = function(value) {
-      if (!is.numeric(value) || !all(c('anc1', 'penta1') %in% names(value))) {
+      if (!is.numeric(value) || !all(c('anc1', 'penta1', 'penta3') %in% names(value))) {
         cd_abort(c('x' = 'Survey must be a numeric vector containing {.val anc1}, {.val penta1} and {.val penta3}'))
-      }
-      if (!'penta3' %in% value) {
-        value['penta3'] <- private$.in_memory_data$survey_estimates['penta3']
       }
       private$update_field('survey_estimates', value)
     },
@@ -251,6 +248,10 @@ CacheConnection <- R6::R6Class(
     #' @description Set national estimates.
     #' @param value Named list.
     set_national_estimates = function(value) private$setter('national_estimates', value, is.list),
+
+    #' @description Set year of survey estimates.
+    #' @param value Character scalar.
+    set_survey_source = function(value) private$setter('survey_source', value, is_scalar_character),
 
     #' @description Set year of survey estimates.
     #' @param value Integer year.
@@ -328,7 +329,7 @@ CacheConnection <- R6::R6Class(
       if (missing(value)) {
         if (is.null(self$countdown_data)) return(NULL)
 
-        return(attr(self$countdown_data, 'country'))
+        return(attr_or_abort(self$countdown_data, 'country'))
       }
 
       cd_abort(c('x' = '{.field country} is readonly.'))
@@ -339,10 +340,21 @@ CacheConnection <- R6::R6Class(
       if (missing(value)) {
         if (is.null(self$countdown_data)) return(NULL)
 
-        return(attr(self$countdown_data, 'iso3'))
+        return(attr_or_abort(self$countdown_data, 'iso3'))
       }
 
       cd_abort(c('x' = '{.field iso3} is readonly.'))
+    },
+
+    #' @field default_national_estimates Get the national rates.
+    default_national_estimates = function(value) {
+      if (missing(value)) {
+        if (is.null(self$countdown_data)) return(NULL)
+
+        return(attr_or_abort(self$countdown_data, 'national_rates'))
+      }
+
+      cd_abort(c('x' = '{.field default_national_estimates} is readonly.'))
     },
 
     #' @field adjusted_data Gets adjusted data.
@@ -427,6 +439,9 @@ CacheConnection <- R6::R6Class(
         pull(year)
     },
 
+    #' @field survey_source Gets survey source of information.
+    survey_source = function(value) private$getter('survey_source', value),
+
     #' @field survey_year Gets survey year of survey estimates.
     survey_year = function(value) private$getter('survey_year', value),
 
@@ -508,12 +523,13 @@ CacheConnection <- R6::R6Class(
       k_factors = c(anc = 0, idelv = 0, vacc = 0),
       adjusted_flag = FALSE,
       survey_year = NULL,
-      survey_estimates = c(anc1 = 98, penta1 = 97, penta3 = 89),
+      survey_estimates = c(anc1 = NA, penta1 = NA, penta3 = NA),
       national_estimates  = list(
-        nmr = NA_real_, pnmr = NA_real_, twin_rate = NA_real_,preg_loss = NA_real_,
-        sbr = NA_real_, penta1_mort_rate = NA_real_
+        nmr = NA, pnmr = NA, twin_rate = NA,preg_loss = NA,
+        sbr = NA, penta1_mort_rate = NA
       ),
       start_survey_year = NULL,
+      survey_source = NULL,
       denominator = 'dhis2',
       selected_admin_level_1 = NULL,
       selected_district = NULL,

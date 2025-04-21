@@ -27,6 +27,8 @@ from \code{.rds} files.
 
 \item{\code{country_iso}}{Get country ISO3 code.}
 
+\item{\code{default_national_estimates}}{Get the national rates.}
+
 \item{\code{adjusted_data}}{Gets adjusted data.}
 
 \item{\code{data_with_excluded_years}}{Get data with excluded years removed.}
@@ -44,6 +46,8 @@ from \code{.rds} files.
 \item{\code{national_estimates}}{Gets national estimates.}
 
 \item{\code{survey_years}}{Get survey years.}
+
+\item{\code{survey_source}}{Gets survey source of information.}
 
 \item{\code{survey_year}}{Gets survey year of survey estimates.}
 
@@ -97,6 +101,7 @@ Update a field (with change tracking)}
 \item \href{#method-CacheConnection-set_adjusted_flag}{\code{CacheConnection$set_adjusted_flag()}}
 \item \href{#method-CacheConnection-set_survey_estimates}{\code{CacheConnection$set_survey_estimates()}}
 \item \href{#method-CacheConnection-set_national_estimates}{\code{CacheConnection$set_national_estimates()}}
+\item \href{#method-CacheConnection-set_survey_source}{\code{CacheConnection$set_survey_source()}}
 \item \href{#method-CacheConnection-set_survey_year}{\code{CacheConnection$set_survey_year()}}
 \item \href{#method-CacheConnection-set_start_survey_year}{\code{CacheConnection$set_start_survey_year()}}
 \item \href{#method-CacheConnection-set_denominator}{\code{CacheConnection$set_denominator()}}
@@ -394,6 +399,23 @@ Set national estimates.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{value}}{Named list.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_survey_source"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_survey_source}{}}}
+\subsection{Method \code{set_survey_source()}}{
+Set year of survey estimates.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_survey_source(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Character scalar.}
 }
 \if{html}{\out{</div>}}
 }
