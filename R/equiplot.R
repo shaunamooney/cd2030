@@ -34,7 +34,7 @@ equiplot <- function(.data, variables, group_by, x_title = NULL, legend_title = 
 
   Variable = Value = over_factor = NULL
 
-  check_equity_data(.data)
+  # check_equity_data(.data)
 
   # Input checks and data preparation
   if (!is.data.frame(.data)) {
@@ -143,10 +143,12 @@ equiplot_area <- function(.data,
     x_title <- paste0(indicator, ' Coverage (%)')
   }
 
+  indicator <- paste0('r_', indicator)
+
   .data %>%
-    select(year, contains( paste0('r_', 'penta2', c('2rural', '1urban')))) %>%
-    rename_with(~ gsub('.*rural$', 'Rural', .x), .cols = contains('rural')) %>%
-    rename_with(~ gsub('.*urban$', 'Urban', .x), .cols = contains('urban')) %>%
+    select(year, level, contains(indicator)) %>%
+    mutate(level = str_to_title(level)) %>%
+    pivot_wider(names_from = level, values_from = !!sym(indicator)) %>%
     equiplot(variables = c('Rural', 'Urban'),
              group_by = year,
              x_title = x_title,
@@ -188,11 +190,16 @@ equiplot_education <- function(.data,
     x_title <- paste0(indicator, ' Coverage (%)')
   }
 
+  indicator <- paste0('r_', indicator)
+
   .data %>%
-    select(year, contains(paste0('r_', indicator, c('1none', '2primary', '3secondary')))) %>%
-    rename_with(~ gsub('.*none$', 'No education', .x), .cols = contains('none')) %>%
-    rename_with(~ gsub('.*primary$', 'Primary', .x), .cols = contains('primary')) %>%
-    rename_with(~ gsub('.*secondary$', 'Secondary or higher', .x), .cols = contains('secondary')) %>%
+    select(year, level, contains(indicator)) %>%
+    mutate(
+      level = case_match(level,
+                         'none' ~ 'No education',
+                         'primary' ~ 'Primary',
+                         'secondary+' ~ 'Secondary or higher')) %>%
+    pivot_wider(names_from = level, values_from = !!sym(indicator)) %>%
     equiplot(variables = c('No education', 'Primary', 'Secondary or higher'),
              group_by = year,
              x_title = x_title,
@@ -237,8 +244,9 @@ equiplot_wealth <- function(.data,
   }
 
   .data %>%
-    select(year, contains(indicator_name)) %>%
-    rename_with(~ gsub(indicator_name, '', .x), .cols = starts_with(indicator_name)) %>%
+    select(year, level, contains(indicator_name)) %>%
+    mutate(level = str_to_title(level)) %>%
+    pivot_wider(names_from = level, values_from = !!sym(indicator_name)) %>%
     equiplot(variables = c('Q1', 'Q2', 'Q3', 'Q4', 'Q5'),
              group_by = year,
              x_title = x_title,

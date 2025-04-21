@@ -2,26 +2,28 @@
 % Please edit documentation in R/load_survey_data.R
 \name{load_survey_data}
 \alias{load_survey_data}
-\title{Load and Process Country-Specific Survey Data}
+\title{Load and Process Survey Data}
 \usage{
 load_survey_data(
-  path,
+  path = NULL,
+  .data = NULL,
   country_iso,
   admin_level = c("national", "adminlevel_1")
 )
 }
 \arguments{
-\item{path}{Character. File path to the survey data file (DTA format).}
+\item{path}{Optional. File path to a \code{.dta} file.}
 
-\item{country_iso}{Character. ISO code of the country.}
+\item{.data}{Optional. A preloaded data frame.}
 
-\item{admin_level}{description}
+\item{country_iso}{Character. Country ISO3 code.}
+
+\item{admin_level}{Character. One of \code{'national'} or \code{'adminlevel_1'}.}
 }
 \value{
-A tibble containing cleaned and processed survey data, with aligned state codes.
+A tibble of class \code{cd_survey_data}.
 }
 \description{
-This function loads and processes survey data from a specified file path.
-It performs data cleaning, renaming, and standardization while allowing for
-the alignment of state codes.
+Loads national or subnational survey data, cleans labels and codes, and applies
+country-specific adjustments for admin-level naming.
 }

@@ -2,20 +2,21 @@
 % Please edit documentation in R/load_survey_data.R
 \name{load_wuenic_data}
 \alias{load_wuenic_data}
-\title{Load WUENIC Data}
+\title{Load WUENIC Immunization Data}
 \usage{
-load_wuenic_data(path, country_iso)
+load_wuenic_data(path = NULL, .data = NULL, country_iso)
 }
 \arguments{
-\item{path}{Character. File path to the WUENIC data file (DTA format).}
+\item{path}{Optional. File path to a \code{.dta} file.}
 
-\item{country_iso}{Character. ISO code of the country.}
+\item{.data}{Optional. A preloaded data frame.}
+
+\item{country_iso}{Character. ISO3 country code.}
 }
 \value{
-A tibble of class \code{wuenic_data} containing cleaned and processed WUENIC data.
+A tibble of class \code{cd_wuenic_data}.
 }
 \description{
-This function loads and processes WUENIC data from a specified file path.
-It performs data cleaning, renaming, and computation of zero-dose, undervax,
-and dropout indicators.
+Loads and processes WUENIC estimates, computes dropout and zero-dose indicators,
+and standardizes naming conventions.
 }

@@ -394,20 +394,7 @@ CacheConnection <- R6::R6Class(
     adjusted_flag = function(value) private$getter('adjusted_flag', value),
 
     #' @field survey_estimates Gets survey estimates.
-    survey_estimates = function(value) {
-      if (missing(value)) {
-        private$depend('survey_estimates')
-        return(private$.in_memory_data$survey_estimates)
-      }
-
-      if (!is.numeric(value) || !all(c('anc1', 'penta1') %in% names(value))) {
-        cd_abort(c('x' = 'Survey must be a numeric vector containing {.val anc1}, {.val penta1} and {.val penta3}'))
-      }
-      if (!'penta3' %in% value) {
-        value['penta3'] <- private$.in_memory_data$survey_estimates['penta3']
-      }
-      private$update_field('survey_estimates', value)
-    },
+    survey_estimates = function(value) private$getter('survey_estimates', value),
 
     #' @field national_estimates Gets national estimates.
     national_estimates = function(value) {
@@ -461,41 +448,43 @@ CacheConnection <- R6::R6Class(
     mapping_years = function(value) private$getter('selected_mapping_years', value),
 
     #' @field un_estimates Gets UN estimates.
-    # un_estimates = function(value) private$getter('un_estimates', value),
     un_estimates = function(value) {
-      if (missing(value)) {
-        private$depend('un_estimates')
-        if (is.null(private$.in_memory_data$un_estimates)) {
-          end_year <- max(self$countdown_data$year, na.rm = TRUE)
-          start_year <- min(self$countdown_data$year, na.rm = TRUE)
-          private$.in_memory_data$un_estimates <- create_un_estimates(un_estimates,
-                                                                      self$country_iso,
-                                                                      start_year,
-                                                                      end_year)
-        }
-        return(private$.in_memory_data$un_estimates)
+      estimates <- private$getter('un_estimates', value)
+      if (is.null(estimates)) {
+        # Use countdown years to define range
+        years <- self$countdown_data$year
+        end_year <- robust_max(years, 2024)
+        start_year <- min(years, na.rm = TRUE)
+
+        estimates <- load_un_estimates(
+          .data = un_estimates,
+          country_iso = self$country_iso,
+          start_year = start_year,
+          end_year = end_year
+        )
+        self$set_un_estimates(estimates)
       }
-      cd_abort(c('x' = '{.field un_estimates} is readonly.'))
+      return(estimates)
     },
 
     #' @field wuenic_estimates Gets WUENIC estimates.
-    # wuenic_estimates = function(value) private$getter('wuenic_estimates', value),
     wuenic_estimates = function(value) {
-      if (missing(value)) {
-        private$depend('wuenic_estimates')
-        if (is.null(private$.in_memory_data$wuenic_estimates)) {
-          private$.in_memory_data$wuenic_estimates <- create_wuenic_estimates(wuenic_estimates,
-                                                                              self$country_iso)
-        }
-        return(private$.in_memory_data$wuenic_estimates)
+      estimates <- private$getter('wuenic_estimates', value)
+      if (is.null(estimates)) {
+        estimates <- load_wuenic_data(.data = wuenic_estimates, country_iso = self$country_iso)
+        self$set_wuenic_estimates(estimates)
       }
-      cd_abort(c('x' = '{.field wuenic_estimates} is readonly.'))
+      return(estimates)
     },
 
     #' @field national_survey Gets national survey.
     national_survey = function(value) {
       survey <- private$getter('national_survey', value)
-      if (is.null(survey)) return(NULL)
+      if (is.null(survey)) {
+        survey <- load_survey_data(.data = national_surv,
+                                   country_iso = self$country_iso)
+        self$set_national_survey(survey)
+      }
 
       private$filter_survey(survey)
     },
@@ -503,7 +492,12 @@ CacheConnection <- R6::R6Class(
     #' @field regional_survey Gets regional survey.
     regional_survey = function(value) {
       survey <- private$getter('regional_survey', value)
-      if (is.null(survey)) return(NULL)
+      if (is.null(survey)) {
+        survey <- load_survey_data(.data = region_surv,
+                                   country_iso = self$country_iso,
+                                   admin_level = 'adminlevel_1')
+        self$set_regional_survey(survey)
+      }
 
       private$filter_survey(survey)
     },
@@ -511,7 +505,11 @@ CacheConnection <- R6::R6Class(
     #' @field wiq_survey Gets WIQ survey.
     wiq_survey = function(value) {
       survey <- private$getter('wiq_survey', value)
-      if (is.null(survey)) return(NULL)
+      if (is.null(survey)) {
+        survey <- load_equity_data(.data = wiq_surv,
+                                   country_iso = self$country_iso)
+        self$set_wiq_survey(survey)
+      }
 
       private$filter_survey(survey)
     },
@@ -519,7 +517,11 @@ CacheConnection <- R6::R6Class(
     #' @field area_survey Gets area survey.
     area_survey = function(value) {
       survey <- private$getter('area_survey', value)
-      if (is.null(survey)) return(NULL)
+      if (is.null(survey)) {
+        survey <- load_equity_data(.data = area_surv,
+                                   country_iso = self$country_iso)
+        self$set_area_survey(survey)
+      }
 
       private$filter_survey(survey)
     },
@@ -527,7 +529,11 @@ CacheConnection <- R6::R6Class(
     #' @field education_survey Gets  education survey.
     education_survey = function(value) {
       survey <- private$getter('education_survey', value)
-      if (is.null(survey)) return(NULL)
+      if (is.null(survey)) {
+        survey <- load_equity_data(.data = meduc_surv,
+                                   country_iso = self$country_iso)
+        self$set_education_survey(survey)
+      }
 
       private$filter_survey(survey)
     },

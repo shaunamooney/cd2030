@@ -47,8 +47,6 @@ denominatorAssessmentServer <- function(id, cache, i18n) {
       denominators <- reactive({
         req(cache(), un_estimates())
 
-        print(un_estimates())
-
         data() %>%
           prepare_population_metrics(un_estimates = un_estimates())
       })

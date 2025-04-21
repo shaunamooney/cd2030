@@ -1,203 +1,117 @@
 #' Load UN Estimates
 #'
-#' This function reads and processes UN estimates from a DTA file, filters them
-#' by country and year, and returns a cleaned tibble with a specific class.
+#' Loads and processes UN estimates from a `.dta` file or in-memory data.
+#' Filters by country and year, renames columns, and assigns a custom class.
 #'
-#' @param path Character. File path to the UN estimates `.dta` file.
-#' @param country_iso Character. ISO3 code for the country of interest.
-#' @param start_year Integer. Minimum year to include.
-#' @param end_year Integer. Maximum year to include.
+#' @param path Optional. File path to a `.dta` file.
+#' @param .data Optional. A preloaded data frame.
+#' @param country_iso Character. ISO3 code of the country.
+#' @param start_year, end_year Integers. Year range to include.
 #'
-#' @return A tibble of class `cd_un_estimates` containing cleaned UN estimate data
-#'   for the specified country and year range.
-#'
+#' @return A tibble of class `cd_un_estimates`.
 #' @export
-load_un_estimates <- function(path, country_iso, start_year, end_year) {
+load_un_estimates <- function(path = NULL, .data = NULL, country_iso, start_year, end_year) {
 
   year = iso3 = country = countrycode = iso2 = NULL
 
-  # Validate file path and extension
-  check_file_path(path)
-
-  file_ext <- tools::file_ext(path)
-
-  # Only support .dta files
-  if (tolower(file_ext) != 'dta') {
-    cd_abort(c('x' = 'Unsupported file format. Only {.val .dta} files are allowed.'))
-  }
-
-  # Read the Stata file
-  raw_data <- haven::read_dta(path)
-
-  # Process the data
-  create_un_estimates(raw_data, country_iso, start_year, end_year)
-}
-
-#' Create UN Estimates Tibble
-#'
-#' Filters, cleans, and renames columns for UN estimate data and assigns a custom
-#'class.
-#'
-#' @param .data A data frame read from the UN estimates file.
-#' @param country_iso Character. ISO3 country code.
-#' @param start_year Integer. Starting year of data to keep.
-#' @param end_year Integer. Ending year of data to keep.
-#'
-#' @return A tibble of class `cd_un_estimates`.
-#'
-#' @export
-create_un_estimates <- function(.data, country_iso, start_year, end_year) {
-  # Validate inputs
-  check_required(.data)
   check_required(country_iso)
   check_required(start_year)
   check_required(end_year)
 
-  # Clean and filter
-  un_estimates <- .data %>%
+  data <- load_data_or_file(path, .data)
+  data %>%
     filter(year >= start_year & year <= end_year, iso3 == country_iso) %>%
-    rename_with(~ paste0('un_', .), -c(country, year, countrycode, iso3, iso2))
-
-  # Return new tibble with custom class
-  new_tibble(
-    un_estimates,
-    class = 'cd_un_estimates'
-  )
+    rename_with(~ paste0('un_', .), -c(country, year, countrycode, iso3, iso2)) %>%
+    new_tibble(class = 'cd_un_estimates')
 }
 
-#' Load and Process Country-Specific Survey Data
+#' Load and Process Survey Data
 #'
-#' This function loads and processes survey data from a specified file path.
-#' It performs data cleaning, renaming, and standardization while allowing for
-#' the alignment of state codes.
+#' Loads national or subnational survey data, cleans labels and codes, and applies
+#' country-specific adjustments for admin-level naming.
 #'
-#' @param path Character. File path to the survey data file (DTA format).
-#' @param country_iso Character. ISO code of the country.
-#' @param admin_level description
+#' @param path Optional. File path to a `.dta` file.
+#' @param .data Optional. A preloaded data frame.
+#' @param country_iso Character. Country ISO3 code.
+#' @param admin_level Character. One of `'national'` or `'adminlevel_1'`.
 #'
-#' @return A tibble containing cleaned and processed survey data, with aligned state codes.
-#'
+#' @return A tibble of class `cd_survey_data`.
 #' @export
-load_survey_data <- function(path, country_iso, admin_level = c('national', 'adminlevel_1')) {
+load_survey_data <- function(path = NULL, .data = NULL, country_iso, admin_level = c('national', 'adminlevel_1')) {
 
   year = iso = adminlevel_1 = admin1_code = NULL
 
-  check_file_path(path)
   check_required(country_iso)
-
+  data <- load_data_or_file(path, .data, country_iso)
   admin_level <- arg_match(admin_level)
 
-  file_extension <- tools::file_ext(path)
-  survdata <- switch(file_extension,
-                       'dta' = read_dta(path),
-                       cd_abort(
-                         'x' = 'Unsupported file format: please provide a DTA file.')
-  )
-
-  survdata <- survdata %>%
-    mutate(iso = country_iso) %>%
+  data <- data %>%
     select(-contains('24_35'))
 
   if (admin_level == 'adminlevel_1') {
-    survdata <- survdata %>%
+    data <- data %>%
       # mutate(across(matches('^r_|^se_|^ll_|^ul_'), ~ .)) %>%
       select(-any_of(c('adminlevel_1', 'admin1_code'))) %>%
       separate_wider_delim(cols = 'level', delim = ' ', names = c('admin1_code', 'adminlevel_1'), too_many = 'merge', too_few = 'align_end') %>%
-      filter(!(iso == 'TZA' & adminlevel_1 %in% c('Kaskazini Unguja','Pemba North',
+      filter(!(iso3 == 'TZA' & adminlevel_1 %in% c('Kaskazini Unguja','Pemba North',
                                                  'Kusini Pemba','Pemba South','Pemba',
                                                  'Kusini Unguja','Zanzibar North',
                                                  'Mjini Magharibi','Zanzibar South',
                                                  'Rest Zanzibar','Town West'))) %>%
       mutate(
         # admin1_code = as.integer(admin1_code),
-        adminlevel_1 = if_else(iso == 'KEN', str_replace(adminlevel_1, '/', ''), adminlevel_1),
-        adminlevel_1 = if_else(iso == 'KEN', str_replace(adminlevel_1,  '-', ' '), adminlevel_1),
-        adminlevel_1 = if_else(iso == 'KEN', str_replace(adminlevel_1,  ' City', ''), adminlevel_1)
+        adminlevel_1 = if_else(iso3 == 'KEN', str_replace(adminlevel_1, '/', ''), adminlevel_1),
+        adminlevel_1 = if_else(iso3 == 'KEN', str_replace(adminlevel_1,  '-', ' '), adminlevel_1),
+        adminlevel_1 = if_else(iso3 == 'KEN', str_replace(adminlevel_1,  ' City', ''), adminlevel_1)
       )
   }
 
   new_tibble(
-    survdata,
+    data,
     class = 'cd_survey_data'
   )
 }
 
-#' Load and Process Country-Specific Survey Equity Data
+#' Load and Filter Equity Data
 #'
-#' `load_equity_data` loads and processes survey data from a specified file path.
-#' It performs data cleaning, renaming, and standardization while allowing for
-#' the alignment of state codes.
+#' Loads survey equity data, removes unnecessary variables, and filters by country.
 #'
-#' @param path Character. File path to the survey data file (DTA format).
+#' @param path Optional. File path to a `.dta` file.
+#' @param .data Optional. A preloaded data frame.
+#' @param country_iso Character. ISO3 country code to filter by.
 #'
-#' @return A tibble containing cleaned and processed survey data.
-#'
+#' @return A tibble of class `cd_equity_data`.
 #' @export
-load_equity_data <- function(path) {
-
+load_equity_data <- function(path = NULL, .data = NULL, country_iso) {
   year = NULL
 
-  check_file_path(path)
-
-  file_extension <- tools::file_ext(path)
-  survdata <- switch(file_extension,
-                     'dta' = read_dta(path),
-                     cd_abort(
-                       'x' = 'Unsupported file format: please provide a DTA file.')
-  )
-
-  survdata <- survdata %>%
-    select(-contains('24_35'))
-
-  new_tibble(
-    survdata,
-    class = 'cd_equity_data'
-  )
-}
-
-##' Load WUENIC Data
-#'
-#' Loads and processes WUENIC data from a `.dta` file for a specific country.
-#' This includes standardizing column names, removing unnecessary columns, and
-#' computing indicators such as zero-dose, undervax, and dropout rates.
-#'
-#' @param path Character. File path to the `.dta` WUENIC data file.
-#' @param country_iso Character. ISO3 country code.
-#'
-#' @return A tibble of class `cd_wuenic_data` with cleaned and computed WUENIC indicators.
-#'
-#' @export
-load_wuenic_data <- function(path, country_iso) {
-  check_file_path(path)
-
-  ext <- tools::file_ext(path)
-
-  if (tolower(ext) != 'dta') {
-    cd_abort(c('x' = 'Unsupported file format. Only {.val .dta} is supported.'))
-  }
-
-  raw <- haven::read_dta(path)
-
-  create_wuenic_estimates(raw, country_iso)
-}
-
-#' Create WUENIC Estimates Tibble
-#'
-#' Filters and transforms raw WUENIC data for a given country, computes key
-#' immunization indicators, and assigns a custom class.
-#'
-#' @param .data A raw data frame from WUENIC source.
-#' @param country_iso Character. ISO3 code for filtering.
-#'
-#' @return A tibble of class `cd_wuenic_data`.
-#'
-#' @export
-create_wuenic_estimates <- function(.data, country_iso) {
-  check_required(.data)
   check_required(country_iso)
 
-  # Process data
-  wuenic_data <- .data %>%
+  data <- load_data_or_file(path, .data, country_iso)
+
+  data %>%
+    separate_wider_regex(cols = level, patterns = c("[0-9]*", "\\s*", level = ".*")) %>%
+    select(-contains('24_35')) %>%
+    new_tibble(class = 'cd_equity_data')
+}
+
+#' Load WUENIC Immunization Data
+#'
+#' Loads and processes WUENIC estimates, computes dropout and zero-dose indicators,
+#' and standardizes naming conventions.
+#'
+#' @param path Optional. File path to a `.dta` file.
+#' @param .data Optional. A preloaded data frame.
+#' @param country_iso Character. ISO3 country code.
+#'
+#' @return A tibble of class `cd_wuenic_data`.
+#' @export
+load_wuenic_data <- function(path = NULL, .data = NULL, country_iso) {
+  check_required(country_iso)
+
+  data <- load_data_or_file(path, .data)
+
+  data %>%
     filter(iso == country_iso) %>%
     # Standardize column names
     rename_with(~ str_replace(., '^cov_cov', 'cov')) %>%
@@ -221,12 +135,36 @@ create_wuenic_estimates <- function(.data, country_iso) {
       cov_dropout_measles12_wuenic = ((cov_measles1_wuenic - cov_measles2_wuenic) / cov_measles1_wuenic) * 100,
       cov_dropout_penta3mcv1_wuenic = ((cov_penta3_wuenic - cov_measles1_wuenic) / cov_penta3_wuenic) * 100,
       cov_dropout_penta1mcv1_wuenic = ((cov_penta1_wuenic - cov_measles1_wuenic) / cov_penta1_wuenic) * 100
-    )
+    ) %>%
+    new_tibble(class = 'cd_wuenic_data')
+}
 
+#' Load Data from File or Use Provided Data
+#'
+#' Loads data from a `.dta` file or uses provided data directly. Optionally
+#' assigns a custom class to the returned tibble.
+#'
+#' @param path Optional. File path to a `.dta` file.
+#' @param .data Optional. A preloaded data frame or tibble.
+#' @param country_iso Optional. Character. ISO3 for the country.
+#'
+#' @return A tibble, optionally with custom class.
+#' @noRd
+load_data_or_file <- function(path = NULL, .data = NULL, country_iso = NULL) {
+  if (!is.null(path)) {
+    check_file_path(path)
+    ext <- tools::file_ext(path)
+    if (tolower(ext) != 'dta') {
+      cd_abort(c('x' = 'Only {.val .dta} files are supported.'))
+    }
+    .data <- haven::read_dta(path)
+    if (!is.null(country_iso)) {
+      .data <- .data %>% mutate(iso3 = country_iso)
+    }
+  }
 
-  # Return tibble with custom class
-  new_tibble(
-    wuenic_data,
-    class = 'cd_wuenic_data'
-  )
+  check_required(.data)
+
+  .data %>%
+    filter(if (is.null(country_iso)) TRUE else iso3 == country_iso)
 }

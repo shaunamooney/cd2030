@@ -4,22 +4,21 @@
 \alias{load_un_estimates}
 \title{Load UN Estimates}
 \usage{
-load_un_estimates(path, country_iso, start_year, end_year)
+load_un_estimates(path = NULL, .data = NULL, country_iso, start_year, end_year)
 }
 \arguments{
-\item{path}{Character. File path to the UN estimates \code{.dta} file.}
+\item{path}{Optional. File path to a \code{.dta} file.}
 
-\item{country_iso}{Character. ISO3 code for the country of interest.}
+\item{.data}{Optional. A preloaded data frame.}
 
-\item{start_year}{Integer. Minimum year to include.}
+\item{country_iso}{Character. ISO3 code of the country.}
 
-\item{end_year}{Integer. Maximum year to include.}
+\item{start_year, }{end_year Integers. Year range to include.}
 }
 \value{
-A tibble of class \code{cd_un_estimates} containing cleaned UN estimate data
-for the specified country and year range.
+A tibble of class \code{cd_un_estimates}.
 }
 \description{
-This function reads and processes UN estimates from a DTA file, filters them
-by country and year, and returns a cleaned tibble with a specific class.
+Loads and processes UN estimates from a \code{.dta} file or in-memory data.
+Filters by country and year, renames columns, and assigns a custom class.
 }
