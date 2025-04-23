@@ -92,7 +92,7 @@ plot.cd_reporting_rate <- function(x,
       theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
   } else {
     low_value <- min(x[[indicator]], na.rm = TRUE)
-    high_value <- max(x[[indicator]], na.rm = TRUE)
+    high_value <- robust_max(x[[indicator]], fallback = 100)
 
     color_vals <- c('red', 'orange', 'forestgreen')
 
@@ -175,7 +175,7 @@ plot.cd_district_reporting_rate <- function(x, ...) {
   years <- x %>% distinct(year) %>% pull(year)
   base_colors <- c('darkgreen', 'orangered', 'royalblue4', 'indianred4', 'darkslategray4')
 
-  extra_needed <- max(0, length(years) - length(base_colors))
+  extra_needed <- robust_max(c(0, length(years) - length(base_colors)), 0)
   extra_colors <- if (extra_needed > 0) {
     scales::hue_pal()(extra_needed)
   } else {

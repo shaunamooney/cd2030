@@ -407,8 +407,8 @@
     },
     {
       "key": "msg_cache_loaded",
-      "en": "File loaded from cache or internal database",
-      "fr": "Fichier chargé depuis le cache ou la base de données interne"
+      "en": "Upload successful: File loaded from cache",
+      "fr": "Téléversement réussi : Fichier chargé depuis le cache"
     },
     {
       "key": "msg_upload_success",
@@ -1072,8 +1072,8 @@
     },
     {
       "key": "title_upload_survey",
-      "en": "Advanced: Upload Your Data (Optional)",
-      "fr": "Importation avancée des données (facultatif)"
+      "en": "Upload Survey Folder",
+      "fr": "Téléverser le dossier d'enquête"
     },
     {
       "key": "title_subnational_mapping_opt",

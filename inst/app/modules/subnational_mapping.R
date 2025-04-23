@@ -97,7 +97,7 @@ subnationalMappingServer <- function(id, cache, i18n) {
       })
 
       dt <- reactive({
-        req(data(), un_estimates(), denominator(), input$palette)
+        req(data(), un_estimates(), all(!is.na(cache()$national_estimates)))
 
         data() %>%
           get_mapping_data(un_estimates(), cache()$national_estimates, cache()$map_mapping)

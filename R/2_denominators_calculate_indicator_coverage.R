@@ -52,7 +52,7 @@ calculate_indicator_coverage <- function(.data,
                                          preg_loss = 0.03) {
   check_cd_data(.data)
   admin_level <- arg_match(admin_level)
-  admin_level_cols <- get_admin_columns(admin_level)
+  # admin_level_cols <- get_admin_columns(admin_level)
   country_iso <- attr(.data, 'iso3')
 
   output_data <- calculate_populations(.data,
@@ -60,8 +60,8 @@ calculate_indicator_coverage <- function(.data,
                                        un_estimates = un_estimates,
                                        sbr = sbr, nmr = nmr, pnmr = pnmr,
                                        anc1survey = anc1survey, dpt1survey = dpt1survey,
-                                       twin = twin, preg_loss = preg_loss) %>%
-    select(any_of(c(admin_level_cols, 'year')), starts_with('cov_'))
+                                       twin = twin, preg_loss = preg_loss) # %>%
+    # select(any_of(c(admin_level_cols, 'year')), starts_with('cov_'))
 
   new_tibble(
     output_data,

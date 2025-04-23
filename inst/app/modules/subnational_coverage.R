@@ -68,7 +68,7 @@ subnationalCoverageServer <- function(id, cache, i18n) {
       })
 
       coverage <- reactive({
-        req(cache(), cache()$un_estimates, cache()$wuenic_estimates, survey_data())
+        req(cache(), cache()$un_estimates, cache()$wuenic_estimates, survey_data(), all(!is.na(cache()$national_estimates)))
 
         rates <- cache()$national_estimates
 

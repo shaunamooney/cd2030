@@ -94,9 +94,18 @@ derivedCoverageServer <- function(id, cache, i18n) {
         cache()$survey_year
       })
 
+      national_estimates <- reactive({
+        req(cache())
+        cache()$national_estimates
+      })
+
       populations <- reactive({
-        req(data(), un_estimates(), admin_level())
-        calculate_populations(data(), un_estimates = un_estimates(), admin_level = admin_level())
+        req(data(), un_estimates(), admin_level(), all(!is.na(national_estimates())))
+        nat_est <- national_estimates()
+        calculate_indicator_coverage(data(), un_estimates = un_estimates(), admin_level = admin_level(),
+                                     sbr = nat_est$sbr, nmr = nat_est$nmr, pnmr = nat_est$pnmr,
+                                     twin = nat_est$twin_rate, preg_loss = nat_est$preg_loss,
+                                     anc1survey = nat_est$anc1, dpt1survey = nat_est$penta1)
       })
 
       penta1_data <- reactive({
@@ -168,7 +177,7 @@ derivedCoverageServer <- function(id, cache, i18n) {
         excel_write_function = function(wb) {
           sheet_name_1 <- i18n$t('shhet_penta1_derived_coverage')
           addWorksheet(wb, sheet_name_1)
-          writeData(wb, sheet = sheet_name_1, penta3_data(), startCol = 1, startRow = 1)
+          writeData(wb, sheet = sheet_name_1, penta1_data(), startCol = 1, startRow = 1)
         }
       )
 
