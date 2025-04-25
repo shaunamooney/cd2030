@@ -7,13 +7,13 @@ surveySetupUI <- function(id, i18n) {
     width = 12,
     fluidRow(
       column(3, offset = 2, numericInput(ns('anc1_prop'), i18n$t("title_anc1_survey"),
-                                         min = 0, max = 100, value = 0, step = 1)),
+                                         min = 0, max = 100, value = NA, step = 1)),
       column(3, offset = 0, numericInput(ns('penta1_prop'), i18n$t("title_penta1_survey"),
-                                         min = 0, max = 100, value = 0, step = 1))
+                                         min = 0, max = 100, value = NA, step = 1))
     ),
     fluidRow(
       column(3, offset = 2, numericInput(ns('survey_year'), i18n$t("title_survey_year"),
-                                         min = 2015, max = 2030, value = 2024, step = 1)),
+                                         min = 2015, max = 2030, value = NA, step = 1)),
       column(3, offset = 0, uiOutput(ns('survey_start_ui')))
     )
   )
@@ -31,16 +31,16 @@ surveySetupServer <- function(id, cache, i18n) {
         req(cache())
         estimates <- cache()$survey_estimates
 
-        if (any(is.na(estimates))) {
-          default_estimates <- cache()$default_national_estimates
-
-          cache()$set_survey_estimates(
-            c(anc1 = default_estimates$anc1 * 100,
-              penta1 = default_estimates$penta1 * 100,
-              penta3 = 89
-            )
-          )
-        }
+        # if (any(is.na(estimates))) {
+        #   default_estimates <- cache()$default_national_estimates
+        #
+        #   cache()$set_survey_estimates(
+        #     c(anc1 = default_estimates$anc1 * 100,
+        #       penta1 = default_estimates$penta1 * 100,
+        #       penta3 = 89
+        #     )
+        #   )
+        # }
 
         if (is.null(cache()$survey_source) || cache()$survey_source == 'ratios') {
           updateNumericInput(session, 'anc1_prop', value = unname(estimates['anc1']))
@@ -70,18 +70,18 @@ surveySetupServer <- function(id, cache, i18n) {
       observe({
         req(cache())
         survey_year <- cache()$survey_year
-        max_year <- robust_max(cache()$countdown_data$year)
-
-        if (is.null(survey_year)) {
-          cache()$set_survey_year(max_year)
-        }
-
-        value_year <- min(c(survey_year, max_year), na.rm = TRUE)
-        updateNumericInput(session, 'survey_year', value = value_year, max = max_year)
+        # max_year <- robust_max(cache()$countdown_data$year)
+        #
+        # if (is.null(survey_year)) {
+        #   cache()$set_survey_year(max_year)
+        # }
+        #
+        # value_year <- min(c(survey_year, max_year), na.rm = TRUE)
+        updateNumericInput(session, 'survey_year', value = survey_year)
       })
 
       observeEvent(input$survey_year, {
-        req(cache())
+        req(cache(), input$survey_year)
         cache()$set_survey_year(as.numeric(input$survey_year))
       })
 

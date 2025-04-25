@@ -9,8 +9,6 @@ fileUploadUI <- function(id, i18n) {
     title = i18n$t('title_upload_survey'),
     status = 'success',
     solidHeader = TRUE,
-    collapsible = TRUE,
-    collapsed = TRUE,
     width = 12,
 
     fluidRow(

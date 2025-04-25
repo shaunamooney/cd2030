@@ -11,13 +11,13 @@ calculateRatiosUI <- function(id, i18n) {
         fluidRow(
           column(3, offset = 1, numericInput(ns('anc1_coverage'),
                                              i18n$t("title_anc1_coverage"),
-                                            min = 0, max = 100, value = 98, step = 1)),
+                                            min = 0, max = 100, value = NA, step = 1)),
           column(3, offset = 0, numericInput(ns('penta1_coverage'),
                                              i18n$t("title_penta1_coverage"),
-                                            min = 0, max = 100, value = 97, step = 1)),
+                                            min = 0, max = 100, value = NA, step = 1)),
           column(3, offset = 0, numericInput(ns('penta3_coverage'),
                                              i18n$t("title_penta3_coverage_pct"),
-                                            min = 0, max = 100, value = 89, step = 1))
+                                            min = 0, max = 100, value = NA, step = 1))
         )
       ),
       box(
@@ -40,14 +40,15 @@ calculateRatiosServer <- function(id, cache, i18n) {
     id = id,
     module = function(input, output, session) {
 
-      data <- reactive({
-        req(cache())
-        cache()$countdown_data
-      })
-
       survey_estimates <- reactive({
         req(cache())
         cache()$survey_estimates
+      })
+
+      ratio_summary <- reactive({
+        req(cache(), all(!is.na(survey_estimates())))
+        calculate_ratios_summary(cache()$countdown_data,
+                                 survey_coverage = survey_estimates())
       })
 
       observe({
@@ -79,17 +80,17 @@ calculateRatiosServer <- function(id, cache, i18n) {
       })
 
       output$ratios_plot <- renderCustomPlot({
-        req(data())
-        plot(calculate_ratios_summary(data(), survey_coverage = survey_estimates()))
+        req(ratio_summary())
+        plot(ratio_summary())
       })
 
       downloadPlot(
         id = 'ratio_plot_download',
         filename = 'ratio_plot',
-        data = data,
+        data = ratio_summary,
         i18n = i18n,
         plot_function = function() {
-          plot(calculate_ratios_summary(data(), survey_coverage = survey_estimates()))
+          plot(ratio_summary())
         }
       )
 

@@ -78,7 +78,7 @@ subnationalInequalityServer <- function(id, cache, i18n) {
       admin_level <- adminLevelInputServer('admin_level')
 
       inequalities <- reactive({
-        req(cache(), cache()$un_estimates, admin_level())
+        req(cache(), cache()$adjusted_data, cache()$un_estimates, admin_level(), all(!is.na(cache()$national_estimates)))
 
         rates <- cache()$national_estimates
 

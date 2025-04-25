@@ -112,7 +112,7 @@ calculate_inequality <- function(.data,
     mutate(
       across(starts_with('cov_'), ~ {
         rd_max = round(robust_max(.x, fallback = 100), -1)
-        rd_max = if_else(rd_max < max(.x, na.rm = TRUE), rd_max + 10, rd_max)
+        rd_max = if_else(rd_max < robust_max(.x, fallback = 100), rd_max + 10, rd_max)
         rd_max = rd_max * 1.05
 
         if_else(rd_max %% 20 != 0, rd_max + 10, rd_max)

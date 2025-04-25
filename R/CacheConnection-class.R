@@ -448,43 +448,15 @@ CacheConnection <- R6::R6Class(
     mapping_years = function(value) private$getter('selected_mapping_years', value),
 
     #' @field un_estimates Gets UN estimates.
-    un_estimates = function(value) {
-      estimates <- private$getter('un_estimates', value)
-      if (is.null(estimates)) {
-        # Use countdown years to define range
-        years <- self$countdown_data$year
-        end_year <- robust_max(years, 2024)
-        start_year <- min(years, na.rm = TRUE)
-
-        estimates <- load_un_estimates(
-          .data = un_estimates,
-          country_iso = self$country_iso,
-          start_year = start_year,
-          end_year = end_year
-        )
-        self$set_un_estimates(estimates)
-      }
-      return(estimates)
-    },
+    un_estimates = function(value) private$getter('un_estimates', value),
 
     #' @field wuenic_estimates Gets WUENIC estimates.
-    wuenic_estimates = function(value) {
-      estimates <- private$getter('wuenic_estimates', value)
-      if (is.null(estimates)) {
-        estimates <- load_wuenic_data(.data = wuenic_estimates, country_iso = self$country_iso)
-        self$set_wuenic_estimates(estimates)
-      }
-      return(estimates)
-    },
+    wuenic_estimates = function(value) private$getter('wuenic_estimates', value),
 
     #' @field national_survey Gets national survey.
     national_survey = function(value) {
       survey <- private$getter('national_survey', value)
-      if (is.null(survey)) {
-        survey <- load_survey_data(.data = national_surv,
-                                   country_iso = self$country_iso)
-        self$set_national_survey(survey)
-      }
+      if (is.null(survey)) return(NULL)
 
       private$filter_survey(survey)
     },
@@ -492,12 +464,7 @@ CacheConnection <- R6::R6Class(
     #' @field regional_survey Gets regional survey.
     regional_survey = function(value) {
       survey <- private$getter('regional_survey', value)
-      if (is.null(survey)) {
-        survey <- load_survey_data(.data = region_surv,
-                                   country_iso = self$country_iso,
-                                   admin_level = 'adminlevel_1')
-        self$set_regional_survey(survey)
-      }
+      if (is.null(survey)) return(NULL)
 
       private$filter_survey(survey)
     },
@@ -505,11 +472,7 @@ CacheConnection <- R6::R6Class(
     #' @field wiq_survey Gets WIQ survey.
     wiq_survey = function(value) {
       survey <- private$getter('wiq_survey', value)
-      if (is.null(survey)) {
-        survey <- load_equity_data(.data = wiq_surv,
-                                   country_iso = self$country_iso)
-        self$set_wiq_survey(survey)
-      }
+      if (is.null(survey)) return(NULL)
 
       private$filter_survey(survey)
     },
@@ -517,11 +480,7 @@ CacheConnection <- R6::R6Class(
     #' @field area_survey Gets area survey.
     area_survey = function(value) {
       survey <- private$getter('area_survey', value)
-      if (is.null(survey)) {
-        survey <- load_equity_data(.data = area_surv,
-                                   country_iso = self$country_iso)
-        self$set_area_survey(survey)
-      }
+      if (is.null(survey)) return(NULL)
 
       private$filter_survey(survey)
     },
@@ -529,11 +488,7 @@ CacheConnection <- R6::R6Class(
     #' @field education_survey Gets  education survey.
     education_survey = function(value) {
       survey <- private$getter('education_survey', value)
-      if (is.null(survey)) {
-        survey <- load_equity_data(.data = meduc_surv,
-                                   country_iso = self$country_iso)
-        self$set_education_survey(survey)
-      }
+      if (is.null(survey)) return(NULL)
 
       private$filter_survey(survey)
     },

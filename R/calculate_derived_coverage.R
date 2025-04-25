@@ -20,7 +20,7 @@
 #'
 #' @export
 calculate_derived_coverage <- function(.data, indicator, base_year) {
-  check_cd_population_metrics(.data)
+  check_cd_indicator_coverage(.data)
 
   # Get admin level attribute (national, adminlevel_1, district)
   admin_level <- attr_or_abort(.data, 'admin_level')

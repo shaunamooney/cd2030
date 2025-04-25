@@ -62,7 +62,7 @@ denominatorSelectionServer <- function(id, cache, i18n) {
       })
 
       indicator_coverage <- reactive({
-        req(data(), un_estimates())
+        req(data(), any(!is.na(un_estimates())))
 
         rates <- cache()$national_estimates
         data() %>%
