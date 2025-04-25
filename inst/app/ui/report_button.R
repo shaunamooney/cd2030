@@ -8,7 +8,7 @@ reportButtonUI <- function(id, label) {
   )
 }
 
-reportButtonServer <- function(id, cache, report_name, i18n) {
+reportButtonServer <- function(id, cache, report_name, i18n, adminlevel_1 = NULL) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
@@ -85,9 +85,10 @@ reportButtonServer <- function(id, cache, report_name, i18n) {
         rv$future <- future({
           temp_file <- tempfile(fileext = paste0('.', extension()))
           generate_report(
-            cache = cache(),  # Use the minimized data
+            cache = cache(),
             output_file = temp_file,
             report_name = report_name,
+            adminlevel_1 = adminlevel_1,
             output_format = params$format
           )
           temp_file

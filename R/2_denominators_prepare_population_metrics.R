@@ -89,8 +89,8 @@ prepare_population_metrics <- function(.data,
 
   # Integrate UN estimates for national-level calculations
   if (admin_level == 'national' && !is.null(un_estimates)) {
-    combined_data <- un_estimates %>%
-      inner_join(dhis_data, by = 'year')
+    combined_data <- dhis_data %>%
+      left_join(un_estimates, by = 'year')
   } else {
     combined_data <- dhis_data
   }

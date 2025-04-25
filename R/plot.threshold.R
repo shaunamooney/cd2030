@@ -3,16 +3,20 @@ plot.cd_threshold <- function(x,
                               denominator = c('dhis2', 'anc1', 'penta1'),
                               ...) {
 
-  denom = arg_match(denominator)
-  indicator = attr(x, 'indicator')
+  denom <-  arg_match(denominator)
+  indicator <-  attr(x, 'indicator')
+  admin_level <-  attr(x, 'admin_level')
+  admin_level <- switch (
+    admin_level,
+    adminlevel_1 = 'Admin Level 1',
+    district = 'District'
+  )
 
   title = if (indicator == 'coverage') {
-    'Regions with vaccination coverage > 90%'
+    str_glue('Pecentage of {admin_level} with Vaccination Coverage > 90%')
   } else {
-    'Districts with dropout rate of < 10%'
+    str_glue('Percent of {admin_level} with Dropout Rate of < 10%')
   }
-
-  # intercept <- if (indicator == 'coverage') 90 else 10
 
   x %>%
     filter(denominator == denom) %>%

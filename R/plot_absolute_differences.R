@@ -51,7 +51,7 @@ plot_absolute_differences <- function(.data,
 
   # Prepare the data for plotting
   plot_data <- .data %>%
-    pivot_longer(-c(country, year)) %>%
+    pivot_longer(-any_of(c('country', 'year', 'iso3'))) %>%
     mutate(
       category = case_when(
         grepl('_dhis2$', name) ~ 'DHIS2 projection',

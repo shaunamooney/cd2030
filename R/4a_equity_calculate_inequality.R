@@ -60,20 +60,22 @@ calculate_inequality <- function(.data,
   check_cd_data(.data)
   admin_level <-  arg_match(admin_level)
 
-  national_data <- calculate_populations(.data,
-                                         admin_level = 'national',
-                                         un_estimates = un_estimates,
-                                         sbr = sbr, nmr = nmr, pnmr = pnmr,
-                                         anc1survey = anc1survey, dpt1survey = dpt1survey,
-                                         twin = twin, preg_loss = preg_loss) %>%
+  national_data <- calculate_indicator_coverage(.data,
+                                                admin_level = 'national',
+                                                un_estimates = un_estimates,
+                                                sbr = sbr, nmr = nmr, pnmr = pnmr,
+                                                anc1survey = anc1survey, dpt1survey = dpt1survey,
+                                                twin = twin, preg_loss = preg_loss) %>%
     select(year, matches('^cov_|^tot'), -ends_with('_un')) %>%
     rename_with(~ paste0('nat_', .x), matches('^cov_|^tot'))
 
-  subnational_data <- calculate_populations(.data,
-                                            admin_level = admin_level,
-                                            sbr = sbr, nmr = nmr, pnmr = pnmr,
-                                            anc1survey = anc1survey, dpt1survey = dpt1survey,
-                                            twin = twin, preg_loss = preg_loss) %>%
+  print(national_data, n= 200)
+
+  subnational_data <- calculate_indicator_coverage(.data,
+                                                   admin_level = admin_level,
+                                                   sbr = sbr, nmr = nmr, pnmr = pnmr,
+                                                   anc1survey = anc1survey, dpt1survey = dpt1survey,
+                                                   twin = twin, preg_loss = preg_loss) %>%
     select(year, any_of(c('adminlevel_1', 'district')), matches('^cov_|^tot'))
 
   combined_data <- subnational_data %>%

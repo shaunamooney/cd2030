@@ -41,7 +41,7 @@ outlierDetectionUI <- function(id, i18n) {
         width = 6,
         fluidRow(
           column(4, downloadButtonUI(ns('download_outliers'))),
-          column(12, reactableOutput(ns('district_outlier_summary')))
+          column(12, withSpinner(reactableOutput(ns('district_outlier_summary'))))
         )
       ),
       box(

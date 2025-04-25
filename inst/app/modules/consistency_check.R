@@ -57,7 +57,7 @@ consistencyCheckServer <- function(id, cache, i18n) {
       observe({
         req(cache())
 
-        all_indicators <- get_named_indicators()
+        all_indicators <- list_vaccines()
         all_indicators <- c('Select' = '', all_indicators)
 
         updateSelectizeInput(session, 'x_axis', choices = all_indicators)

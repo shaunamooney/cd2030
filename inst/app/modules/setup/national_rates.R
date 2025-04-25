@@ -25,8 +25,6 @@ nationalRatesUI <- function(id, i18n) {
       column(3, offset = 1, numericInput(ns('pregnancy_loss'), i18n$t("title_pregnancy_loss"),
                                          min = 0, max = 0.05, value = 0, step = 0.001)),
       column(3, offset = 0, numericInput(ns('twin_rate'), i18n$t("title_twin_rate"),
-                                         min = 0, max = 0.05, value = 0, step = 0.001)),
-      column(3, offset = 0, numericInput(ns('penta1_mortality_rate'), i18n$t("title_anc1_to_penta1_mort_rate"),
                                          min = 0, max = 0.05, value = 0, step = 0.001))
     )
   )
@@ -68,10 +66,10 @@ nationalRatesServer <- function(id, cache) {
         updateNumericInput(session, "twin_rate", value = national_estimates$twin_rate)
         updateNumericInput(session, "pregnancy_loss", value = national_estimates$preg_loss)
         updateNumericInput(session, "stillbirth_rate", value = national_estimates$sbr)
-        updateNumericInput(session, "penta1_mortality_rate", value = national_estimates$penta1_mort_rate)
+
       })
 
-      observeEvent(c(input$neonatal_mortality_rate, input$post_neonatal_mortality_rate, input$stillbirth_rate, input$pregnancy_loss, input$twin_rate, input$penta1_mortality_rate), {
+      observeEvent(c(input$neonatal_mortality_rate, input$post_neonatal_mortality_rate, input$stillbirth_rate, input$pregnancy_loss, input$twin_rate), {
         req(cache())
 
         estimates <- list(
@@ -79,8 +77,7 @@ nationalRatesServer <- function(id, cache) {
           nmr = input$neonatal_mortality_rate,
           pnmr = input$post_neonatal_mortality_rate,
           twin_rate = input$twin_rate,
-          preg_loss = input$pregnancy_loss,
-          penta1_mort_rate = input$penta1_mortality_rate
+          preg_loss = input$pregnancy_loss
         )
 
          cache()$set_national_estimates(estimates)

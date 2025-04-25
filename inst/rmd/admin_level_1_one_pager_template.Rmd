@@ -1,0 +1,96 @@
+---
+title: " `r params$adminlevel_1` - Countdown Analysis"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  officedown::rdocx_document:
+    reference_docx: one-pager-template.docx
+    page_size:
+      width: 8.3
+      height: 11.7
+      orient: "landscape"
+    page_margins:
+      bottom: 0.1
+      top: 0
+      right: 0.2
+      left: 0.2
+      gutter: 0
+      header: 0
+      footer: 0
+  pdf_document:
+    toc: false
+    latex_engine: lualatex
+    number_sections: false
+    keep_tex: true
+    includes:
+      in_header: |
+        \usepackage[a4paper, margin=0.2in, bottom=0.1in, top=0in, right=0.2in, left=0.2in, includehead, includefoot]
+        
+params:
+  cache: NULL
+  country: NULL
+  adminlevel_1: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  dpi=1200
+)
+
+library(cd2030)
+library(dplyr)
+library(purrr)
+library(flextable)
+library(reactable)
+library(officedown)
+library(officer)
+
+cache <- params$cache
+adminlevel_1 <- params$adminlevel_1
+
+data <- cache$countdown_data
+# adjusted_data <- cache$adjusted_data
+# country <- cache$country
+# threshold <- cache$performance_threshold
+# k_factors <- cache$k_factors
+# rates <- cache$national_estimates
+# denominator <- cache$denominator
+# mapping_years <- cache$mapping_years
+# un_estimates <- cache$un_estimates
+# wuenic_estimates <- cache$wuenic_estimates
+# survey_start_year <- cache$start_survey_year
+# survdata <- cache$national_survey %>% 
+#   filter(if(is.null(survey_start_year)) TRUE else year >= survey_start_year)
+# gregion <- cache$regional_survey %>% 
+#   filter(if(is.null(survey_start_year)) TRUE else year >= survey_start_year)
+# subnational_map <- cache$survey_mapping
+# map_mapping <- cache$map_mapping
+# meduc <- cache$education_survey
+# wiq <- cache$wiq_survey
+# area <- cache$area_survey
+# selected_admin_level_1 <- cache$selected_admin_level_1
+# selected_district <- cache$selected_district
+```
+
+```{r}
+last_year <- max(data$year, na.rm = TRUE)
+data %>% 
+  filter(adminlevel_1 == !!adminlevel_1, year == last_year) %>% 
+  select(district, total_pop, live_births) %>% 
+  flextable() %>% 
+  set_header_labels(
+    district = "District",
+    total_pop = "Population",
+    live_births = "Live Births"
+  ) %>% 
+  autofit()
+```
+

@@ -9,15 +9,18 @@ calculateRatiosUI <- function(id, i18n) {
         status = 'success',
         width = 12,
         fluidRow(
-          column(3, offset = 1, numericInput(ns('anc1_coverage'),
-                                             i18n$t("title_anc1_coverage"),
-                                            min = 0, max = 100, value = NA, step = 1)),
-          column(3, offset = 0, numericInput(ns('penta1_coverage'),
-                                             i18n$t("title_penta1_coverage"),
-                                            min = 0, max = 100, value = NA, step = 1)),
-          column(3, offset = 0, numericInput(ns('penta3_coverage'),
-                                             i18n$t("title_penta3_coverage_pct"),
-                                            min = 0, max = 100, value = NA, step = 1))
+          column(3, numericInput(ns('anc1_coverage'),
+                                 i18n$t("title_anc1_coverage"),
+                                 min = 0, max = 100, value = NA, step = 1)),
+          column(3, numericInput(ns('penta1_coverage'),
+                                 i18n$t("title_penta1_coverage"),
+                                 min = 0, max = 100, value = NA, step = 1)),
+          column(3, numericInput(ns('penta3_coverage'),
+                                 i18n$t("title_penta3_coverage_pct"),
+                                 min = 0, max = 100, value = NA, step = 1)),
+          column(3, numericInput(ns('penta1_mort_rate'),
+                                 i18n$t("title_anc1_to_penta1_mort_rate"),
+                                 min = 0, max = 5, value = NA, step = 0.1))
         )
       ),
       box(
@@ -46,9 +49,10 @@ calculateRatiosServer <- function(id, cache, i18n) {
       })
 
       ratio_summary <- reactive({
-        req(cache(), all(!is.na(survey_estimates())))
+        req(cache(), all(!is.na(survey_estimates())), cache()$penta1_mort_rate)
         calculate_ratios_summary(cache()$countdown_data,
-                                 survey_coverage = survey_estimates())
+                                 survey_coverage = survey_estimates(),
+                                 anc1_penta1_mortality = cache()$penta1_mort_rate)
       })
 
       observe({
@@ -60,11 +64,13 @@ calculateRatiosServer <- function(id, cache, i18n) {
           updateNumericInput(session, 'penta1_coverage', value = unname(estimates["penta1"]))
           updateNumericInput(session, 'penta3_coverage', value = unname(estimates["penta3"]))
         }
+        updateNumericInput(session, 'penta1_mortality_rate', value = cache()$penta1_mort_rate)
       })
 
       debounced_anc1 <- debounce(reactive(input$anc1_coverage), millis = 500)
       debounced_penta1 <- debounce(reactive(input$penta1_coverage), millis = 500)
       debounced_penta3 <- debounce(reactive(input$penta3_coverage), millis = 500)
+      debounced_penta1_mort <- debounce(reactive(input$penta1_mort_rate), millis = 500)
 
       # Causing a loop the national_rates.R
       observeEvent(c(debounced_anc1(), debounced_penta1(), debounced_penta3()), {
@@ -77,6 +83,12 @@ calculateRatiosServer <- function(id, cache, i18n) {
         )
         cache()$set_survey_estimates(estimates)
         cache()$set_survey_source('ratios')
+      })
+
+      observeEvent(debounced_penta1_mort(), {
+        req(input$penta1_mort_rate)
+        print(class(input$penta1_mort_rate))
+        cache()$set_penta1_mort_rate(input$penta1_mort_rate)
       })
 
       output$ratios_plot <- renderCustomPlot({

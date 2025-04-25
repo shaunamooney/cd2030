@@ -52,7 +52,7 @@ dataCompletenessUI <- function(id, i18n) {
           column(4, downloadButtonUI(ns('download_incompletes')))
         ),
         fluidRow(
-          column(12, reactableOutput(ns('incomplete_district')))
+          column(12, withSpinner(reactableOutput(ns('incomplete_district'))))
         )
       )
     )

@@ -130,6 +130,7 @@ calculate_threshold <- function(.data,
   new_tibble(
     threshold,
     class = 'cd_threshold',
+    admin_level = admin_level,
     indicator = indicator
   )
 }

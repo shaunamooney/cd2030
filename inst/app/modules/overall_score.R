@@ -9,7 +9,7 @@ overallScoreUI <- function(id, i18n) {
         status = 'success',
         width = 12,
         fluidRow(
-          column(12, uiOutput(ns('overall_score')))
+          column(12, withSpinner(uiOutput(ns('overall_score'))))
         )
       )
     )
@@ -34,7 +34,7 @@ overallScoreServer <- function(id, cache, i18n) {
         years <- unique(data()$year)
         threshold <- cache()$performance_threshold
 
-        data() %>%
+        dt <- data() %>%
           calculate_overall_score(threshold) %>%
           mutate(
             type = case_when(
@@ -42,7 +42,11 @@ overallScoreServer <- function(id, cache, i18n) {
               no %in% c("2a", "2b") ~ i18n$t("title_extreme_outliers"),
               no %in% c("3a", "3b",'3f', '3g') ~ i18n$t("title_consistency_annual_reporting")
             )
-          ) %>%
+          )
+
+        print(dt)
+
+        dt %>%
           as_grouped_data(groups = 'type') %>%
           as_flextable() %>%
           bold(j = 1, i = ~ !is.na(type), bold = TRUE, part = "body") %>%
@@ -72,7 +76,7 @@ overallScoreServer <- function(id, cache, i18n) {
           ) %>%
           theme_vanilla() %>%
           autofit() %>%
-          htmltools_value()
+          htmltools_value(ft.align = 'center')
       })
 
       contentHeaderServer(

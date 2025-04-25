@@ -115,7 +115,7 @@ adjustmentChangesServer <- function(id, cache, i18n) {
       })
 
       output$custom_check <- renderCustomPlot({
-        req(adjustments(), input$indicator != '0')
+        req(adjustments(), input$indicator)
 
         plot(adjustments(),
              indicator = input$indicator)
