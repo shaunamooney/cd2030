@@ -72,7 +72,7 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
       derived_denom = base_denom * (1 + percent_change),
 
       # Step 3: Calculate traditional and derived coverage values
-      coverage_old = (!!indicator_col / totinftpenta_national_penta1) * 100,
+      coverage_old = (!!indicator_col / totinftpenta_penta1) * 100,
       coverage_new = (!!indicator_col / derived_denom) * 100
     ) %>%
     select(
