@@ -80,7 +80,8 @@ nationalCoverageServer <- function(id, cache, i18n) {
       })
 
       coverage <- reactive({
-        req(cache(), cache()$un_estimates, survey_data(), cache()$wuenic_estimates, all(!is.na(cache()$national_estimates)))
+        req(cache(), cache()$survey_year, cache()$un_estimates, survey_data(),
+            cache()$wuenic_estimates, all(!is.na(cache()$national_estimates)))
 
         rates <- cache()$national_estimates
 
@@ -95,7 +96,8 @@ nationalCoverageServer <- function(id, cache, i18n) {
             twin = rates$twin_rate,
             preg_loss = rates$preg_loss,
             anc1survey = rates$anc1,
-            dpt1survey = rates$penta1
+            dpt1survey = rates$penta1,
+            survey_year = cache()$survey_year
           )
       })
 

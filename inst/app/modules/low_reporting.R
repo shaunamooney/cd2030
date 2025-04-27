@@ -57,12 +57,32 @@ lowReportingServer <- function(id, cache, i18n) {
 
       coverage_threshold <- reactive({
         req(data(), admin_level())
-        calculate_threshold(cache()$adjusted_data, admin_level(), 'coverage')
+        calculate_threshold(data(),
+                            admin_level = admin_level(),
+                            indicator = 'coverage',
+                            sbr = rates$sbr,
+                            nmr = rates$nmr,
+                            pnmr = rates$pnmr,
+                            anc1survey = rates$anc1,
+                            dpt1survey = rates$penta1,
+                            survey_year = cache()$survey_year,
+                            twin = rates$twin_rate,
+                            preg_loss = rates$preg_loss)
       })
 
       dropout_threshold <- reactive({
         req(data(), admin_level())
-        calculate_threshold(cache()$adjusted_data, admin_level(), 'dropout')
+        calculate_threshold(data(),
+                            admin_level = admin_level(),
+                            indicator = 'dropout',
+                            sbr = rates$sbr,
+                            nmr = rates$nmr,
+                            pnmr = rates$pnmr,
+                            anc1survey = rates$anc1,
+                            dpt1survey = rates$penta1,
+                            survey_year = cache()$survey_year,
+                            twin = rates$twin_rate,
+                            preg_loss = rates$preg_loss)
       })
 
       output$coverage <- renderCustomPlot({

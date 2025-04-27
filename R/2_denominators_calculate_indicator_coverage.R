@@ -17,6 +17,7 @@
 #' @param pnmr Numeric. Post-neonatal mortality rate. Default is `0.024`.
 #' @param anc1survey Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first visit). Default is `0.98`.
 #' @param dpt1survey Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination). Default is `0.97`.
+#' @param survey_year Interger. The year of Penta-1 survey provided
 #' @param twin Numeric. Twin birth rate. Default is `0.015`.
 #' @param preg_loss Numeric. Pregnancy loss rate. Default is `0.03`.
 #'
@@ -48,9 +49,11 @@ calculate_indicator_coverage <- function(.data,
                                          pnmr = 0.024,
                                          anc1survey = 0.98,
                                          dpt1survey = 0.97,
+                                         survey_year = 2019,
                                          twin = 0.015,
                                          preg_loss = 0.03) {
   check_cd_data(.data)
+  check_scalar_integerish(survey_year)
   admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level)
   country_iso <- attr(.data, 'iso3')
@@ -66,7 +69,7 @@ calculate_indicator_coverage <- function(.data,
   derived_data <- list_vaccine_indicators() %>%
     map(~ {
 
-      dt <- calculate_derived_coverage(population, .x, 2021)
+      dt <- calculate_derived_coverage(population, .x, survey_year)
 
       if (!is.null(dt)) {
         dt %>%

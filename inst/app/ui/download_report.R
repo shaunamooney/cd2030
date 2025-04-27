@@ -36,9 +36,8 @@ downloadReportServer <- function(id, cache, i18n) {
       observeEvent(input$download, {
         req(cache())
 
-        # if (is.null(cache()$un_estimates) || is.null(cache()$wuenic_estimates) ||
-        #     is.null(cache()$national_survey) || is.null(cache()$regional_survey)) {
-        if (FALSE) {
+        if (is.null(cache()$un_estimates) || is.null(cache()$wuenic_estimates) ||
+            is.null(cache()$national_survey) || is.null(cache()$regional_survey)) {
           # Show an error dialog if data is not available
           showModal(
             modalDialog(
@@ -77,7 +76,7 @@ downloadReportServer <- function(id, cache, i18n) {
         }
       })
 
-      reportButtonServer('report', cache, input$type, i18n, input$adminlevel_1)
+      reportButtonServer('report', cache, reactive(input$type), i18n, reactive(input$adminlevel_1))
     }
   )
 }

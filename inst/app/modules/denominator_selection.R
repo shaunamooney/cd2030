@@ -62,7 +62,7 @@ denominatorSelectionServer <- function(id, cache, i18n) {
       })
 
       indicator_coverage <- reactive({
-        req(data(), any(!is.na(un_estimates())))
+        req(data(), cache()$survey_year, un_estimates(), any(!is.na(cache()$national_estimates)))
 
         rates <- cache()$national_estimates
         data() %>%
@@ -73,7 +73,8 @@ denominatorSelectionServer <- function(id, cache, i18n) {
                                        twin = rates$twin_rate,
                                        preg_loss = rates$preg_loss,
                                        anc1survey = rates$anc1,
-                                       dpt1survey = rates$penta1)
+                                       dpt1survey = rates$penta1,
+                                       survey_year = cache()$survey_year)
       })
 
       output$penta3 <- renderCustomPlot({

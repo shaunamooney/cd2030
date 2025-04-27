@@ -100,12 +100,13 @@ derivedCoverageServer <- function(id, cache, i18n) {
       })
 
       populations <- reactive({
-        req(data(), un_estimates(), admin_level(), all(!is.na(national_estimates())))
+        req(data(), un_estimates(), admin_level(), survey_year(), all(!is.na(national_estimates())))
         nat_est <- national_estimates()
         calculate_indicator_coverage(data(), un_estimates = un_estimates(), admin_level = admin_level(),
                                      sbr = nat_est$sbr, nmr = nat_est$nmr, pnmr = nat_est$pnmr,
                                      twin = nat_est$twin_rate, preg_loss = nat_est$preg_loss,
-                                     anc1survey = nat_est$anc1, dpt1survey = nat_est$penta1)
+                                     anc1survey = nat_est$anc1, dpt1survey = nat_est$penta1,
+                                     survey_year = survey_year())
       })
 
       penta1_data <- reactive({

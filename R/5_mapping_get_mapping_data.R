@@ -18,6 +18,7 @@
 #' @param admin_level A character string specifying the level of analysis. Options are:
 #'   - `'adminlevel_1'`: First administrative level.
 #'   - `'district'`: District level (default for Kenya).
+#' @param survey_year Integer. The year of Penta-1 survey provided
 #'
 #' @return A data frame merged with the corresponding shapefile for subnational mapping.
 #'
@@ -29,7 +30,8 @@
 #' }
 #'
 #' @export
-get_mapping_data <- function(.data, un_estimates, rates, subnational_map = NULL, admin_level = c('adminlevel_1', 'district')) {
+get_mapping_data <- function(.data, un_estimates, rates, survey_year,
+                             subnational_map = NULL, admin_level = c('adminlevel_1', 'district')) {
 
   NAME_1 = adminlevel_1 = district = NULL
 
@@ -55,7 +57,7 @@ get_mapping_data <- function(.data, un_estimates, rates, subnational_map = NULL,
       calculate_indicator_coverage('district', un_estimates,
                                    sbr = rates$sbr, nmr = rates$nmr,
                                    pnmr = rates$pnmr, anc1survey = rates$anc1,
-                                   dpt1survey = rates$penta1, twin = rates$twin_rate,
+                                   dpt1survey = rates$penta1, survey_year = survey_year, twin = rates$twin_rate,
                                    preg_loss = rates$preg_loss) %>%
       select(-adminlevel_1) %>%
       rename(adminlevel_1 = district)
@@ -64,8 +66,8 @@ get_mapping_data <- function(.data, un_estimates, rates, subnational_map = NULL,
       calculate_indicator_coverage('adminlevel_1', un_estimates,
                                    sbr = rates$sbr, nmr = rates$nmr,
                                    pnmr = rates$pnmr, anc1survey = rates$anc1,
-                                   dpt1survey = rates$penta1, twin = rates$twin_rate,
-                                   preg_loss = rates$preg_loss)
+                                   dpt1survey = rates$penta1, survey_year = survey_year,
+                                   twin = rates$twin_rate, preg_loss = rates$preg_loss)
   }
 
   merged_data <- merged_data %>%

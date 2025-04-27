@@ -24,6 +24,7 @@
 #' @param pnmr Numeric. The post-neonatal mortality rate (default: 0.024).
 #' @param anc1survey Numeric. Survey-based ANC-1 coverage rate (default: 0.98).
 #' @param dpt1survey Numeric. Survey-based Penta-1 coverage rate (default: 0.97).
+#' @param survey_year Integer. The year of Penta-1 survey provided
 #' @param twin Numeric. The twin birth rate (default: 0.015).
 #' @param preg_loss Numeric. The pregnancy loss rate (default: 0.03).
 #'
@@ -51,6 +52,7 @@ calculate_inequality <- function(.data,
                                  pnmr = 0.024,
                                  anc1survey = 0.98,
                                  dpt1survey = 0.97,
+                                 survey_year = 2019,
                                  twin = 0.015,
                                  preg_loss = 0.03) {
 
@@ -66,7 +68,7 @@ calculate_inequality <- function(.data,
                                                 un_estimates = un_estimates,
                                                 sbr = sbr, nmr = nmr, pnmr = pnmr,
                                                 anc1survey = anc1survey, dpt1survey = dpt1survey,
-                                                twin = twin, preg_loss = preg_loss) %>%
+                                                survey_year = survey_year, twin = twin, preg_loss = preg_loss) %>%
     select(year, matches('^cov_|^tot'), -ends_with('_un')) %>%
     rename_with(~ paste0('nat_', .x), matches('^cov_|^tot'))
 
@@ -74,10 +76,8 @@ calculate_inequality <- function(.data,
                                                    admin_level = admin_level,
                                                    sbr = sbr, nmr = nmr, pnmr = pnmr,
                                                    anc1survey = anc1survey, dpt1survey = dpt1survey,
-                                                   twin = twin, preg_loss = preg_loss) %>%
+                                                   survey_year = survey_year, twin = twin, preg_loss = preg_loss) %>%
     select(year, any_of(admin_level_col), matches('^cov_|^tot'))
-
-  print(glimpse(subnational_data))
 
   combined_data <- subnational_data %>%
     left_join(national_data, join_by(year)) %>%
@@ -90,7 +90,6 @@ calculate_inequality <- function(.data,
       across(starts_with('diff_'), ~ {
         indicator <-  str_extract(cur_column(), "(?<=_cov_).+(?=_[^_]+$)")
         denominator <-  str_extract(cur_column(), "[^_]+$")
-        print(indicator)
         population <- get_population_column(indicator, denominator)
 
         stats::weighted.mean(.x, get(paste('popshare', population, sep = '_')), na.rm = TRUE)
