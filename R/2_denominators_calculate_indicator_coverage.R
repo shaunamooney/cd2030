@@ -17,6 +17,7 @@
 #' @param pnmr Numeric. Post-neonatal mortality rate. Default is `0.024`.
 #' @param anc1survey Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first visit). Default is `0.98`.
 #' @param dpt1survey Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination). Default is `0.97`.
+#' @param survey_year Interger. The year of Penta-1 survey provided
 #' @param twin Numeric. Twin birth rate. Default is `0.015`.
 #' @param preg_loss Numeric. Pregnancy loss rate. Default is `0.03`.
 #'
@@ -48,14 +49,16 @@ calculate_indicator_coverage <- function(.data,
                                          pnmr = 0.024,
                                          anc1survey = 0.98,
                                          dpt1survey = 0.97,
+                                         survey_year = 2019,
                                          twin = 0.015,
                                          preg_loss = 0.03) {
   check_cd_data(.data)
+  check_scalar_integerish(survey_year)
   admin_level <- arg_match(admin_level)
-  # admin_level_cols <- get_admin_columns(admin_level)
+  admin_level_cols <- get_admin_columns(admin_level)
   country_iso <- attr(.data, 'iso3')
 
-  output_data <- calculate_populations(.data,
+  population <- calculate_populations(.data,
                                        admin_level = admin_level,
                                        un_estimates = un_estimates,
                                        sbr = sbr, nmr = nmr, pnmr = pnmr,
@@ -63,9 +66,29 @@ calculate_indicator_coverage <- function(.data,
                                        twin = twin, preg_loss = preg_loss) # %>%
     # select(any_of(c(admin_level_cols, 'year')), starts_with('cov_'))
 
+  derived_data <- list_vaccine_indicators() %>%
+    map(~ {
+
+      dt <- calculate_derived_coverage(population, .x, survey_year)
+
+      if (!is.null(dt)) {
+        dt %>%
+          select(year, any_of(admin_level_cols), ends_with('penta1derived'))
+      } else {
+        dt
+      }
+
+    }) %>%
+    compact() %>%
+    unique() %>%
+    reduce(coalesce_join, by =c('year', admin_level_cols))
+
+  output_data <- population %>%
+    left_join(derived_data, by = c('year', admin_level_cols))
+
   new_tibble(
     output_data,
-    class = 'cd_indicator_coverage',
+    class = c('cd_indicator_coverage', 'cd_population'),
     admin_level = admin_level,
     iso3 = country_iso
   )
@@ -184,7 +207,7 @@ calculate_populations <- function(.data,
       )
   }
 
-  output_data %>%
+  output_data <- output_data %>%
     # Compute coverage  based on projected lives births in DHIS-2
     mutate(
       cov_anc1_dhis2 = 100 * anc1/(totpreg_dhis2 * 1000),
@@ -294,6 +317,43 @@ calculate_populations <- function(.data,
       cov_dropout_penta13_penta1 = ((penta1 - penta3)/penta1) * 100,
       cov_dropout_measles12_penta1 = ((measles1 - measles2)/measles1) * 100,
       cov_dropout_penta3mcv1_penta1 = ((penta3 - measles1)/penta3) * 100,
-      cov_dropout_penta1mcv1_penta1 = ((penta1-measles1)/penta1) * 100
+      cov_dropout_penta1mcv1_penta1 = ((penta1 - measles1)/penta1) * 100
+    )
+
+  new_tibble(
+    output_data,
+    class = 'cd_population'
+  )
+}
+
+coalesce_join <- function(x, y, by = NULL, suffix = c(".x", ".y"), join = left_join, ...) {
+
+  joined <- join(x, y, by = by, suffix = suffix, ...)
+
+  # Identify columns with suffixes
+  x_cols_suffix <- names(joined)[str_ends(names(joined), fixed(suffix[1]))]
+  y_cols_suffix <- names(joined)[str_ends(names(joined), fixed(suffix[2]))]
+
+  # Base names (remove suffix)
+  x_base <- str_remove(x_cols_suffix, fixed(suffix[1]))
+  y_base <- str_remove(y_cols_suffix, fixed(suffix[2]))
+
+  # Columns truly common to x and y
+  common_cols <- intersect(x_base, y_base)
+
+  # Build coalesced columns
+  coalesced_cols <- map(common_cols, function(col) {
+    coalesce(
+      joined[[paste0(col, suffix[1])]],
+      joined[[paste0(col, suffix[2])]]
+    )
+  }) %>% set_names(common_cols)
+
+  # Build final tibble
+  joined %>%
+    mutate(!!!coalesced_cols) %>%
+    select(
+      -any_of(paste0(common_cols, suffix[1])),
+      -any_of(paste0(common_cols, suffix[2]))
     )
 }

@@ -15,6 +15,7 @@ output:
 params:
   cache: NULL
   country: NULL
+  adminlevel_1: NULL
 ---
 
 ```{r setup, include=FALSE}

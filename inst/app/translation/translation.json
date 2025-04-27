@@ -192,8 +192,13 @@
     },
     {
       "key": "opt_one_pager",
-      "en": "One Pager",
-      "fr": "Une page"
+      "en": "National One Pager",
+      "fr": "Page unique nationale"
+    },
+    {
+      "key": "opt_admin_level_one_pager",
+      "en": "Admin Level One Pager",
+      "fr": "Page unique – Niveau administratif 1"
     },
     {
       "key": "btn_cancel",
@@ -692,13 +697,13 @@
     },
     {
       "key": "title_district_outliers",
-      "en": "Districts with Outliers",
-      "fr": "Districts avec des valeurs aberrantes"
+      "en": "Sub-National Units with Outliers",
+      "fr": "Unités infranationales avec des valeurs aberrantes"
     },
     {
       "key": "title_district_trends",
-      "en": "Districts Trends",
-      "fr": "Tendances des districts"
+      "en": "Sub-National Trends",
+      "fr": "Tendances infranationales"
     },
     {
       "key": "title_outliers",
@@ -802,8 +807,8 @@
     },
     {
       "key": "title_districts_with_missing_data",
-      "en": "Districts with Missing Data",
-      "fr": "Districts avec des données manquantes"
+      "en": "Sub-National Units with Missing Data",
+      "fr": "Unités infranationales avec des données manquantes"
     },
     {
       "key": "title_missing",

@@ -48,7 +48,7 @@ plot.cd_adjustment_values <- function(x,
                                       ...) {
   year = perc_diff = type = value = NULL
 
-  indicator = arg_match(indicator, list_vaccines())
+  indicator = arg_match(indicator, get_all_indicators())
 
   # Set default title if not provided
   if (is.null(title)) {

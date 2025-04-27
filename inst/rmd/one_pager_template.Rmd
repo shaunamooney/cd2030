@@ -31,6 +31,7 @@ output:
         
 params:
   cache: NULL
+  adminlevel_1: NULL
   country: NULL
 ---
 
@@ -65,10 +66,9 @@ mapping_years <- cache$mapping_years
 un_estimates <- cache$un_estimates
 wuenic_estimates <- cache$wuenic_estimates
 survey_start_year <- cache$start_survey_year
-survdata <- cache$national_survey %>% 
-  filter(if(is.null(survey_start_year)) TRUE else year >= survey_start_year)
-gregion <- cache$regional_survey %>% 
-  filter(if(is.null(survey_start_year)) TRUE else year >= survey_start_year)
+survey_year <- cache$survey_year
+survdata <- cache$national_survey
+gregion <- cache$regional_survey 
 subnational_map <- cache$survey_mapping
 map_mapping <- cache$map_mapping
 meduc <- cache$education_survey
@@ -255,7 +255,11 @@ plot(national_coverage, indicator = 'dropout_penta13', denominator = denominator
 #### Measles 1
 
 ```{r, fig.width=3.5, fig.height=1.5}
-mapping_data <- get_mapping_data(adjusted_data, un_estimates, rates, map_mapping)
+mapping_data <- get_mapping_data(adjusted_data, 
+                                 un_estimates = un_estimates, 
+                                 rates = rates, 
+                                 survey_year = survey_year,
+                                 subnational_map = map_mapping)
 
 plot(mapping_data, 
      indicator = 'measles1',

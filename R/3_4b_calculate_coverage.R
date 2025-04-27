@@ -17,6 +17,7 @@
 #' @param pnmr Numeric. Post-neonatal mortality rate. Default is `0.024`.
 #' @param anc1survey Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first visit). Default is `0.98`.
 #' @param dpt1survey Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination). Default is `0.97`.
+#' @param survey_year Integer. The year of Penta-1 survey provided
 #' @param preg_loss Numeric. Pregnancy loss rate
 #' @param twin Numeric. Twin birth rate. Default is `0.015`.
 #' @param subnational_map (Optional) A data frame mapping subnational regions to
@@ -41,6 +42,7 @@ calculate_coverage  <- function(.data,
                                 pnmr = 0.024,
                                 anc1survey = 0.98,
                                 dpt1survey = 0.97,
+                                survey_year = 2019,
                                 twin = 0.015,
                                 preg_loss = 0.03,
                                 subnational_map = NULL) {
@@ -58,7 +60,7 @@ calculate_coverage  <- function(.data,
   coverage <- calculate_indicator_coverage(.data, admin_level = admin_level,
                                            un_estimates = un_estimates, sbr = sbr,
                                            nmr = nmr, pnmr = pnmr, anc1survey = anc1survey,
-                                           dpt1survey = dpt1survey, twin = twin,
+                                           dpt1survey = dpt1survey, survey_year = survey_year, twin = twin,
                                            preg_loss = preg_loss)
 
   # Prepare DHIS2 data
@@ -113,7 +115,7 @@ calculate_coverage  <- function(.data,
 #' @export
 filter_coverage <- function(.data,
                             indicator,
-                            denominator = c('dhis2', 'anc1', 'penta1'),
+                            denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived'),
                             region = NULL) {
 
   . = value = estimates = NULL

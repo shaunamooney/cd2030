@@ -24,6 +24,7 @@
 #' @param pnmr Numeric. The post-neonatal mortality rate (default: 0.024).
 #' @param anc1survey Numeric. Survey-based ANC-1 coverage rate (default: 0.98).
 #' @param dpt1survey Numeric. Survey-based Penta-1 coverage rate (default: 0.97).
+#' @param survey_year Integer. The year of Penta-1 survey provided
 #' @param twin Numeric. The twin birth rate (default: 0.015).
 #' @param preg_loss Numeric. The pregnancy loss rate (default: 0.03).
 #'
@@ -51,6 +52,7 @@ calculate_inequality <- function(.data,
                                  pnmr = 0.024,
                                  anc1survey = 0.98,
                                  dpt1survey = 0.97,
+                                 survey_year = 2019,
                                  twin = 0.015,
                                  preg_loss = 0.03) {
 
@@ -59,22 +61,23 @@ calculate_inequality <- function(.data,
   # Validation
   check_cd_data(.data)
   admin_level <-  arg_match(admin_level)
+  admin_level_col <- get_admin_columns(admin_level)
 
-  national_data <- calculate_populations(.data,
-                                         admin_level = 'national',
-                                         un_estimates = un_estimates,
-                                         sbr = sbr, nmr = nmr, pnmr = pnmr,
-                                         anc1survey = anc1survey, dpt1survey = dpt1survey,
-                                         twin = twin, preg_loss = preg_loss) %>%
+  national_data <- calculate_indicator_coverage(.data,
+                                                admin_level = 'national',
+                                                un_estimates = un_estimates,
+                                                sbr = sbr, nmr = nmr, pnmr = pnmr,
+                                                anc1survey = anc1survey, dpt1survey = dpt1survey,
+                                                survey_year = survey_year, twin = twin, preg_loss = preg_loss) %>%
     select(year, matches('^cov_|^tot'), -ends_with('_un')) %>%
     rename_with(~ paste0('nat_', .x), matches('^cov_|^tot'))
 
-  subnational_data <- calculate_populations(.data,
-                                            admin_level = admin_level,
-                                            sbr = sbr, nmr = nmr, pnmr = pnmr,
-                                            anc1survey = anc1survey, dpt1survey = dpt1survey,
-                                            twin = twin, preg_loss = preg_loss) %>%
-    select(year, any_of(c('adminlevel_1', 'district')), matches('^cov_|^tot'))
+  subnational_data <- calculate_indicator_coverage(.data,
+                                                   admin_level = admin_level,
+                                                   sbr = sbr, nmr = nmr, pnmr = pnmr,
+                                                   anc1survey = anc1survey, dpt1survey = dpt1survey,
+                                                   survey_year = survey_year, twin = twin, preg_loss = preg_loss) %>%
+    select(year, any_of(admin_level_col), matches('^cov_|^tot'))
 
   combined_data <- subnational_data %>%
     left_join(national_data, join_by(year)) %>%
@@ -151,7 +154,7 @@ calculate_inequality <- function(.data,
 #' @export
 filter_inequality <- function(.data,
                               indicator,
-                              denominator = c('dhis2', 'anc1', 'penta1'),
+                              denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived'),
                               ...) {
 
   # check_cd_inequality(.data)
@@ -162,7 +165,7 @@ filter_inequality <- function(.data,
   dhis_col <- paste('cov', indicator, denominator, sep = '_')
 
   .data %>%
-    select(year, any_of(c('adminlevel_1', 'district')), ends_with(dhis_col), ends_with(pop_col)) %>%
+    select(year, any_of(pop_col), ends_with(dhis_col), ends_with(pop_col)) %>%
     rename_with(~ str_remove(.x, paste0('_', dhis_col)), ends_with(dhis_col)) %>%
     select(-any_of(paste0('nat_', pop_col))) %>%
     rename_with(~ str_remove(.x, paste0('_', pop_col)), ends_with(pop_col))

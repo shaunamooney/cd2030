@@ -97,10 +97,13 @@ subnationalMappingServer <- function(id, cache, i18n) {
       })
 
       dt <- reactive({
-        req(data(), un_estimates(), all(!is.na(cache()$national_estimates)))
+        req(data(), cache()$survey_year, un_estimates(), all(!is.na(cache()$national_estimates)))
 
         data() %>%
-          get_mapping_data(un_estimates(), cache()$national_estimates, cache()$map_mapping)
+          get_mapping_data(un_estimates = un_estimates(),
+                           ratescache()$national_estimates,
+                           survey_year = cache()$survey_year,
+                           subnational_map = cache()$map_mapping)
       })
 
       years <- reactive({

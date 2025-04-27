@@ -24,8 +24,9 @@ contentHeaderServer <- function(id, cache, objects = NULL, md_title, md_file, i1
       reportButtonServer(
         id = 'report',
         cache = cache,
-        report_name = id,
-        i18n = i18n
+        report_name = reactive(id),
+        i18n = i18n,
+        adminlevel_1 = reactive(NULL)
       )
 
       helpButtonServer(

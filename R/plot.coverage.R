@@ -38,7 +38,7 @@
 #' @export
 plot.cd_coverage <- function(x,
                              indicator,
-                             denominator = c('dhis2', 'anc1', 'penta1'),
+                             denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived'),
                              region = NULL,
                              ...) {
 

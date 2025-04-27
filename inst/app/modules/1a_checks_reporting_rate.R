@@ -52,7 +52,7 @@ reportingRateUI <- function(id, i18n) {
                                    label = i18n$t("title_year"),
                                    choices =NULL)),
           column(3, offset = 6, downloadButtonUI(ns('download_districts'))),
-          column(12, reactableOutput(ns('low_reporting')))
+          column(12, withSpinner(reactableOutput(ns('low_reporting'))))
         )
       )
     )

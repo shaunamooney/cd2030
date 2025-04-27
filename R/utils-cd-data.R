@@ -131,7 +131,7 @@ get_named_indicators <- function() {
 #' @export
 get_population_column <- function(indicator, denominator) {
   indicator <- arg_match(indicator, list_vaccine_indicators())
-  denominator <- arg_match(denominator, c('dhis2', 'anc1', 'penta1'))
+  denominator <- arg_match(denominator, c('dhis2', 'anc1', 'penta1', 'penta1derived'))
   population <- case_match(
     indicator,
     c('anc1', 'anc4') ~ 'totpreg',

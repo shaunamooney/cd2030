@@ -1,0 +1,327 @@
+---
+title: " `r params$adminlevel_1` - Countdown Analysis"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  officedown::rdocx_document:
+    page_size:
+      height: 8.3
+      width: 11.7
+      orient: "landscape"
+    page_margins:
+      bottom: 0.1
+      top: 0
+      right: 0.2
+      left: 0.2
+      gutter: 0
+      header: 0
+      footer: 0
+  pdf_document:
+    toc: false
+    latex_engine: lualatex
+    number_sections: false
+    keep_tex: true
+    includes:
+      in_header: |
+        \usepackage[a4paper, margin=0.2in, bottom=0.1in, top=0in, right=0.2in, left=0.2in, includehead, includefoot]
+        
+params:
+  cache: NULL
+  country: NULL
+  adminlevel_1: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  dpi=1200
+)
+
+library(cd2030)
+library(dplyr)
+library(purrr)
+library(flextable)
+library(reactable)
+library(officedown)
+library(officer)
+
+cache <- params$cache
+adminlevel_1 <- params$adminlevel_1
+
+data <- cache$countdown_data
+adjusted_data <- cache$adjusted_data
+country <- cache$country
+# threshold <- cache$performance_threshold
+# k_factors <- cache$k_factors
+rates <- cache$national_estimates
+# denominator <- cache$denominator
+# mapping_years <- cache$mapping_years
+# un_estimates <- cache$un_estimates
+wuenic_estimates <- cache$wuenic_estimates
+survey_year <- cache$survey_year
+# survey_start_year <- cache$start_survey_year
+# survdata <- cache$national_survey %>% 
+#   filter(if(is.null(survey_start_year)) TRUE else year >= survey_start_year)
+gregion <- cache$regional_survey
+subnational_map <- cache$survey_mapping
+# map_mapping <- cache$map_mapping
+# meduc <- cache$education_survey
+# wiq <- cache$wiq_survey
+# area <- cache$area_survey
+# selected_admin_level_1 <- cache$selected_admin_level_1
+# selected_district <- cache$selected_district
+```
+
+<!---BLOCK_MULTICOL_START--->
+
+```{r, fig.width=4, fig.height=2}
+last_year <- max(data$year, na.rm = TRUE)
+data %>% 
+  filter(adminlevel_1 == !!adminlevel_1, year == last_year) %>% 
+  distinct(district, total_pop, live_births) %>% 
+  flextable() %>% 
+  set_header_labels(
+    district = "District",
+    total_pop = "Population",
+    live_births = "Live Births"
+  ) %>% 
+  fontsize(part = 'body', size = 7) %>% 
+  bold(part = "header", bold = TRUE) %>%
+  fontsize(part = 'header', size = 7) %>% 
+  set_table_properties(layout = "autofit")
+```
+
+```{r, fig.width=4, fig.height=1.5}
+run_columnbreak()
+penta3_cov_adm1 <- calculate_coverage(
+  data, 
+  admin_level = 'adminlevel_1',
+  survey_data = gregion, 
+  wuenic_data = wuenic_estimates, 
+  sbr = rates$sbr,
+  nmr = rates$nmr,
+  pnmr = rates$pnmr,
+  twin = rates$twin_rate,
+  preg_loss = rates$preg_loss,
+  anc1survey = rates$anc1,
+  dpt1survey = rates$penta1,
+  survey_year = survey_year)
+
+plot(penta3_cov_adm1, 'penta3', 'penta1', adminlevel_1) +
+  cd_report_theme(base_size = 7) +
+  theme(
+    legend.position = 'none',
+    plot.margin = margin(0, 0, 0, 0)
+  )
+```
+
+```{r, fig.width=4, fig.height=3}
+# Color palette
+category_colors <- c(
+  "Lower than average" = "#145374",
+  "Average" = "#45A9E3",
+  "Higher than average" = "#A9DCFA"
+)
+
+df <- penta3_cov_adm1 %>% 
+  filter(year == last_year) %>% 
+  select(adminlevel_1, cov_penta3_penta1) %>% 
+  arrange(cov_penta3_penta1) %>% 
+  mutate(
+    category = case_when(
+      cov_penta3_penta1 <= quantile(cov_penta3_penta1, 0.33) ~ "Lower than average",
+      cov_penta3_penta1 <= quantile(cov_penta3_penta1, 0.66) ~ "Average",
+      TRUE ~ "Higher than average"
+    )
+  ) 
+
+category_labels <- df %>%
+  # filter(adminlevel_1 != !!adminlevel_1) %>%
+  group_by(category) %>%
+  summarize(
+    mid = (min(as.numeric(factor(adminlevel_1, levels = adminlevel_1))) +
+           max(as.numeric(factor(adminlevel_1, levels = adminlevel_1)))) / 2,
+    .groups = "drop"
+  ) %>%
+  mutate(
+    y = 20  # Vertical position for category labels
+  )
+
+df %>% 
+  ggplot(aes(x = factor(adminlevel_1, levels = adminlevel_1), y = cov_penta3_penta1, fill = category)) +
+  geom_col(width = 1) +
+  geom_col(
+    data = filter(df, adminlevel_1 == !!adminlevel_1),
+    aes(x = adminlevel_1),
+    fill = "yellow", color = "black", width = 1, size = 0.5
+  ) +
+  geom_text(
+    data = filter(df, adminlevel_1 == !!adminlevel_1),
+    aes(x = adminlevel_1, y = cov_penta3_penta1 / 2, label = adminlevel_1), 
+    vjust = 0.5, angle = 90, hjust = 0.5,  # Center vertically and horizontally
+    fontface = "bold", color = "black",
+    size = 3
+  ) +
+  
+  geom_label(
+    data = category_labels,
+    aes(x = mid, y = y, label = category),
+    fill = "white", color = "black", size = 3, fontface = "bold",
+    label.size = 0, inherit.aes = FALSE
+  ) +
+  
+  scale_fill_manual(values = category_colors) +
+  scale_y_continuous(limits = c(0, 105), expand = c(0, 0)) +
+  labs(
+    title = str_glue("Penta3 immunization, by region, {country}, {last_year} (HMIS)"),
+    x = NULL, y = NULL
+  ) +
+  cd_report_theme(base_size = 7) +
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    legend.position = "none",
+    legend.title = element_blank(),
+    # legend.margin = margin(0, 0, -10, 0),
+    plot.margin = margin(0, 0, 0, 0)
+  )
+```
+
+
+```{r, fig.width=5, fig.height=1.5}
+penta3_cov_adm2 <- calculate_coverage(
+    data, 
+    admin_level = 'district',
+    survey_data = gregion, 
+    wuenic_data = wuenic_estimates, 
+    sbr = rates$sbr,
+    nmr = rates$nmr,
+    pnmr = rates$pnmr,
+    twin = rates$twin_rate,
+    preg_loss = rates$preg_loss,
+    anc1survey = rates$anc1,
+    dpt1survey = rates$penta1,
+    survey_year = survey_year
+  ) %>% 
+  filter(adminlevel_1 == !!adminlevel_1) %>% 
+  select(year, district, cov_penta3_penta1) %>% 
+  mutate(cov_penta3_penta1 = round(cov_penta3_penta1)) %>% 
+  pivot_wider(names_from = year, values_from = cov_penta3_penta1)
+
+penta3_cov_adm2 %>% 
+ flextable() %>% 
+  fontsize(part = 'body', size = 7) %>% 
+  bold(part = "header", bold = TRUE) %>%
+  fontsize(part = 'header', size = 7) %>% 
+  set_table_properties(layout = "autofit")
+```
+
+`r run_columnbreak()`
+
+```{r, fig.width=4, fig.height=1.5}
+measles1_cov_adm1 <- calculate_coverage(
+  data, 
+  admin_level = 'adminlevel_1',
+  survey_data = gregion, 
+  wuenic_data = wuenic_estimates, 
+  sbr = rates$sbr,
+  nmr = rates$nmr,
+  pnmr = rates$pnmr,
+  twin = rates$twin_rate,
+  preg_loss = rates$preg_loss,
+  anc1survey = rates$anc1,
+  dpt1survey = rates$penta1,
+  survey_year = survey_year)
+
+plot(measles1_cov_adm1, 'measles1', 'penta1', adminlevel_1) +
+  cd_report_theme(base_size = 7) +
+  theme(
+    legend.position = 'none',
+    plot.margin = margin(0, 0, 0, 0)
+  )
+```
+
+```{r, fig.width=4, fig.height=3}
+df <- measles1_cov_adm1 %>% 
+  filter(year == last_year) %>% 
+  select(adminlevel_1, cov_measles1_penta1) %>% 
+  arrange(cov_measles1_penta1) %>% 
+  mutate(
+    category = case_when(
+      cov_measles1_penta1 <= quantile(cov_measles1_penta1, 0.33) ~ "Lower than average",
+      cov_measles1_penta1 <= quantile(cov_measles1_penta1, 0.66) ~ "Average",
+      TRUE ~ "Higher than average"
+    )
+  ) 
+
+df %>% 
+  ggplot(aes(x = factor(adminlevel_1, levels = adminlevel_1), y = cov_measles1_penta1, fill = category)) +
+  geom_col(width = 1) +
+  geom_col(
+    data = filter(df, adminlevel_1 == !!adminlevel_1),
+    aes(x = adminlevel_1),
+    fill = "yellow", color = "black", width = 1, size = 0.5
+  ) +
+  geom_text(
+    data = filter(df, adminlevel_1 == !!adminlevel_1),
+    aes(x = adminlevel_1, y = cov_measles1_penta1 / 2, label = adminlevel_1), 
+    vjust = 0.5, angle = 90, hjust = 0.5,
+    fontface = "bold", color = "black",
+    size = 3
+  ) +
+  scale_fill_manual(values = category_colors) +
+  scale_y_continuous(limits = c(0, 105), expand = c(0, 0)) +
+  labs(
+    title = str_glue("Measles 1 immunization, by region, {country}, {last_year} (HMIS)"),
+    x = NULL, y = NULL
+  ) +
+  cd_report_theme(base_size = 7) +
+  theme(
+    panel.grid = element_blank(),
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    legend.position = "none",
+    legend.title = element_blank(),
+    legend.margin = margin(4, 0, 0, 0),
+    # legend.margin = margin(0, 0, -10, 0),
+    plot.margin = margin(0, 0, 0, 0)
+  )
+```
+
+```{r, fig.width=5, fig.height=1.5}
+measles1_cov_adm2 <- calculate_coverage(
+    data, 
+    admin_level = 'district',
+    survey_data = gregion, 
+    wuenic_data = wuenic_estimates, 
+    sbr = rates$sbr,
+    nmr = rates$nmr,
+    pnmr = rates$pnmr,
+    twin = rates$twin_rate,
+    preg_loss = rates$preg_loss,
+    anc1survey = rates$anc1,
+    dpt1survey = rates$penta1,
+    survey_year = survey_year
+  ) %>% 
+  filter(adminlevel_1 == !!adminlevel_1) %>% 
+  select(year, district, cov_measles1_penta1) %>% 
+  mutate(cov_measles1_penta1 = round(cov_measles1_penta1)) %>% 
+  pivot_wider(names_from = year, values_from = cov_measles1_penta1)
+
+measles1_cov_adm2 %>% 
+  flextable() %>% 
+  fontsize(part = 'body', size = 7) %>% 
+  bold(part = "header", bold = TRUE) %>%
+  fontsize(part = 'header', size = 7) %>% 
+  set_table_properties(layout = "autofit")
+```
+
+<!---BLOCK_MULTICOL_STOP{widths: [3,4,4], space: 0.2, sep: true}--->

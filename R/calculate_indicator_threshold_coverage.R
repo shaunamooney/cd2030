@@ -69,10 +69,19 @@ calculate_indicator_threshold_coverage <- function(.data) {
 #' If no regions meet the criteria (i.e., all values are below the threshold), a default output is returned.
 #'
 #' @param .data A tibble of class `cd_data`.
+#' @param survey_year Integer. The year of Penta-1 survey provided
 #' @param admin_level The level of analysis.
 #' @param indicator Character. The specific health indicator to evaluate. Options are:
 #'   - `"coverage"`:coverage indicators.
 #'   - `"dropout"`: dropout indicators.
+#' @param sbr Numeric. The stillbirth rate. Default is `0.02`.
+#' @param nmr Numeric. Neonatal mortality rate. Default is `0.025`.
+#' @param pnmr Numeric. Post-neonatal mortality rate. Default is `0.024`.
+#' @param anc1survey Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first visit). Default is `0.98`.
+#' @param dpt1survey Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination). Default is `0.97`.
+#' @param survey_year Integer. The year of Penta-1 survey provided
+#' @param preg_loss Numeric. Pregnancy loss rate
+#' @param twin Numeric. Twin birth rate. Default is `0.015`.
 #'
 #' @return A tibble with the selected administrative level and coverage value for regions
 #'   that do not meet the below-10% threshold for the specified indicator and year. If no regions
@@ -88,7 +97,15 @@ calculate_indicator_threshold_coverage <- function(.data) {
 #' @export
 calculate_threshold <- function(.data,
                                 admin_level = c('adminlevel_1', 'district'),
-                                indicator = c('coverage', 'dropout')) {
+                                indicator = c('coverage', 'dropout'),
+                                sbr = 0.02,
+                                nmr = 0.025,
+                                pnmr = 0.024,
+                                anc1survey = 0.98,
+                                dpt1survey = 0.97,
+                                survey_year = 2019,
+                                twin = 0.015,
+                                preg_loss = 0.03) {
 
   check_cd_data(.data)
   indicator <- arg_match(indicator)
@@ -105,7 +122,10 @@ calculate_threshold <- function(.data,
     function(x) x < 10
   }
 
-  threshold <- calculate_indicator_coverage(.data, admin_level = admin_level) %>%
+  threshold <- calculate_indicator_coverage(.data, admin_level = admin_level,
+                                            sbr = sbr, nmr = nmr, pnmr = pnmr,
+                                            anc1survey = anc1survey, dpt1survey = dpt1survey,
+                                            survey_year = survey_year, twin = twin, preg_loss = preg_loss) %>%
     select(year, adminlevel_1, matches(paste0('cov_(', indicators, ')'))) %>%
     mutate(across(starts_with('cov_'), ~ threshold_func(.), .names = 'below10_{.col}')) %>%
     summarise(across(starts_with('below10'), ~ mean(., na.rm = TRUE)) * 100, .by = year) %>%
@@ -130,6 +150,7 @@ calculate_threshold <- function(.data,
   new_tibble(
     threshold,
     class = 'cd_threshold',
+    admin_level = admin_level,
     indicator = indicator
   )
 }
