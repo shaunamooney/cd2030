@@ -44,9 +44,7 @@ overallScoreServer <- function(id, cache, i18n) {
             )
           )
 
-        print(dt)
-
-        dt %>%
+        dt_html <- dt %>%
           as_grouped_data(groups = 'type') %>%
           as_flextable() %>%
           bold(j = 1, i = ~ !is.na(type), bold = TRUE, part = "body") %>%
@@ -77,6 +75,8 @@ overallScoreServer <- function(id, cache, i18n) {
           theme_vanilla() %>%
           autofit() %>%
           htmltools_value(ft.align = 'center')
+
+        HTML(as.character(dt_html))
       })
 
       contentHeaderServer(
