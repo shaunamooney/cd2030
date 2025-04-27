@@ -175,7 +175,7 @@ derivedCoverageServer <- function(id, cache, i18n) {
         data = penta3_data,
         i18n = i18n,
         excel_write_function = function(wb) {
-          sheet_name_1 <- i18n$t('shhet_penta1_derived_coverage')
+          sheet_name_1 <- i18n$t('sheet_penta1_derived_coverage')
           addWorksheet(wb, sheet_name_1)
           writeData(wb, sheet = sheet_name_1, penta1_data(), startCol = 1, startRow = 1)
         }

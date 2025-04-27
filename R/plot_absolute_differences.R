@@ -57,9 +57,10 @@ plot_absolute_differences <- function(.data,
         grepl('_dhis2$', name) ~ 'DHIS2 projection',
         grepl('_anc1$', name) ~ 'ANC1-derived',
         grepl('_penta1$', name) ~ 'Penta1-derived',
-        grepl('_un$', name) ~ 'UN projection'
+        grepl('_un$', name) ~ 'UN projection',
+        grepl('_penta1derived$', name) ~ 'DPT1 Calculated'
       ),
-      category = factor(category, levels = c('DHIS2 projection', 'ANC1-derived', 'Penta1-derived', 'UN projection')),
+      category = factor(category, levels = c('DHIS2 projection', 'ANC1-derived', 'Penta1-derived', 'UN projection', 'DPT1 Calculated')),
       indicator_name = str_extract(name, "(?<=cov_).*?(?=_)")
     ) %>%
     filter(year == coverage_year, indicator_name == indicator)

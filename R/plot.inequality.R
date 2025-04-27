@@ -23,7 +23,7 @@
 #' @export
 plot.cd_inequality <- function(x,
                                indicator,
-                               denominator = c('dhis2', 'anc1', 'penta1'),
+                               denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived'),
                                ...) {
 
   year = nat = madm = NULL

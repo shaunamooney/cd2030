@@ -59,6 +59,7 @@ calculate_inequality <- function(.data,
   # Validation
   check_cd_data(.data)
   admin_level <-  arg_match(admin_level)
+  admin_level_col <- get_admin_columns(admin_level)
 
   national_data <- calculate_indicator_coverage(.data,
                                                 admin_level = 'national',
@@ -69,14 +70,14 @@ calculate_inequality <- function(.data,
     select(year, matches('^cov_|^tot'), -ends_with('_un')) %>%
     rename_with(~ paste0('nat_', .x), matches('^cov_|^tot'))
 
-  print(national_data, n= 200)
-
   subnational_data <- calculate_indicator_coverage(.data,
                                                    admin_level = admin_level,
                                                    sbr = sbr, nmr = nmr, pnmr = pnmr,
                                                    anc1survey = anc1survey, dpt1survey = dpt1survey,
                                                    twin = twin, preg_loss = preg_loss) %>%
-    select(year, any_of(c('adminlevel_1', 'district')), matches('^cov_|^tot'))
+    select(year, any_of(admin_level_col), matches('^cov_|^tot'))
+
+  print(glimpse(subnational_data))
 
   combined_data <- subnational_data %>%
     left_join(national_data, join_by(year)) %>%
@@ -89,6 +90,7 @@ calculate_inequality <- function(.data,
       across(starts_with('diff_'), ~ {
         indicator <-  str_extract(cur_column(), "(?<=_cov_).+(?=_[^_]+$)")
         denominator <-  str_extract(cur_column(), "[^_]+$")
+        print(indicator)
         population <- get_population_column(indicator, denominator)
 
         stats::weighted.mean(.x, get(paste('popshare', population, sep = '_')), na.rm = TRUE)
@@ -153,7 +155,7 @@ calculate_inequality <- function(.data,
 #' @export
 filter_inequality <- function(.data,
                               indicator,
-                              denominator = c('dhis2', 'anc1', 'penta1'),
+                              denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived'),
                               ...) {
 
   # check_cd_inequality(.data)
@@ -164,7 +166,7 @@ filter_inequality <- function(.data,
   dhis_col <- paste('cov', indicator, denominator, sep = '_')
 
   .data %>%
-    select(year, any_of(c('adminlevel_1', 'district')), ends_with(dhis_col), ends_with(pop_col)) %>%
+    select(year, any_of(pop_col), ends_with(dhis_col), ends_with(pop_col)) %>%
     rename_with(~ str_remove(.x, paste0('_', dhis_col)), ends_with(dhis_col)) %>%
     select(-any_of(paste0('nat_', pop_col))) %>%
     rename_with(~ str_remove(.x, paste0('_', pop_col)), ends_with(pop_col))

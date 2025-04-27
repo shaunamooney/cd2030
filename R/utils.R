@@ -34,6 +34,17 @@ check_cd_indicator_coverage <- function(.data, arg = caller_arg(.data), call = c
   invisible(TRUE)
 }
 
+check_cd_population <- function(.data, arg = caller_arg(.data), call = caller_env()) {
+
+  check_required(.data, arg = arg, call = call)
+
+  if (!inherits(.data, 'cd_population')) {
+    cd_abort(c('x' = 'The data object must be of class {.field cd_population}.'), call = call)
+  }
+
+  invisible(TRUE)
+}
+
 check_cd_reporting_rate <- function(.data, arg = caller_arg(.data), call = caller_env()) {
 
   check_required(.data, arg = arg, call = call)

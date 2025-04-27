@@ -53,8 +53,11 @@ plot.cd_derived_coverage <- function(x, region = NULL, ...) {
     str_glue('{indicator_label} Coverage Over Time for {region}')
   }
 
+  coverage_old <- paste0('cov_', indicator, '_penta1')
+  coverage_new <- paste0(coverage_old, 'derived')
+
   # Determine upper y-axis limit using rounded max
-  max_val <- robust_max(c(data$coverage_new, data$coverage_old), fallback = 100)
+  max_val <- robust_max(c(data[[coverage_new]], data[[coverage_old]]), fallback = 100)
   y_max <- ceiling(max_val / 10) * 10
 
   # Define custom legend labels
@@ -64,8 +67,8 @@ plot.cd_derived_coverage <- function(x, region = NULL, ...) {
   )
 
   ggplot(data, aes(x = year)) +
-    geom_line(aes(y = coverage_new, color = paste0(indicator_label, ' New')), size = 1) +
-    geom_line(aes(y = coverage_old, color = paste0(indicator_label, ' Old')), size = 1) +
+    geom_line(aes(y = !!sym(coverage_new), color = paste0(indicator_label, ' New')), size = 1) +
+    geom_line(aes(y = !!sym(coverage_old), color = paste0(indicator_label, ' Old')), size = 1) +
     geom_hline(yintercept = 100, linetype = 'dashed', color = 'gray') +
     scale_y_continuous(
       breaks = scales::pretty_breaks(n = 13),

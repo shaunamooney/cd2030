@@ -132,10 +132,12 @@ ui <- dashboardPage(
                            icon = icon('adjust'))
       ),
       menuItem(i18n$t('title_setup'), tabName = 'setup', icon = icon('sliders-h')),
-      menuItem(i18n$t('title_derived_coverage'), tabName = 'derived_coverage', icon = icon('chart-line')),
       menuItem(i18n$t('title_denominator_selection'),
                tabName = 'denom_assess',
                icon = icon('calculator'),
+               menuSubItem(i18n$t('title_derived_coverage'),
+                           tabName = 'derived_coverage',
+                           icon = icon('chart-line')),
                menuSubItem(i18n$t('title_denominator_assessment'),
                            tabName = 'denominator_assessment',
                            icon = icon('calculator')),

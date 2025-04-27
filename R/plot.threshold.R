@@ -1,6 +1,6 @@
 #' @export
 plot.cd_threshold <- function(x,
-                              denominator = c('dhis2', 'anc1', 'penta1'),
+                              denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived'),
                               ...) {
 
   denom <-  arg_match(denominator)

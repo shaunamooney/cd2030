@@ -6,7 +6,8 @@ denominatorInputUI <- function(id, i18n) {
     choices = c(
       'DHIS2' = 'dhis2',
       'ANC 1' = 'anc1',
-      'Penta 1' = 'penta1'
+      'Penta 1' = 'penta1',
+      'Penta 1 Derived' = 'penta1derived'
     )
   )
 }

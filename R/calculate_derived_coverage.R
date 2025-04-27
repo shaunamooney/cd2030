@@ -20,21 +20,37 @@
 #'
 #' @export
 calculate_derived_coverage <- function(.data, indicator, base_year) {
-  check_cd_indicator_coverage(.data)
+  check_cd_population(.data)
 
   # Get admin level attribute (national, adminlevel_1, district)
   admin_level <- attr_or_abort(.data, 'admin_level')
 
   # Match and reference the selected indicator
-  indicator <- arg_match(indicator, get_all_indicators())
+  indicator <- arg_match(indicator, list_vaccine_indicators())
   indicator_col <- sym(indicator)
+
+  coverage <- paste0('cov_', indicator, '_penta1')
+  coverage_col <- sym(coverage)
+
+  coverage_derived <- paste0(coverage, 'derived')
+  coverage_derived_col <- sym(coverage_derived)
 
   # Get relevant population column for DHIS2 (e.g., totpop_dhis2)
   dhis2_pop <- get_population_column(indicator, 'dhis2')
   dhis2_pop_col <- sym(dhis2_pop)
 
+  penta1_denom <- get_population_column(indicator, 'penta1')
+  penta1_denom_col <- sym(penta1_denom)
+
+  derived_denom <- paste0(penta1_denom, 'derived')
+  derived_denom_col <- sym(derived_denom)
+
   # Determine grouping columns based on admin level
   group_cols <- get_admin_columns(admin_level)
+
+  if (!indicator %in% colnames(.data)) {
+    return(NULL)
+  }
 
   # If subnational, aggregate to national level first
   nat_data <- if (!is.null(group_cols)) {
@@ -49,7 +65,7 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
 
   # Keep only necessary columns and convert DHIS2 pop to count (×1000)
   nat_data <- nat_data %>%
-    select(year, all_of(c(indicator, dhis2_pop)), totinftpenta_penta1) %>%
+    select(year, all_of(c(indicator, dhis2_pop, coverage)), !!penta1_denom_col) %>%
     mutate(!!dhis2_pop_col := !!dhis2_pop_col * 1000)
 
   # Ensure base year is not earlier than first year in data
@@ -60,7 +76,7 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
     filter(year == base_year)
 
   base_value <- base_row %>% pull(!!dhis2_pop_col)        # national base population
-  base_denom <- base_row %>% pull(totinftpenta_penta1)    # national base DTP1-derived denominator
+  base_denom <- base_row %>% pull(!!penta1_denom_col)    # national base DTP1-derived denominator
 
   # ---- NATIONAL-LEVEL DERIVED DENOMINATOR TRENDS ----
   national <- nat_data %>%
@@ -69,21 +85,21 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
       percent_change = (!!dhis2_pop_col - base_value) / base_value,
 
       # Step 2: Apply percent change to national base denominator
-      derived_denom = base_denom * (1 + percent_change),
+      !!derived_denom_col := base_denom * (1 + percent_change),
 
       # Step 3: Calculate traditional and derived coverage values
-      coverage_old = (!!indicator_col / totinftpenta_penta1) * 100,
-      coverage_new = (!!indicator_col / derived_denom) * 100
+      # coverage_old = (!!indicator_col / totinftpenta_penta1) * 100,
+      !!coverage_derived_col := (!!indicator_col / !!derived_denom_col) * 100
     ) %>%
     select(
       year,
       !!indicator_col,
       !!dhis2_pop_col,
-      totinftpenta_penta1,
-      derived_denom,
-      percent_change,
-      coverage_old,
-      coverage_new
+      !!penta1_denom_col,
+      !!derived_denom_col,
+      # percent_change,
+      !!coverage_col,
+      !!coverage_derived_col
     )
 
   # ---- SUBNATIONAL: DISTRIBUTE DERIVED NATIONAL DENOMINATOR ----
@@ -91,7 +107,7 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
 
     # Prepare national population and derived_denom for merge
     national_sel <- national %>%
-      select(year, derived_denom, !!dhis2_pop_col) %>%
+      select(year, !!derived_denom_col, !!dhis2_pop_col) %>%
       rename(national_pop = !!dhis2_pop_col)
 
     # Step 1: Aggregate subnational indicator, DHIS2 population, and DTP1 denom
@@ -99,7 +115,7 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
       summarise(
         !!indicator_col := sum(!!indicator_col, na.rm = TRUE),
         !!dhis2_pop_col := sum(!!dhis2_pop_col * 1000, na.rm = TRUE),
-        totinftpenta_penta1 = sum(totinftpenta_penta1, na.rm = TRUE),
+        !!penta1_denom_col := sum(!!penta1_denom_col, na.rm = TRUE),
         .by = c(year, group_cols)
       ) %>%
       left_join(national_sel, by = 'year') %>%
@@ -108,13 +124,13 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
         nat_pro = !!dhis2_pop_col / national_pop,
 
         # Step 3: Apply that share to national derived denominator
-        derived_denom = derived_denom * nat_pro,
+        !!derived_denom_col := !!derived_denom_col * nat_pro,
 
         # Step 4: Recalculate coverage
-        coverage_old = (!!indicator_col / totinftpenta_penta1) * 100,
-        coverage_new = (!!indicator_col / derived_denom) * 100
+        !!coverage_col := (!!indicator_col / !!penta1_denom_col) * 100,
+        !!coverage_derived_col := (!!indicator_col / !!derived_denom_col) * 100
       ) %>%
-      select(-national_pop)
+      select(-national_pop, -nat_pro)
   } else {
     # If admin level is national, use already-computed national data
     national
