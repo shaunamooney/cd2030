@@ -56,7 +56,8 @@ lowReportingServer <- function(id, cache, i18n) {
       })
 
       coverage_threshold <- reactive({
-        req(data(), admin_level())
+        req(data(), admin_level(), all(!is.na(cache()$national_estimates)))
+        rates <- cache()$national_estimates
         calculate_threshold(data(),
                             admin_level = admin_level(),
                             indicator = 'coverage',
@@ -71,7 +72,8 @@ lowReportingServer <- function(id, cache, i18n) {
       })
 
       dropout_threshold <- reactive({
-        req(data(), admin_level())
+        req(data(), admin_level(), all(!is.na(cache()$national_estimates)))
+        rates <- cache()$national_estimates
         calculate_threshold(data(),
                             admin_level = admin_level(),
                             indicator = 'dropout',

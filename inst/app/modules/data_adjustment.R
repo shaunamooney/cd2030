@@ -94,7 +94,7 @@ dataAdjustmentServer <- function(id, cache, i18n) {
       })
 
       observeEvent(c(input$k_anc, input$k_delivery, input$k_vaccines), {
-        req(cache(), input$k_anc, input$k_delivery, input$k_vaccines)
+        req(cache())
 
         k <- k_factors()
         k['anc'] <- as.numeric(input$k_anc)
