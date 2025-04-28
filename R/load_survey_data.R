@@ -52,7 +52,7 @@ load_survey_data <- function(path = NULL, .data = NULL, country_iso, admin_level
     data <- data %>%
       # mutate(across(matches('^r_|^se_|^ll_|^ul_'), ~ .)) %>%
       select(-any_of(c('adminlevel_1', 'admin1_code'))) %>%
-      separate_wider_delim(cols = 'level', delim = ' ', names = c('admin1_code', 'adminlevel_1'), too_many = 'merge', too_few = 'align_end') %>%
+      separate_wider_regex(cols = level, patterns = c("[0-9]*", "\\s*", level = ".*")) %>%
       filter(!(iso3 == 'TZA' & adminlevel_1 %in% c('Kaskazini Unguja','Pemba North',
                                                  'Kusini Pemba','Pemba South','Pemba',
                                                  'Kusini Unguja','Zanzibar North',
