@@ -121,7 +121,7 @@ add_mad_med_columns <- function(.data, indicators, group_by = 'district') {
   check_required(indicators)
 
   # Validate group_by, year, and indicators columns
-  if (!group_by %in% colnames(.data) ||
+  if ((!is.null(group_by) && !group_by %in% colnames(.data)) ||
       !'year' %in% colnames(.data) ||
       !all(indicators %in% colnames(.data))) {
     cd_abort(c('x' = '{.arg .data} must contain the columns specified by {.arg group_by} and {.field indicators}'))

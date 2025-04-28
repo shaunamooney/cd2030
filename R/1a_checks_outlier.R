@@ -53,18 +53,18 @@ calculate_outliers_summary <- function(.data, admin_level = c('national', 'admin
       across(any_of(allindicators), mean, na.rm  = TRUE),
       .by = c(admin_level_cols, 'year', 'month')
     ) %>%
-    add_outlier5std_column(indicators = allindicators, group_by = admin_level) %>%
+    add_outlier5std_column(indicators = allindicators, group_by = if(admin_level == 'national') NULL else admin_level) %>%
     summarise(
       across(ends_with('_outlier5std'), mean, na.rm  = TRUE),
       .by = if (include_year) c(admin_level_cols, 'year') else admin_level_cols
     ) %>%
     mutate(
-      # mean_out_all = rowMeans(select(., ends_with('_outlier5std')), na.rm = TRUE),
-      # mean_out_vacc_only = rowMeans(select(., paste0(vaccine_only, '_outlier5std')), na.rm = TRUE),
-      # mean_out_vacc_tracer = rowMeans(select(., paste0(tracers, '_outlier5std')), na.rm = TRUE),
+      mean_out_all = rowMeans(select(., ends_with('_outlier5std')), na.rm = TRUE),
+      mean_out_vacc_only = rowMeans(select(., paste0(vaccine_only, '_outlier5std')), na.rm = TRUE),
+      mean_out_vacc_tracer = rowMeans(select(., paste0(tracers, '_outlier5std')), na.rm = TRUE),
 
       # across(c(ends_with('_outlier5std'), starts_with('mean_out_')), ~ round((1 - .x) * 100, 2))
-      across(ends_with('_outlier5std'), ~ round((1 - .x) * 100, 0))
+      across(c(ends_with('_outlier5std'), starts_with('mean_out_')), ~ round((1 - .x) * 100, 0))
     )
 
   new_tibble(
