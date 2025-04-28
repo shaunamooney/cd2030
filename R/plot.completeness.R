@@ -28,8 +28,6 @@ plot.cd_completeness_summary <- function(x,
     arg_match(indicator, list_vaccines())
   }
 
-  print(x)
-
   if (is.null(indicator)) {
     x <- x %>%
       pivot_longer(cols = starts_with('mis_'), names_to = 'indicator') %>%

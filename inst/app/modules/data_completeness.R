@@ -163,7 +163,6 @@ dataCompletenessServer <- function(id, cache, i18n) {
 
       output$district_missing_heatmap <- renderCustomPlot({
         req(completeness_summary())
-        print(class(completeness_summary()))
         # ggplotly(
           plot(completeness_summary(), input$indicator)
         # )
