@@ -41,8 +41,6 @@ from \code{.rds} files.
 
 \item{\code{adjusted_flag}}{Gets adjusted flag.}
 
-\item{\code{penta1_mort_rate}}{Gets ANC1 to Penta1 Mortality Rate.}
-
 \item{\code{survey_estimates}}{Gets survey estimates.}
 
 \item{\code{national_estimates}}{Gets national estimates.}
@@ -107,7 +105,6 @@ Update a field (with change tracking)}
 \item \href{#method-CacheConnection-set_survey_year}{\code{CacheConnection$set_survey_year()}}
 \item \href{#method-CacheConnection-set_start_survey_year}{\code{CacheConnection$set_start_survey_year()}}
 \item \href{#method-CacheConnection-set_denominator}{\code{CacheConnection$set_denominator()}}
-\item \href{#method-CacheConnection-set_penta1_mort_rate}{\code{CacheConnection$set_penta1_mort_rate()}}
 \item \href{#method-CacheConnection-set_selected_admin_level_1}{\code{CacheConnection$set_selected_admin_level_1()}}
 \item \href{#method-CacheConnection-set_selected_district}{\code{CacheConnection$set_selected_district()}}
 \item \href{#method-CacheConnection-set_mapping_years}{\code{CacheConnection$set_mapping_years()}}
@@ -470,23 +467,6 @@ Set denominator type.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{value}}{Character scalar.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-set_penta1_mort_rate"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-set_penta1_mort_rate}{}}}
-\subsection{Method \code{set_penta1_mort_rate()}}{
-Set ANC1 to Penta1 Mortality Rate.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_penta1_mort_rate(value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Double scalar.}
 }
 \if{html}{\out{</div>}}
 }

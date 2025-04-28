@@ -7,7 +7,15 @@
 calculate_threshold(
   .data,
   admin_level = c("adminlevel_1", "district"),
-  indicator = c("coverage", "dropout")
+  indicator = c("coverage", "dropout"),
+  sbr = 0.02,
+  nmr = 0.025,
+  pnmr = 0.024,
+  anc1survey = 0.98,
+  dpt1survey = 0.97,
+  survey_year = 2019,
+  twin = 0.015,
+  preg_loss = 0.03
 )
 }
 \arguments{
@@ -20,6 +28,22 @@ calculate_threshold(
 \item \code{"coverage"}:coverage indicators.
 \item \code{"dropout"}: dropout indicators.
 }}
+
+\item{sbr}{Numeric. The stillbirth rate. Default is \code{0.02}.}
+
+\item{nmr}{Numeric. Neonatal mortality rate. Default is \code{0.025}.}
+
+\item{pnmr}{Numeric. Post-neonatal mortality rate. Default is \code{0.024}.}
+
+\item{anc1survey}{Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first visit). Default is \code{0.98}.}
+
+\item{dpt1survey}{Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination). Default is \code{0.97}.}
+
+\item{survey_year}{Integer. The year of Penta-1 survey provided}
+
+\item{twin}{Numeric. Twin birth rate. Default is \code{0.015}.}
+
+\item{preg_loss}{Numeric. Pregnancy loss rate}
 }
 \value{
 A tibble with the selected administrative level and coverage value for regions

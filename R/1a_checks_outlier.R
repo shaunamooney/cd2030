@@ -12,6 +12,7 @@
 #'   outlier and 0 indicates non-outliers).
 #' @param admin_level Character. The administrative level at which to calculate
 #'   reporting rates. Must be one of `"national"`, `"adminlevel_1"` or `"district"`.
+#' @param include_year Integer. Whether to include the year
 #'
 #' @details
 #' - **Outlier Detection**: Outliers are calculated based on Hampel’s robust X84
@@ -35,7 +36,7 @@
 #' }
 #'
 #' @export
-calculate_outliers_summary <- function(.data, admin_level = c('national', 'adminlevel_1', 'district')) {
+calculate_outliers_summary <- function(.data, admin_level = c('national', 'adminlevel_1', 'district'), include_year = TRUE) {
 
   year = . = NULL
 
@@ -48,17 +49,22 @@ calculate_outliers_summary <- function(.data, admin_level = c('national', 'admin
   allindicators <- get_all_indicators()
 
   data <- .data %>%
-    add_outlier5std_column(allindicators) %>%
     summarise(
-      across(ends_with('_outlier5std'), mean, na.rm = TRUE),
-      .by = c(admin_level_cols, 'year')
+      across(any_of(allindicators), mean, na.rm  = TRUE),
+      .by = c(admin_level_cols, 'year', 'month')
+    ) %>%
+    add_outlier5std_column(indicators = allindicators, group_by = admin_level) %>%
+    summarise(
+      across(ends_with('_outlier5std'), mean, na.rm  = TRUE),
+      .by = if (include_year) c(admin_level_cols, 'year') else admin_level_cols
     ) %>%
     mutate(
-      mean_out_all = rowMeans(select(., ends_with('_outlier5std')), na.rm = TRUE),
-      mean_out_vacc_only = rowMeans(select(., paste0(vaccine_only, '_outlier5std')), na.rm = TRUE),
-      mean_out_vacc_tracer = rowMeans(select(., paste0(tracers, '_outlier5std')), na.rm = TRUE),
+      # mean_out_all = rowMeans(select(., ends_with('_outlier5std')), na.rm = TRUE),
+      # mean_out_vacc_only = rowMeans(select(., paste0(vaccine_only, '_outlier5std')), na.rm = TRUE),
+      # mean_out_vacc_tracer = rowMeans(select(., paste0(tracers, '_outlier5std')), na.rm = TRUE),
 
-      across(c(ends_with('_outlier5std'), starts_with('mean_out_')), ~ round((1 - .x) * 100, 2))
+      # across(c(ends_with('_outlier5std'), starts_with('mean_out_')), ~ round((1 - .x) * 100, 2))
+      across(ends_with('_outlier5std'), ~ round((1 - .x) * 100, 0))
     )
 
   new_tibble(
@@ -194,3 +200,28 @@ list_outlier_units <- function(.data,
     admin_level = admin_level
   )
 }
+
+
+#' Core Function to Calculate Outlier Metrics
+#'
+#' @param .data A `cd_data` object.
+#' @param indicators A character vector of indicators.
+#' @param admin_level Administrative level: 'national', 'adminlevel_1', or 'district'.
+#'
+#' @return A tibble with outlier metrics.
+#'
+#' @noRd
+calculate_outlier_core <- function(.data, indicators, admin_level = c('national', 'adminlevel_1', 'district')) {
+
+  check_cd_data(.data)
+  check_required(indicators)
+
+  admin_level <- arg_match(admin_level)
+  group_vars <- get_admin_columns(admin_level)
+
+  .data %>%
+    summarise(across(any_of(indicators), mean, na.rm = TRUE), .by = c(group_vars, 'year', 'month')) %>%
+    add_outlier5std_column(indicators = indicators, group_by = admin_level)
+}
+
+

@@ -53,8 +53,7 @@ nationalRatesServer <- function(id, cache) {
         #     nmr = default_national_estimates$nmr,
         #     pnmr = default_national_estimates$pnmr,
         #     twin_rate = as.numeric(input$twin_rate),
-        #     preg_loss = as.numeric(input$pregnancy_loss),
-        #     penta1_mort_rate = as.numeric(input$penta1_mortality_rate)
+        #     preg_loss = as.numeric(input$pregnancy_loss)
         #   )
         #
         #  cache()$set_national_estimates(estimates)

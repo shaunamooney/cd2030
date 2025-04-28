@@ -13,6 +13,7 @@ calculate_indicator_coverage(
   pnmr = 0.024,
   anc1survey = 0.98,
   dpt1survey = 0.97,
+  survey_year = 2019,
   twin = 0.015,
   preg_loss = 0.03
 )
@@ -36,6 +37,8 @@ for national-level calculations.}
 \item{anc1survey}{Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first visit). Default is \code{0.98}.}
 
 \item{dpt1survey}{Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination). Default is \code{0.97}.}
+
+\item{survey_year}{Interger. The year of Penta-1 survey provided}
 
 \item{twin}{Numeric. Twin birth rate. Default is \code{0.015}.}
 

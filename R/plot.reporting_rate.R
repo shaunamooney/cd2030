@@ -83,7 +83,7 @@ plot.cd_reporting_rate <- function(x,
       geom_tile(color = 'white') +
       scale_fill_manual(
         values = set_names( c('forestgreen', 'orange', 'red'), c(greater, mid, low)),
-        name = 'Value Category',
+        name = str_glue('{indicator} Category'),
         drop = FALSE
       ) +
       geom_text(aes(label = !!sym(indicator)), color = 'black', size = 3, vjust = 0.5) +

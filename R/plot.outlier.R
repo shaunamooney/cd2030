@@ -90,24 +90,28 @@ plot.cd_outlier <- function(x,
       )
 
   } else if (selection_type == 'heat_map') {
-    p <- if (is.null(indicator)) {
-      x %>%
+    if (is.null(indicator)) {
+      x <- x %>%
         pivot_longer(cols = ends_with('_outlier5std'), names_to = 'indicator') %>%
-        mutate(indicator = str_remove(indicator, '_outlier5std')) %>%
-        ggplot(aes(x = !!sym(admin_level), y = indicator, fill = value)) +
-          labs(x = admin_level, y = 'Indicator', fill = 'Value')
+        mutate(indicator = str_remove(indicator, '_outlier5std'))
+
+      ggplot(x, aes(x = !!sym(admin_level), y = indicator, fill = value)) +
+        geom_tile(color = 'white') +
+        geom_text(aes(label = value), color = 'black', size = 3, vjust = 0.5) +
+        scale_fill_gradient2(low = 'red3', mid = 'orange', high = 'forestgreen', midpoint = 80) +
+        labs(x = admin_level, y = 'Indicator', fill = 'Value') +
+        theme_minimal() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 9))
     } else {
       column_name <- paste0(indicator, '_outlier5std')
       ggplot(x, aes(x = !!sym(admin_level), y = factor(year), fill = !!sym(column_name))) +
+        geom_tile(color = 'white') +
         geom_text(aes(label = !!sym(column_name)), color = 'black', size = 3, vjust = 0.5) +
-          labs(x = admin_level, y = 'Year', fill = paste0(indicator, ' Value'))
+        scale_fill_gradient2(low = 'red3', mid = 'orange', high = 'forestgreen', midpoint = 80) +
+        labs(x = admin_level, y = 'Year', fill = paste0(indicator, ' Value')) +
+        theme_minimal() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 9))
     }
-
-    p +
-      geom_tile(color = 'white') +
-      scale_fill_gradient2(low = 'red3', mid = 'orange', high = 'forestgreen', midpoint = 80) +
-      theme_minimal() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 9))
   }
 }
 
@@ -171,7 +175,7 @@ plot.cd_outlier_list <- function(x, region = NULL) {
       x = 'Month'
     ) +
     scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-    scale_x_date(date_breaks = "3 months", date_labels = "%Y %b") +
+    scale_x_date(date_breaks = "1 months", date_labels = "%Y %b") +
     cd_plot_theme() +
     # theme_minimal() +
     theme(

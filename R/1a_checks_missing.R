@@ -11,7 +11,11 @@
 #'
 #' @param .data A `cd_data` object containing indicator data, including columns with
 #'   the `mis_` prefix which represent missing value flags for each indicator.
-#' @return A `cd_missing_summary` object containing a tibble. This tibble shows
+#' @param admin_level Character. The administrative level at which to calculate
+#'   reporting rates. Must be one of `"national"`, `"adminlevel_1"` or `"district"`.
+#' @param include_year Integer. Whether to include the year
+#'
+#' @return A `cd_completeness_summary` object containing a tibble. This tibble shows
 #'   the yearly percentages of non-missing values for each indicator and the average
 #'   percentage of non-missing values across all indicators per year.
 #'
@@ -27,30 +31,41 @@
 #'   calculate_completeness_summary(data)
 #' }
 #' @export
-calculate_completeness_summary <- function(.data) {
+calculate_completeness_summary <- function(.data, admin_level = c('national', 'adminlevel_1', 'district'), include_year = TRUE) {
 
   year = . = NULL
 
   check_cd_data(.data)
+  admin_level <- arg_match(admin_level)
+  admin_level_cols <- get_admin_columns(admin_level)
 
   vaccine_only <- list_vaccines ()
   tracers <-list_tracer_vaccines ()
   allindicators <- get_all_indicators()
 
   data <- .data %>%
-    add_missing_column(allindicators) %>%
-    summarise(across(starts_with('mis_'), mean, na.rm = TRUE), .by = year) %>%
+    # summarise(
+    #   across(any_of(allindicators), mean, na.rm  = TRUE),
+    #   .by = c(admin_level_cols, 'year', 'month')
+    # ) %>%
+    add_missing_column(indicators = allindicators) %>%
+    summarise(
+      across(starts_with('mis_'), mean, na.rm  = TRUE),
+      .by = if (include_year) c(admin_level_cols, 'year') else admin_level_cols
+    ) %>%
     mutate(
-      mean_mis_all = rowMeans(select(., any_of(starts_with('mis_'))), na.rm = TRUE),
-      mean_mis_vacc_only = rowMeans(select(.,  any_of(paste0('mis_', vaccine_only))), na.rm = TRUE),
-      mean_mis_vacc_tracer = rowMeans(select(.,  any_of(paste0('mis_', tracers))), na.rm = TRUE),
+      # mean_mis_all = rowMeans(select(., any_of(starts_with('mis_'))), na.rm = TRUE),
+      # mean_mis_vacc_only = rowMeans(select(.,  any_of(paste0('mis_', vaccine_only))), na.rm = TRUE),
+      # mean_mis_vacc_tracer = rowMeans(select(.,  any_of(paste0('mis_', tracers))), na.rm = TRUE),
 
-      across(c(starts_with('mis_'), starts_with('mean_mis_')), ~ round((1 - .x) * 100, 2))
+      # across(c(starts_with('mis_'), starts_with('mean_mis_')), ~ round((1 - .x) * 100, 2))
+      across(starts_with('mis_'), ~ round((1 - .x) * 100, 0))
     )
 
   new_tibble(
     data,
-    class = 'cd_completeness_summary'
+    class = 'cd_completeness_summary',
+    admin_level = admin_level
   )
 }
 
@@ -105,5 +120,36 @@ calculate_district_completeness_summary <- function(.data) {
   new_tibble(
     data,
     class = 'cd_missing_district'
+  )
+}
+
+
+#' @export
+list_missing_units <- function(.data,
+                               indicator,
+                               admin_level = c('adminlevel_1', 'district')) {
+  check_cd_data(.data)
+  indicator <- arg_match(indicator, list_vaccines())
+  admin_level <- arg_match(admin_level)
+
+  admin_level_cols <- get_admin_columns(admin_level)
+  admin_level_cols <- c(admin_level_cols, 'year', 'month')
+
+  x <- .data %>%
+    add_missing_column(indicators = indicator) %>%
+    # summarise(
+    #   across(starts_with('mis_'), mean, na.rm  = TRUE),
+    #   .by = admin_level_cols
+    # ) %>%
+    # mutate(
+    #   across(starts_with('mis_'), ~ round((1 - .x) * 100, 0))
+    # ) %>%
+    select(any_of(c(admin_level_cols, paste0('mis_', indicator))))
+
+  new_tibble(
+    x,
+    class = 'cd_missing_list',
+    indicator = indicator,
+    admin_level = admin_level
   )
 }

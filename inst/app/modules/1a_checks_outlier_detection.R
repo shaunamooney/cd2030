@@ -10,7 +10,6 @@ outlierDetectionUI <- function(id, i18n) {
         solidHeader = TRUE,
         width = 12,
         fluidRow(
-          column(3, selectizeInput(ns('year'), label = i18n$t('title_year'), choice = NULL)),
           column(3, adminLevelInputUI(ns('admin_level'), i18n)),
           column(3, selectizeInput(ns('indicator'),
                                    label = i18n$t('title_indicator'),
@@ -22,7 +21,7 @@ outlierDetectionUI <- function(id, i18n) {
         width = 12,
 
         tabPanel(title = i18n$t('title_heat_map'), fluidRow(
-          column(12, plotCustomOutput(ns('district_outlier_heatmap'))),
+          column(12, withSpinner(plotlyOutput(ns('district_outlier_heatmap')))),
           column(4, downloadButtonUI(ns('download_data')))
         )),
 
@@ -40,7 +39,8 @@ outlierDetectionUI <- function(id, i18n) {
         collapsible = TRUE,
         width = 6,
         fluidRow(
-          column(4, downloadButtonUI(ns('download_outliers'))),
+          column(3, selectizeInput(ns('year'), label = i18n$t('title_year'), choice = NULL)),
+          column(3, offset = 6, downloadButtonUI(ns('download_outliers'))),
           column(12, withSpinner(reactableOutput(ns('district_outlier_summary'))))
         )
       ),
@@ -50,7 +50,6 @@ outlierDetectionUI <- function(id, i18n) {
         collapsible = TRUE,
         width = 6,
         fluidRow(
-          # column(6, selectizeInput(ns('district'), label = 'District', choice = NULL)),
           column(6, regionInputUI(ns('region'), i18n)),
           column(12, withSpinner(plotCustomOutput(ns('district_trend'))))
         )
@@ -78,20 +77,14 @@ outlierDetectionServer <- function(id, cache, i18n) {
         req(data(), admin_level())
 
         data() %>%
-          calculate_outliers_summary(admin_level())
+          calculate_outliers_summary(admin_level(), include_year = input$indicator != '')
       })
 
       outlier_districts <- reactive({
-        req(outlier_summary(), admin_level(), input$indicator, input$year)
+        req(data(), admin_level(), input$indicator, input$year)
 
-        outlier_column <- paste0(input$indicator, '_outlier5std')
-        selected_year <- as.numeric(input$year)
-        admin_level_cols <- get_admin_columns(admin_level())
-
-        data() %>%
-          add_outlier5std_column(input$indicator, admin_level()) %>%
-          filter(if (selected_year == 0) TRUE else year == selected_year, !!sym(outlier_column) == 1) %>%
-          select(any_of(admin_level_cols), year, month, any_of(c(input$indicator, paste0(input$indicator, '_med'), paste0(input$indicator, '_mad'))))
+        list_outlier_units(data(), input$indicator, admin_level()) %>%
+          filter(year == as.integer(input$year))
       })
 
       observe({
@@ -102,23 +95,23 @@ outlierDetectionServer <- function(id, cache, i18n) {
           arrange(desc(year)) %>%
           pull(year)
 
-        updateSelectizeInput(session, 'year', choices = c('All years' = 0, years))
+        updateSelectizeInput(session, 'year', choices = years)
       })
 
       output$district_outlier_summary <- renderReactable({
         req(outlier_districts())
 
-        dt <- outlier_districts()
+        outlier_units <- outlier_districts() %>%
+          filter(!!sym(paste0(input$indicator, '_outlier5std')) == 1) %>%
+          select(-!!sym(paste0(input$indicator, '_outlier5std')))
 
-        outlier_districts() %>%
+        outlier_units %>%
           reactable(
             filterable = FALSE,
             minRows = 10,
             groupBy = 'adminlevel_1',
             columns = list(
-              year = colDef(
-                aggregate = 'unique'
-              ),
+              year = colDef(show = FALSE),
               month = colDef(
                 aggregate = 'count',
                 format = list(
@@ -137,9 +130,9 @@ outlierDetectionServer <- function(id, cache, i18n) {
           )
       })
 
-      output$district_outlier_heatmap <- renderCustomPlot({
+      output$district_outlier_heatmap <- renderPlotly({
         req(outlier_summary())
-        plot(outlier_summary(), 'heat_map', input$indicator)
+        ggplotly(plot(outlier_summary(), 'heat_map', input$indicator))
       })
 
       output$region_bar_graph <- renderCustomPlot({
@@ -153,10 +146,8 @@ outlierDetectionServer <- function(id, cache, i18n) {
       })
 
       output$district_trend <- renderCustomPlot({
-        req(data(), region(), input$indicator, admin_level())
-
-        outlier_units <- list_outlier_units(data(), input$indicator, admin_level())
-        plot(outlier_units, region())
+        req(outlier_districts(), region())
+        plot(outlier_districts(), region())
       })
 
       downloadExcel(
