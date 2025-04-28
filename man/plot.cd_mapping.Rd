@@ -7,7 +7,7 @@
 \method{plot}{cd_mapping}(
   x,
   indicator = NULL,
-  denominator = c("dhis2", "anc1", "penta1"),
+  denominator = c("dhis2", "anc1", "penta1", "penta1derived"),
   palette = c("Reds", "Blues", "Greens", "Purples", "YlGnBu"),
   plot_year = NULL,
   title = NULL,

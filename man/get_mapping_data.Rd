@@ -8,6 +8,7 @@ get_mapping_data(
   .data,
   un_estimates,
   rates,
+  survey_year,
   subnational_map = NULL,
   admin_level = c("adminlevel_1", "district")
 )
@@ -27,6 +28,8 @@ get_mapping_data(
 \item \code{twin_rate}: Twin birth rate
 \item \code{preg_loss}: Pregnancy loss rate
 }}
+
+\item{survey_year}{Integer. The year of Penta-1 survey provided}
 
 \item{subnational_map}{An optional data frame containing additional mapping
 information to join with the shapefile.}

@@ -7,7 +7,7 @@
 filter_inequality(
   .data,
   indicator,
-  denominator = c("dhis2", "anc1", "penta1"),
+  denominator = c("dhis2", "anc1", "penta1", "penta1derived"),
   ...
 )
 }

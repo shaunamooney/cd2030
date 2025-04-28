@@ -7,7 +7,7 @@ denominatorInputUI <- function(id, i18n) {
       'DHIS2' = 'dhis2',
       'ANC 1' = 'anc1',
       'Penta 1' = 'penta1',
-      'Penta 1 Derived' = 'penta1derived'
+      'Penta 1 Population Growth' = 'penta1derived'
     )
   )
 }

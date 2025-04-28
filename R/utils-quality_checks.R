@@ -192,7 +192,8 @@ add_missing_column <- function(.data, indicators) {
   district = year = NULL
 
   # Check that the data is valid
-  check_cd_data(.data)
+  # check_cd_data(.data)
+  check_required(.data)
   check_required(indicators)
 
   if (!all(indicators %in% colnames(.data))) {

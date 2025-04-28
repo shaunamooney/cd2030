@@ -10,7 +10,6 @@ dataCompletenessUI <- function(id, i18n) {
         solidHeader = TRUE,
         width = 12,
         fluidRow(
-          column(3, selectizeInput(ns('year'), label = i18n$t('title_year'), choice = NULL)),
           column(3, adminLevelInputUI(ns('admin_level'), i18n)),
           column(3, selectizeInput(ns('indicator'),
                                    label = i18n$t('title_indicator'),
@@ -24,7 +23,7 @@ dataCompletenessUI <- function(id, i18n) {
         tabPanel(
           title = i18n$t('title_heat_map'),
           fluidRow(
-            column(12, withSpinner(plotlyOutput(ns('district_missing_heatmap')))),
+            column(12, withSpinner(plotCustomOutput(ns('district_missing_heatmap')))),
             column(4, align = 'right', downloadButtonUI(ns('download_data')))
           )
         ),
@@ -49,7 +48,8 @@ dataCompletenessUI <- function(id, i18n) {
         status = 'success',
         width = 6,
         fluidRow(
-          column(4, downloadButtonUI(ns('download_incompletes')))
+          column(3, selectizeInput(ns('year'), label = i18n$t('title_year'), choice = NULL)),
+          column(3, offset = 6, downloadButtonUI(ns('download_incompletes')))
         ),
         fluidRow(
           column(12, withSpinner(reactableOutput(ns('incomplete_district'))))
@@ -74,22 +74,18 @@ dataCompletenessServer <- function(id, cache, i18n) {
       })
 
       completeness_summary <- reactive({
-        req(data())
+        req(data(), admin_level())
 
         data() %>%
-          select(district, year, month, list_vaccines()) %>%
-          add_missing_column(list_vaccines())
+          calculate_completeness_summary(admin_level = admin_level(),
+                                         include_year = input$indicator != '')
       })
 
       incomplete_district <- reactive({
-        req(completeness_summary(), input$indicator, input$year)
+        req(data(), admin_level(), input$indicator, input$year)
 
-        mis_column <- paste0('mis_', input$indicator)
-        selected_year <- as.numeric(input$year)
-
-        completeness_summary() %>%
-          filter(if (selected_year == 0) TRUE else year == selected_year, !!sym(mis_column) == 1) %>%
-          select(district, year, month)
+        list_missing_units(data(), input$indicator, admin_level()) %>%
+          filter(year == as.integer(input$year))
       })
 
       observe({
@@ -100,21 +96,23 @@ dataCompletenessServer <- function(id, cache, i18n) {
           arrange(desc(year)) %>%
           pull(year)
 
-        updateSelectizeInput(session, 'year', choices = c('All Years' = 0, years))
+        updateSelectizeInput(session, 'year', choices = years)
       })
 
       output$incomplete_district <- renderReactable({
-        req(completeness_summary())
+        req(incomplete_district())
 
-        incomplete_district() %>%
+        missing_units <- incomplete_district() %>%
+          filter(!!sym(paste0('mis_', input$indicator)) == 1) %>%
+          select(-!!sym(paste0('mis_', input$indicator)))
+
+        missing_units %>%
           reactable(
             filterable = FALSE,
             minRows = 10,
-            groupBy = c('district'),
+            groupBy = 'adminlevel_1',
             columns = list(
-              year = colDef(
-                aggregate = 'unique'
-              ),
+              year = colDef(show = FALSE),
               month = colDef(
                 aggregate = 'count',
                 format = list(
@@ -133,44 +131,42 @@ dataCompletenessServer <- function(id, cache, i18n) {
           )
       })
 
-      output$district_missing_heatmap <- renderPlotly({
+      # output$incomplete_district <- renderReactable({
+      #   req(completeness_summary())
+      #
+      #   incomplete_district() %>%
+      #     reactable(
+      #       filterable = FALSE,
+      #       minRows = 10,
+      #       groupBy = c('district'),
+      #       columns = list(
+      #         year = colDef(
+      #           aggregate = 'unique'
+      #         ),
+      #         month = colDef(
+      #           aggregate = 'count',
+      #           format = list(
+      #             aggregated = colFormat(suffix = ' month(s)')
+      #           )
+      #         )
+      #       ),
+      #       defaultColDef = colDef(
+      #         cell = function(value) {
+      #           if (!is.numeric(value)) {
+      #             return(value)
+      #           }
+      #           format(round(value), nsmall = 0)
+      #         }
+      #       )
+      #     )
+      # })
+
+      output$district_missing_heatmap <- renderCustomPlot({
         req(completeness_summary())
-
-        if (input$indicator == '' || is.null(input$indicator) || length(input$indicator) == 0) {
-          selected_year <- as.numeric(input$year)
-
-          dt <- completeness_summary() %>%
-            filter(if (selected_year == 0) TRUE else year == selected_year) %>%
-            summarise(across(starts_with('mis_'), ~ sum(.x, na.rm = TRUE)), .by = district) %>%
-            pivot_longer(col = starts_with('mis_'), names_to = 'indicator') %>%
-            mutate(indicator = str_remove(indicator, 'mis_'))
-
-          ggplotly(
-            ggplot(dt, aes(x = district, y = indicator, fill = value)) +
-              geom_tile(color = 'white') +
-              scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
-              labs(title = NULL, y = 'Indicator', x = admin_level(), fill = 'Value') +
-              theme_minimal() +
-              theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
-          )
-        } else {
-          dt <- completeness_summary() %>%
-            select(district, year, any_of(paste0('mis_', input$indicator))) %>%
-            summarise(
-              value = sum(.data[[paste0('mis_', input$indicator)]], na.rm = TRUE),
-              .by = c(district, year)
-            ) %>%
-            arrange(year)
-
-          ggplotly(
-            ggplot(dt, aes(x = district, y = year, fill = value)) +
-              geom_tile(color = 'white') +
-              scale_fill_gradient2(low = 'forestgreen', mid = 'white', high = 'red3', midpoint = mean(dt$value, na.rm = TRUE)) +
-              labs(title = NULL, x = admin_level(), y = 'Year', fill = 'Value') +
-              theme_minimal() +
-              theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
-          )
-        }
+        print(class(completeness_summary()))
+        # ggplotly(
+          plot(completeness_summary(), input$indicator)
+        # )
       })
 
       output$complete_vaccines <- renderReactable({

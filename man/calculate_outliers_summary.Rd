@@ -6,7 +6,8 @@
 \usage{
 calculate_outliers_summary(
   .data,
-  admin_level = c("national", "adminlevel_1", "district")
+  admin_level = c("national", "adminlevel_1", "district"),
+  include_year = TRUE
 )
 }
 \arguments{
@@ -18,6 +19,8 @@ outlier and 0 indicates non-outliers).}
 
 \item{admin_level}{Character. The administrative level at which to calculate
 reporting rates. Must be one of \code{"national"}, \code{"adminlevel_1"} or \code{"district"}.}
+
+\item{include_year}{Integer. Whether to include the year}
 }
 \value{
 A \code{cd_outliers_summary} object (tibble) with:

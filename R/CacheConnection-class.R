@@ -265,10 +265,6 @@ CacheConnection <- R6::R6Class(
     #' @param value Character scalar.
     set_denominator = function(value) private$setter('denominator', value, is_scalar_character),
 
-    #' @description Set ANC1 to Penta1 Mortality Rate.
-    #' @param value Double scalar.
-    set_penta1_mort_rate = function(value) private$setter('penta1_mort_rate', value, ~ is.numeric(.x) && length(.x) == 1),
-
     #' @description Set selected region.
     #' @param value Character scalar.
     set_selected_admin_level_1 = function(value) private$setter('selected_admin_level_1', value, is_scalar_character),
@@ -397,9 +393,6 @@ CacheConnection <- R6::R6Class(
     #' @field adjusted_flag Gets adjusted flag.
     adjusted_flag = function(value) private$getter('adjusted_flag', value),
 
-    #' @field penta1_mort_rate Gets ANC1 to Penta1 Mortality Rate.
-    penta1_mort_rate = function(value) private$getter('penta1_mort_rate', value),
-
     #' @field survey_estimates Gets survey estimates.
     survey_estimates = function(value) private$getter('survey_estimates', value),
 
@@ -522,7 +515,6 @@ CacheConnection <- R6::R6Class(
         nmr = NA, pnmr = NA, twin_rate = NA,preg_loss = NA,
         sbr = NA
       ),
-      penta1_mort_rate = NA,
       start_survey_year = NULL,
       survey_source = NULL,
       denominator = 'penta1',

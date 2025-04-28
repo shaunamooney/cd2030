@@ -4,7 +4,12 @@
 \alias{plot.cd_inequality}
 \title{Plot Subnational Health Coverage Analysis}
 \usage{
-\method{plot}{cd_inequality}(x, indicator, denominator = c("dhis2", "anc1", "penta1"), ...)
+\method{plot}{cd_inequality}(
+  x,
+  indicator,
+  denominator = c("dhis2", "anc1", "penta1", "penta1derived"),
+  ...
+)
 }
 \arguments{
 \item{x}{A \code{cd_inequality} object returned by \code{\link[=calculate_inequality]{calculate_inequality()}}.}
