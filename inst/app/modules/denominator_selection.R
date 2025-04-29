@@ -61,10 +61,20 @@ denominatorSelectionServer <- function(id, cache, i18n) {
         cache()$un_estimates
       })
 
-      indicator_coverage <- reactive({
-        req(data(), cache()$survey_year, un_estimates(), any(!is.na(cache()$national_estimates)))
+      national_estimates <- reactive({
+        req(cache())
+        cache()$national_estimates
+      })
 
-        rates <- cache()$national_estimates
+      survey_estimates <- reactive({
+        req(cache())
+        cache()$survey_estimates
+      })
+
+      indicator_coverage <- reactive({
+        req(data(), cache()$survey_year, un_estimates(), all(!is.na(national_estimates())))
+
+        rates <- national_estimates()
         data() %>%
           calculate_indicator_coverage(un_estimates = un_estimates(),
                                        sbr = rates$sbr,
@@ -78,18 +88,21 @@ denominatorSelectionServer <- function(id, cache, i18n) {
       })
 
       output$penta3 <- renderCustomPlot({
-        req(indicator_coverage())
-        plot_absolute_differences(indicator_coverage(), 'penta3')
+        req(indicator_coverage(), all(!is.na(survey_estimates())))
+        penta3_rate <- unname(survey_estimates()['penta3'])
+        plot_absolute_differences(indicator_coverage(), 'penta3', penta3_rate)
       })
 
       output$measles1 <- renderCustomPlot({
-        req(indicator_coverage())
-        plot_absolute_differences(indicator_coverage(), 'measles1')
+        req(indicator_coverage(), all(!is.na(survey_estimates())))
+        measles1_rate <- unname(survey_estimates()['measles1'])
+        plot_absolute_differences(indicator_coverage(), 'measles1', measles1_rate)
       })
 
       output$bcg <- renderCustomPlot({
-        req(indicator_coverage())
-        plot_absolute_differences(indicator_coverage(), 'bcg')
+        req(indicator_coverage(), all(!is.na(survey_estimates())))
+        bcg_rate <- unname(survey_estimates()['bcg'])
+        plot_absolute_differences(indicator_coverage(), 'bcg', bcg_rate)
       })
 
       output$custom_plot <- renderCustomPlot({
@@ -103,7 +116,8 @@ denominatorSelectionServer <- function(id, cache, i18n) {
         data = indicator_coverage,
         i18n = i18n,
         plot_function = function() {
-          plot_absolute_differences(indicator_coverage(), 'penta3')
+          penta3_rate <- unname(survey_estimates()['penta3'])
+          plot_absolute_differences(indicator_coverage(), 'penta3', penta3_rate)
         }
       )
 
@@ -113,7 +127,8 @@ denominatorSelectionServer <- function(id, cache, i18n) {
         data = indicator_coverage,
         i18n = i18n,
         plot_function = function() {
-          plot_absolute_differences(indicator_coverage(), 'measles1')
+          measles1_rate <- unname(survey_estimates()['measles1'])
+          plot_absolute_differences(indicator_coverage(), 'measles1', measles1_rate)
         }
       )
 
@@ -123,7 +138,8 @@ denominatorSelectionServer <- function(id, cache, i18n) {
         data = indicator_coverage,
         i18n = i18n,
         plot_function = function() {
-          plot_absolute_differences(indicator_coverage(), 'bcg')
+          bcg_rate <- unname(survey_estimates()['bcg'])
+          plot_absolute_differences(indicator_coverage(), 'bcg', bcg_rate)
         }
       )
 

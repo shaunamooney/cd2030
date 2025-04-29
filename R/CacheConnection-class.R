@@ -239,7 +239,7 @@ CacheConnection <- R6::R6Class(
     #' @description Set survey estimates.
     #' @param value Named numeric vector.
     set_survey_estimates = function(value) {
-      if (!is.numeric(value) || !all(c('anc1', 'penta1', 'penta3') %in% names(value))) {
+      if (!is.numeric(value) || !all(c('anc1', 'penta1', 'penta3', 'measles1', 'bcg') %in% names(value))) {
         cd_abort(c('x' = 'Survey must be a numeric vector containing {.val anc1}, {.val penta1} and {.val penta3}'))
       }
       private$update_field('survey_estimates', value)
@@ -510,11 +510,8 @@ CacheConnection <- R6::R6Class(
       k_factors = c(anc = 0, idelv = 0, vacc = 0),
       adjusted_flag = FALSE,
       survey_year = NULL,
-      survey_estimates = c(anc1 = NA, penta1 = NA, penta3 = NA),
-      national_estimates  = list(
-        nmr = NA, pnmr = NA, twin_rate = NA,preg_loss = NA,
-        sbr = NA
-      ),
+      survey_estimates = c(anc1 = NA, penta1 = NA, penta3 = NA, measles1 = NA, bcg = NA),
+      national_estimates  = list(nmr = NA, pnmr = NA, twin_rate = NA,preg_loss = NA, sbr = NA),
       start_survey_year = NULL,
       survey_source = NULL,
       denominator = 'penta1',

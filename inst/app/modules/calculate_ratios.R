@@ -70,10 +70,13 @@ calculateRatiosServer <- function(id, cache, i18n) {
       observeEvent(c(debounced_anc1(), debounced_penta1(), debounced_penta3()), {
         req(cache())
 
+        estimates <- cache()$survey_estimates
         estimates <- c(
           anc1 = as.numeric(input$anc1_coverage),
           penta1 = as.numeric(input$penta1_coverage),
-          penta3 = as.numeric(input$penta3_coverage)
+          penta3 = as.numeric(input$penta3_coverage),
+          measles1 = unname(estimates['measles1']),
+          bcg = unname(estimates['bcg'])
         )
         cache()$set_survey_estimates(estimates)
         cache()$set_survey_source('ratios')
