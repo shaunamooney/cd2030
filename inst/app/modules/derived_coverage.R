@@ -1,7 +1,7 @@
 derivedCoverageUI <- function(id, i18n) {
   ns <- NS(id)
   tagList(
-    contentHeader(ns('derived_coverage'), i18n$t("title_derived_coverage"), i18n = i18n),
+    contentHeader(ns('derived_coverage'), i18n$t("title_derived_coverage"), include_buttons = FALSE, i18n = i18n),
     contentBody(
       box(
         title = i18n$t("title_analysis_options"),
