@@ -1,6 +1,6 @@
 # increase the uploading file size limit to 2000M, now our upload is not just about hfd file, it also include the saved data.
-options(shiny.maxRequestSize = 2000*1024^2)
-options(future.globals.maxSize = 1 * 1024 * 1024^2) # 1 GB
+options(shiny.maxRequestSize = 2 * 1024*1024^2)
+options(future.globals.maxSize = 2 * 1024 * 1024^2) # 2 GB
 options(shiny.fullstacktrace = TRUE)
 # options(shiny.error = browser)
 

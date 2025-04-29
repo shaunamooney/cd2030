@@ -922,8 +922,8 @@
     },
     {
       "key": "title_factors",
-      "en": "K-Factors",
-      "fr": "Facteurs K"
+      "en": "K-Factors (Adjustment Factors)",
+      "fr": "Facteurs K (Facteurs d'ajustement)"
     },
     {
       "key": "title_anc_factor",
@@ -1022,8 +1022,8 @@
     },
     {
       "key": "title_national_rates",
-      "en": "Setup National Rates",
-      "fr": "Configurer les taux nationaux"
+      "en": "Setup National Rates (Proportions based on the most recent survey)",
+      "fr": "Configurer les taux nationaux (Proportions basées sur l'enquête la plus récente)"
     },
     {
       "key": "title_nmr",
@@ -1049,11 +1049,6 @@
       "key": "title_still_birth_rate",
       "en": "Still Birth Rate",
       "fr": "Taux de mortinatalité"
-    },
-    {
-      "key": "title_anc1_to_penta1_mort_rate",
-      "en": "ANC1 to Penta1 Mortality Rate",
-      "fr": "Taux de mortalité de ANC1 à Penta1"
     },
     {
       "key": "title_anc1_survey",
@@ -1277,8 +1272,8 @@
     },
     {
       "key": "title_survey_setup",
-      "en": "Survey Setup",
-      "fr": "Configuration de l'enquête"
+      "en": "Survey Setup (percentage based on the most recent survey)",
+      "fr": "Configuration de l'enquête (pourcentage basé sur l'enquête la plus récente)"
     },
 	{
 		"key": "reporting_rate_reporting_rate_1",
@@ -1687,8 +1682,8 @@
 },
 {
   "key": "title_derived_coverage",
-  "en": "Derived Coverage",
-  "fr": "Couverture dérivée"
+  "en": "Population growth derived coverage",
+  "fr": "Couverture dérivée de la croissance démographique"
 }
 
   ]

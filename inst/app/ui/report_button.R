@@ -148,7 +148,7 @@ reportButtonServer <- function(id, cache, report_name, i18n, adminlevel_1) {
           file.copy(rv$file_path, file)
         },
         data = cache,
-        label = i18n$t("btn_download_report"),
+        label = "btn_download_report",
         message = "msg_generating_report"
       )
     }
