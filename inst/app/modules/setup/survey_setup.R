@@ -6,13 +6,21 @@ surveySetupUI <- function(id, i18n) {
     solidHeader = TRUE,
     width = 12,
     fluidRow(
-      column(3, offset = 2, numericInput(ns('anc1_prop'), i18n$t("title_anc1_survey"),
+      column(3, offset = 1, numericInput(ns('anc1_prop'), i18n$t("title_anc1_survey"),
                                          min = 0, max = 100, value = NA, step = 1)),
       column(3, offset = 0, numericInput(ns('penta1_prop'), i18n$t("title_penta1_survey"),
+                                         min = 0, max = 100, value = NA, step = 1)),
+      column(3, offset = 0, numericInput(ns('penta3_prop'), i18n$t("title_penta3_survey"),
                                          min = 0, max = 100, value = NA, step = 1))
     ),
     fluidRow(
-      column(3, offset = 2, numericInput(ns('survey_year'), i18n$t("title_survey_year"),
+      column(3, offset = 1, numericInput(ns('measles1_prop'), i18n$t("title_measles1_survey"),
+                                         min = 0, max = 100, value = NA, step = 1)),
+      column(3, offset = 0, numericInput(ns('bcg_prop'), i18n$t("title_bcg_survey"),
+                                         min = 0, max = 100, value = NA, step = 1))
+    ),
+    fluidRow(
+      column(3, offset = 1, numericInput(ns('survey_year'), i18n$t("title_survey_year"),
                                          min = 2015, max = 2030, value = NA, step = 1)),
       column(3, offset = 0, uiOutput(ns('survey_start_ui')))
     )
@@ -45,17 +53,22 @@ surveySetupServer <- function(id, cache, i18n) {
         if (is.null(cache()$survey_source) || cache()$survey_source == 'ratios') {
           updateNumericInput(session, 'anc1_prop', value = unname(estimates['anc1']))
           updateNumericInput(session, 'penta1_prop', value = unname(estimates['penta1']))
+          updateNumericInput(session, 'penta3_prop', value = unname(estimates['penta3']))
         }
+        updateNumericInput(session, 'measles1_prop', value = unname(estimates['measles1']))
+        updateNumericInput(session, 'bcg_prop', value = unname(estimates['bcg']))
       })
 
-      observeEvent(c(input$anc1_prop, input$penta1_prop), {
+      observeEvent(c(input$anc1_prop, input$penta1_prop, input$penta3_prop, input$measles1_prop, input$bcg_prop), {
         req(cache())
 
         estimates <- cache()$survey_estimates
         new_estimates <- c(
           anc1 = as.numeric(input$anc1_prop),
           penta1 = as.numeric(input$penta1_prop),
-          penta3 = unname(estimates['penta3'])
+          penta3 = as.numeric(input$penta3_prop),
+          measles1 = as.numeric(input$measles1_prop),
+          bcg = as.numeric(input$bcg_prop)
         )
 
         cache()$set_survey_estimates(new_estimates)

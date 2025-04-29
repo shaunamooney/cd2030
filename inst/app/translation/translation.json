@@ -1061,6 +1061,21 @@
       "fr": "Enquête Penta1"
     },
     {
+      "key": "title_penta3_survey",
+      "en": "Penta3 Survey",
+      "fr": "Enquête Penta3"
+    },
+    {
+      "key": "title_measles1_survey",
+      "en": "Measles1 Survey",
+      "fr": "Enquête Rougeole1"
+    },
+    {
+      "key": "title_bcg_survey",
+      "en": "BCG Survey",
+      "fr": "Enquête BCG"
+    },
+    {
       "key": "title_upload_un_estimates",
       "en": "Upload UN Estimates data",
       "fr": "Téléverser les estimations des Nations Unies"

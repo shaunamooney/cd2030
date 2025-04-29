@@ -45,6 +45,7 @@ country <- cache$country
 threshold <- cache$performance_threshold
 k_factors <- cache$k_factors
 rates <- cache$national_estimates
+survey_estimates <- cache$survey_estimates
 denominator <- cache$denominator
 mapping_years <- cache$mapping_years
 un_estimates <- cache$un_estimates
@@ -376,10 +377,8 @@ indicator_coverage <- adjusted_data %>%
                                dpt1survey = rates$penta1,
                                survey_year = survey_year)
 
-plot_absolute_differences(indicator_coverage, 
-                          indicator = 'penta3',
-                          survey_coverage = rates$penta1,
-                          coverage_year = survey_year) +
+plot_absolute_differences(indicator_coverage, indicator = 'penta3',
+                          survey_coverage = unname(survey_estimates['penta3'])) +
   cd_report_theme()
 
 ```
@@ -404,8 +403,7 @@ print_notes(cache, 'denominator_selection', 'Penta 3')
 ```{r}
 plot_absolute_differences(indicator_coverage, 
                           indicator = 'measles1',
-                          survey_coverage = rates$penta1,
-                          coverage_year = survey_year) +
+                          survey_coverage = unname(survey_estimates['measles1'])) +
   cd_report_theme()
 ```
 
@@ -429,8 +427,7 @@ print_notes(cache, 'denominator_selection', 'Measles 1')
 ```{r}
 plot_absolute_differences(indicator_coverage, 
                           indicator = 'bcg',
-                          survey_coverage = rates$penta1,
-                          coverage_year = survey_year) +
+                          survey_coverage = unname(survey_estimates['bcg'])) +
   cd_report_theme()
 ```
 
