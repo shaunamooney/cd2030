@@ -1,4 +1,4 @@
-# cd2030 (development version)
+# cd2030 1.0.6
 
 # cd2030 1.0.5
 
