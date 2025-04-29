@@ -7,6 +7,7 @@ output:
     theme: cerulean
     highlight: kate
   officedown::rdocx_document:
+    reference_docx: subnational-one-pager-template.docx
     page_size:
       height: 8.3
       width: 11.7
@@ -14,8 +15,8 @@ output:
     page_margins:
       bottom: 0.1
       top: 0
-      right: 0.2
-      left: 0.2
+      right: 0
+      left: 0
       gutter: 0
       header: 0
       footer: 0
@@ -122,7 +123,7 @@ plot(penta3_cov_adm1, 'penta3', 'penta1', adminlevel_1) +
   )
 ```
 
-```{r, fig.width=4, fig.height=3}
+```{r, fig.width=4, fig.height=2.5}
 # Color palette
 category_colors <- c(
   "Lower than average" = "#145374",
@@ -142,17 +143,9 @@ df <- penta3_cov_adm1 %>%
     )
   ) 
 
-category_labels <- df %>%
-  # filter(adminlevel_1 != !!adminlevel_1) %>%
-  group_by(category) %>%
-  summarize(
-    mid = (min(as.numeric(factor(adminlevel_1, levels = adminlevel_1))) +
-           max(as.numeric(factor(adminlevel_1, levels = adminlevel_1)))) / 2,
-    .groups = "drop"
-  ) %>%
-  mutate(
-    y = 20  # Vertical position for category labels
-  )
+cat_positions <- df %>%
+  mutate(x = as.numeric(factor(adminlevel_1, levels = adminlevel_1))) %>%
+  summarise(x = mean(x), .by = category)
 
 df %>% 
   ggplot(aes(x = factor(adminlevel_1, levels = adminlevel_1), y = cov_penta3_penta1, fill = category)) +
@@ -171,10 +164,13 @@ df %>%
   ) +
   
   geom_label(
-    data = category_labels,
-    aes(x = mid, y = y, label = category),
-    fill = "white", color = "black", size = 3, fontface = "bold",
-    label.size = 0, inherit.aes = FALSE
+    data = cat_positions,
+    aes(x = x, y = 10, label = category),
+    inherit.aes = FALSE,
+    size = 3,
+    fill = "white",
+    color = "black",
+    label.size = 0
   ) +
   
   scale_fill_manual(values = category_colors) +
@@ -211,10 +207,19 @@ penta3_cov_adm2 <- calculate_coverage(
     dpt1survey = rates$penta1,
     survey_year = survey_year
   ) %>% 
-  filter(adminlevel_1 == !!adminlevel_1) %>% 
+  filter(adminlevel_1 == !!adminlevel_1) 
+
+max_year <- max(penta3_cov_adm2$year)
+
+penta3_cov_adm2 <- penta3_cov_adm2 %>% 
   select(year, district, cov_penta3_penta1) %>% 
   mutate(cov_penta3_penta1 = round(cov_penta3_penta1)) %>% 
-  pivot_wider(names_from = year, values_from = cov_penta3_penta1)
+  filter(!is.na(year)) %>% 
+  pivot_wider(names_from = year, values_from = cov_penta3_penta1) %>% 
+  arrange(desc(!!sym(as.character(max_year)))) %>%
+  mutate(rank = row_number()) %>%
+  filter(rank <= 4 | rank > (n() - 4)) %>% 
+  select(-rank)
 
 penta3_cov_adm2 %>% 
  flextable() %>% 
@@ -249,7 +254,7 @@ plot(measles1_cov_adm1, 'measles1', 'penta1', adminlevel_1) +
   )
 ```
 
-```{r, fig.width=4, fig.height=3}
+```{r, fig.width=4, fig.height=2.5}
 df <- measles1_cov_adm1 %>% 
   filter(year == last_year) %>% 
   select(adminlevel_1, cov_measles1_penta1) %>% 
@@ -261,6 +266,11 @@ df <- measles1_cov_adm1 %>%
       TRUE ~ "Higher than average"
     )
   ) 
+
+# Calculate x positions for category labels
+cat_positions <- df %>%
+  mutate(x = as.numeric(factor(adminlevel_1, levels = adminlevel_1))) %>%
+  summarise(x = mean(x), .by = category)
 
 df %>% 
   ggplot(aes(x = factor(adminlevel_1, levels = adminlevel_1), y = cov_measles1_penta1, fill = category)) +
@@ -277,6 +287,17 @@ df %>%
     fontface = "bold", color = "black",
     size = 3
   ) +
+  
+  geom_label(
+    data = cat_positions,
+    aes(x = x, y = 10, label = category),
+    inherit.aes = FALSE,
+    size = 3,
+    fill = "white",
+    color = "black",
+    label.size = 0
+  ) +
+  
   scale_fill_manual(values = category_colors) +
   scale_y_continuous(limits = c(0, 105), expand = c(0, 0)) +
   labs(
@@ -311,13 +332,22 @@ measles1_cov_adm2 <- calculate_coverage(
     dpt1survey = rates$penta1,
     survey_year = survey_year
   ) %>% 
-  filter(adminlevel_1 == !!adminlevel_1) %>% 
+  filter(adminlevel_1 == !!adminlevel_1) 
+
+max_year <- max(measles1_cov_adm2$year)
+
+measles1_cov_adm2 <- measles1_cov_adm2 %>% 
   select(year, district, cov_measles1_penta1) %>% 
   mutate(cov_measles1_penta1 = round(cov_measles1_penta1)) %>% 
-  pivot_wider(names_from = year, values_from = cov_measles1_penta1)
+  filter(!is.na(year)) %>% 
+  pivot_wider(names_from = year, values_from = cov_measles1_penta1) %>% 
+  arrange(desc(!!sym(as.character(max_year)))) %>%
+  mutate(rank = row_number()) %>%
+  filter(rank <= 4 | rank > (n() - 4)) %>% 
+  select(-rank)
 
 measles1_cov_adm2 %>% 
-  flextable() %>% 
+ flextable() %>% 
   fontsize(part = 'body', size = 7) %>% 
   bold(part = "header", bold = TRUE) %>%
   fontsize(part = 'header', size = 7) %>% 

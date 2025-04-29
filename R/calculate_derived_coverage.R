@@ -136,6 +136,13 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
     national
   }
 
+  # Calculate the number of zerodose based on penta1 and penta1derived figures
+  data_joined <- data_joined %>%
+    mutate(
+      zerodose_penta1 = !!coverage_col - !!indicator_col,
+      zerodose_penta1derived = !!derived_denom_col - !!indicator_col
+    )
+
   # Return final tibble tagged with admin level
   new_tibble(
     data_joined,
