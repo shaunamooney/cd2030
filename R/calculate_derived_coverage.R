@@ -65,9 +65,8 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
 
   # Keep only necessary columns and convert DHIS2 pop to count (×1000)
   nat_data <- nat_data %>%
-    select(year, all_of(c(indicator, dhis2_pop, coverage)), !!penta1_denom_col, totunder1_dhis2) %>%
+    select(year, all_of(c(indicator, dhis2_pop, coverage)), !!penta1_denom_col, totunder1_dhis2) # %>%
     # mutate(!!dhis2_pop_col := !!dhis2_pop_col * 1000)
-    mutate(totunder1_dhis2 = totunder1_dhis2 * 1000)
 
   # Ensure base year is not earlier than first year in data
   base_year <- robust_max(c(base_year,  min(nat_data$year, na.rm = TRUE)), 2024)
@@ -79,8 +78,6 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
   # base_value <- base_row %>% pull(!!dhis2_pop_col)        # national base population
   base_value <- base_row %>% pull(totunder1_dhis2)        # national base population
   base_denom <- base_row %>% pull(!!penta1_denom_col)    # national base DTP1-derived denominator
-
-  print(nat_data$totunder1_dhis2)
 
   # ---- NATIONAL-LEVEL DERIVED DENOMINATOR TRENDS ----
   national <- nat_data %>%
@@ -123,7 +120,7 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
       summarise(
         !!indicator_col := sum(!!indicator_col, na.rm = TRUE),
         # !!dhis2_pop_col := sum(!!dhis2_pop_col * 1000, na.rm = TRUE),
-        totunder1_dhis2 = sum(totunder1_dhis2 * 1000, na.rm = TRUE),
+        totunder1_dhis2 = sum(totunder1_dhis2, na.rm = TRUE),
         !!penta1_denom_col := sum(!!penta1_denom_col, na.rm = TRUE),
         .by = c(year, group_cols)
       ) %>%
