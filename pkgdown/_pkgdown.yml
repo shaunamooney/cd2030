@@ -42,6 +42,7 @@ reference:
     contents:
     - calculate_completeness_summary
     - calculate_district_completeness_summary
+    - plot.cd_completeness_summary
     - tbl_sum.cd_completeness_summary
     - tbl_sum.cd_district_completeness_summary
 

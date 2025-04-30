@@ -42,6 +42,7 @@ cache <- params$cache
 adjusted_data <- cache$adjusted_data
 un_estimates <- cache$un_estimates
 rates <- cache$national_estimates
+survey_estimates <- cache$survey_estimates
 ```
 
 ## 4. Selection of the best denominator {-}
@@ -65,7 +66,8 @@ indicator_coverage <- adjusted_data %>%
                                anc1survey = rates$anc1,
                                dpt1survey = rates$penta1)
 
-plot_absolute_differences(indicator_coverage, 'penta3') +
+
+plot_absolute_differences(indicator_coverage, 'penta3', unname(survey_estimates['penta3'])) +
   cd_report_theme()
 
 ```
@@ -88,7 +90,7 @@ print_notes(cache, 'denominator_selection', 'Penta 3')
 ### Denominator selection based on Measles 1 Coverage
 
 ```{r}
-plot_absolute_differences(indicator_coverage, 'measles1') +
+plot_absolute_differences(indicator_coverage, 'measles1', unname(survey_estimates['measles1'])) +
   cd_report_theme()
 ```
 
@@ -110,7 +112,7 @@ print_notes(cache, 'denominator_selection', 'Measles 1')
 
 
 ```{r}
-plot_absolute_differences(indicator_coverage, 'bcg') +
+plot_absolute_differences(indicator_coverage, 'bcg', unname(survey_estimates['bcg']) +
   cd_report_theme()
 ```
 

@@ -11,8 +11,6 @@
 #'   `mcv1`, `penta3`, `bcg`.
 #' @param survey_coverage A numeric value representing the national survey coverage percentage
 #'   to be displayed as a reference line on the plot. Default is `88`.
-#' @param coverage_year A single integer specifying the year of interest for the plot.
-#'   Only data for this year will be plotted.
 #'
 #' @return A `ggplot2` object showing the coverage percentages for the selected indicator
 #'   from various denominator sources, with a reference line for survey coverage.
@@ -36,18 +34,15 @@
 #' @export
 plot_absolute_differences <- function(.data,
                                       indicator = c('penta3',"measles1",'bcg'),
-                                      survey_coverage = 88,
-                                      coverage_year = 2021) {
+                                      survey_coverage = 88) {
 
   country = year = category = name = indicator_name = value = NULL
 
   # Match the selected indicator to ensure it is valid
   indicator <- arg_match(indicator)
+  check_scalar_integerish(survey_coverage)
 
-  # Check if the year is a valid integer
-  if (!is_scalar_integerish(coverage_year)) {
-    stop("Year must be a single integer value.")
-  }
+  max_year <- robust_max(.data$year, 2024)
 
   # Prepare the data for plotting
   plot_data <- .data %>%
@@ -63,14 +58,13 @@ plot_absolute_differences <- function(.data,
       category = factor(category, levels = c('DHIS2 projection', 'ANC1-derived', 'Penta1-derived', 'UN projection', 'Penta 1 population Growth')),
       indicator_name = str_extract(name, "(?<=cov_).*?(?=_)")
     ) %>%
-    filter(year == coverage_year, indicator_name == indicator)
+    filter(year == max_year, indicator_name == indicator)
 
   # Auto-generate title based on the selected indicator
   title_text <- paste("Fig 2c:", indicator, "coverage, DHIS2-based with different denominators, and survey coverage")
 
   # Plot
   ggplot(plot_data, aes(x = category, y = value)) +
-    # Define bar plot with specific fill color
     geom_col(aes(color = "Facility-based coverage (%)"), fill = 'darkgoldenrod3', width = 0.6) +
 
     # Add horizontal line for survey coverage, mapped to color aesthetic
@@ -80,17 +74,11 @@ plot_absolute_differences <- function(.data,
       title = title_text,
       x = NULL, y = "Coverage (%)"
     ) +
-
-    # Customize y-axis labels
-    scale_y_continuous(labels = scales::number_format()) +
-
-    # Define colors for both elements in the legend
+    # scale_y_continuous(labels = scales::number_format()) +
     scale_color_manual(
       values = c("Facility-based coverage (%)" = "darkgoldenrod3", "Coverage survey, national" = "darkgreen"),
       name = "Coverage Type"
     ) +
-
-    # Apply custom theme
     cd_plot_theme()
 
 }

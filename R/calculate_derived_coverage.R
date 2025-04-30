@@ -65,8 +65,8 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
 
   # Keep only necessary columns and convert DHIS2 pop to count (×1000)
   nat_data <- nat_data %>%
-    select(year, all_of(c(indicator, dhis2_pop, coverage)), !!penta1_denom_col) %>%
-    mutate(!!dhis2_pop_col := !!dhis2_pop_col * 1000)
+    select(year, all_of(c(indicator, dhis2_pop, coverage)), !!penta1_denom_col, totunder1_dhis2) # %>%
+    # mutate(!!dhis2_pop_col := !!dhis2_pop_col * 1000)
 
   # Ensure base year is not earlier than first year in data
   base_year <- robust_max(c(base_year,  min(nat_data$year, na.rm = TRUE)), 2024)
@@ -75,14 +75,16 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
   base_row <- nat_data %>%
     filter(year == base_year)
 
-  base_value <- base_row %>% pull(!!dhis2_pop_col)        # national base population
+  # base_value <- base_row %>% pull(!!dhis2_pop_col)        # national base population
+  base_value <- base_row %>% pull(totunder1_dhis2)        # national base population
   base_denom <- base_row %>% pull(!!penta1_denom_col)    # national base DTP1-derived denominator
 
   # ---- NATIONAL-LEVEL DERIVED DENOMINATOR TRENDS ----
   national <- nat_data %>%
     mutate(
       # Step 1: Compute percent change in DHIS2 population over time from base
-      percent_change = (!!dhis2_pop_col - base_value) / base_value,
+      # percent_change = (!!dhis2_pop_col - base_value) / base_value,
+      percent_change = (totunder1_dhis2 - base_value) / base_value,
 
       # Step 2: Apply percent change to national base denominator
       !!derived_denom_col := base_denom * (1 + percent_change),
@@ -94,7 +96,8 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
     select(
       year,
       !!indicator_col,
-      !!dhis2_pop_col,
+      # !!dhis2_pop_col,
+      totunder1_dhis2,
       !!penta1_denom_col,
       !!derived_denom_col,
       # percent_change,
@@ -107,21 +110,25 @@ calculate_derived_coverage <- function(.data, indicator, base_year) {
 
     # Prepare national population and derived_denom for merge
     national_sel <- national %>%
-      select(year, !!derived_denom_col, !!dhis2_pop_col) %>%
-      rename(national_pop = !!dhis2_pop_col)
+      # select(year, !!derived_denom_col, !!dhis2_pop_col) %>%
+      # rename(national_pop = !!dhis2_pop_col)
+      select(year, !!derived_denom_col, totunder1_dhis2) %>%
+      rename(national_pop = totunder1_dhis2)
 
     # Step 1: Aggregate subnational indicator, DHIS2 population, and DTP1 denom
     .data %>%
       summarise(
         !!indicator_col := sum(!!indicator_col, na.rm = TRUE),
-        !!dhis2_pop_col := sum(!!dhis2_pop_col * 1000, na.rm = TRUE),
+        # !!dhis2_pop_col := sum(!!dhis2_pop_col * 1000, na.rm = TRUE),
+        totunder1_dhis2 = sum(totunder1_dhis2, na.rm = TRUE),
         !!penta1_denom_col := sum(!!penta1_denom_col, na.rm = TRUE),
         .by = c(year, group_cols)
       ) %>%
       left_join(national_sel, by = 'year') %>%
       mutate(
         # Step 2: Compute subnational DHIS2 share of national population
-        nat_pro = !!dhis2_pop_col / national_pop,
+        # nat_pro = !!dhis2_pop_col / national_pop,
+        nat_pro = totunder1_dhis2 / national_pop,
 
         # Step 3: Apply that share to national derived denominator
         !!derived_denom_col := !!derived_denom_col * nat_pro,
