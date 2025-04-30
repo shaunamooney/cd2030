@@ -601,6 +601,11 @@
       "fr": "Indicateur"
     },
     {
+      "key": "title_districts_coverage_rate",
+      "en": "Sub-National with coverage >90% or Droput <10%",
+      "fr": "Zones infranationales avec une couverture > 90 % ou un taux d’abandon < 10 %"
+    },
+    {
       "key": "opt_anc",
       "en": "ANC",
       "fr": "CPN"
@@ -1079,6 +1084,11 @@
       "key": "title_upload_un_estimates",
       "en": "Upload UN Estimates data",
       "fr": "Téléverser les estimations des Nations Unies"
+    },
+    {
+      "key": "title_district_low_reporting",
+      "en": "Sub-National with Reporting Rate >90%",
+      "fr": "Zones infranationales avec un taux de notification >90%"
     },
     {
       "key": "title_upload_wuenic",
