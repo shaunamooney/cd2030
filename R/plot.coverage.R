@@ -45,6 +45,8 @@ plot.cd_coverage <- function(x,
   estimates = year = value = `Survey estimates` = `DHIS2 estimate` = `WUENIC estimates` =
     `95% CI LL` = `95% CI UL` = NULL
 
+  admin_level <- attr_or_abort(x, 'admin_level')
+
   indicator <- arg_match(indicator, list_vaccine_indicators())
 
   data_long <- x %>%
@@ -72,15 +74,20 @@ plot.cd_coverage <- function(x,
   surv_data <- data_long %>%
     filter(!is.na(`Survey estimates`))
 
-  data_long %>%
+  plot <- data_long %>%
     ggplot(aes(x = year)) +
     # Add lines and points for DHIS2 and WUENIC estimates
       geom_line(aes(y = `DHIS2 estimate`, color = "DHIS2 estimate"), size = 1) +
-      geom_point(aes(y = `DHIS2 estimate`, color = "DHIS2 estimate"), size = 2) +
+      geom_point(aes(y = `DHIS2 estimate`, color = "DHIS2 estimate"), size = 2)
+
+  if (admin_level == 'national') {
+    plot <- plot +
       geom_line(aes(y = `WUENIC estimates`, color = "WUENIC estimate"), size = 1) +
-      geom_point(aes(y = `WUENIC estimates`, color = "WUENIC estimate"), size = 2) +
+      geom_point(aes(y = `WUENIC estimates`, color = "WUENIC estimate"), size = 2)
+  }
 
     # Add Survey estimates
+  plot +
       geom_line(data = surv_data, aes(y = `Survey estimates`, color = "Survey estimate"), size = 1) +
       geom_point(aes(y = `Survey estimates`, color = "Survey estimate"), size = 2) +
 

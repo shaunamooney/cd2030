@@ -54,12 +54,12 @@ calculate_completeness_summary <- function(.data, admin_level = c('national', 'a
       .by = if (include_year) c(admin_level_cols, 'year') else admin_level_cols
     ) %>%
     mutate(
-      # mean_mis_all = rowMeans(select(., any_of(starts_with('mis_'))), na.rm = TRUE),
-      # mean_mis_vacc_only = rowMeans(select(.,  any_of(paste0('mis_', vaccine_only))), na.rm = TRUE),
-      # mean_mis_vacc_tracer = rowMeans(select(.,  any_of(paste0('mis_', tracers))), na.rm = TRUE),
+      mean_mis_all = rowMeans(select(., any_of(starts_with('mis_'))), na.rm = TRUE),
+      mean_mis_vacc_only = rowMeans(select(.,  any_of(paste0('mis_', vaccine_only))), na.rm = TRUE),
+      mean_mis_vacc_tracer = rowMeans(select(.,  any_of(paste0('mis_', tracers))), na.rm = TRUE),
 
-      # across(c(starts_with('mis_'), starts_with('mean_mis_')), ~ round((1 - .x) * 100, 2))
-      across(starts_with('mis_'), ~ round((1 - .x) * 100, 0))
+      across(c(starts_with('mis_'), starts_with('mean_mis_')), ~ round((1 - .x) * 100, 2))
+      # across(starts_with('mis_'), ~ round((1 - .x) * 100, 0))
     )
 
   new_tibble(
