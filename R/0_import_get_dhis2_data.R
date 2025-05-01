@@ -27,6 +27,14 @@ get_dhis2_hfd <- function(country_iso3, start_date, end_date, timeout = 60) {
 
   hfd_sheet = iso3 = NULL
 
+  org_units_headers <- get_organisation_unit_levels(fields = c('level', 'name')) %>%
+    filter(level <= 3) %>%
+    arrange(level) %>%
+    pull(name) %>%
+    make_clean_names()
+
+  org_units <- get_organisations_by_level(level = 3)
+
   completeness_data <- get_completeness_data(country_iso3, start_date, end_date, timeout)
   service_data <- get_service_data(country_iso3, start_date, end_date, timeout)
   population_data <- get_population_data(country_iso3, start_date, end_date, timeout)
@@ -50,21 +58,22 @@ get_dhis2_hfd <- function(country_iso3, start_date, end_date, timeout = 60) {
 #' `get_service_data` retrieves service data from the DHIS2 API for a specified
 #' country and date range.
 #'
-#' @param country_iso3 Character. ISO3 code of the country.
 #' @param start_date Character. Start date in "YYYY-MM-DD" format.
 #' @param end_date Character. End date in "YYYY-MM-DD" format.
-#' @param timeout Numeric. Timeout for API calls in seconds. Default is 60.
+#' @param hfd_map Tibble. Data element map for health facility reporting.
+#' @param org_units Tibble. DHIS2 organisation units metadata including.
+#' @param org_units_headers Character vector. Column names to retain and display for organisation units (e.g., c("district")).
+#' @param level Integer. Organisation unit level in DHIS2 (default: 3).
+#' @param timeout Numeric. Timeout in seconds for API calls (default: 3600).
 #'
 #' @return A data frame containing service data, with columns:
-#' \describe{
-#'   \item{district}{District name.}
-#'   \item{year}{Year of the data.}
-#'   \item{month}{Month of the data.}
-#'   \item{hfd_id}{Health facility data identifier.}
-#'   \item{hfd_title}{Title or description of the data element.}
-#'   \item{hfd_sheet}{Category or sheet name for the data.}
-#'   \item{value}{Value of the data element.}
-#' }
+#'   - district District name.
+#'   - year Year of the data.
+#'   - month  Month of the data.
+#'   - hfd_id Health facility data identifier.
+#'   - hfd_title  Title or description of the data element.
+#'   - hfd_sheet  Category or sheet name for the data.
+#'   - value  Value of the data element.
 #'
 #' @examples
 #' \dontrun{
@@ -72,13 +81,13 @@ get_dhis2_hfd <- function(country_iso3, start_date, end_date, timeout = 60) {
 #' }
 #'
 #' @noRd
-get_service_data <- function(country_iso3, start_date, end_date, timeout = 60) {
+get_service_data <- function(start_date, end_date, hfd_map, org_units, org_units_headers, level = 3, timeout = 3600) {
 
   hfd_sheet = iso3 = element_id = dx = pe = ou = year = month = element_name =
     district = hfd_id = hfd_title = NULL
 
-  service_data <- data_elements %>%
-    filter(str_detect(hfd_sheet, '^Service_data'), iso3 == country_iso3)
+  service_data <- hfd_map %>%
+    filter(str_detect(hfd_sheet, '^Service_data'))
 
   dt_element_ids <- service_data %>%
     filter(!is.na(element_id)) %>%
@@ -87,60 +96,48 @@ get_service_data <- function(country_iso3, start_date, end_date, timeout = 60) {
   data <- get_analytics(
     dx %.d% dt_element_ids,
     pe %.d% 'all',
-    ou %.d% 'LEVEL-2',
+    ou %.d% paste0('LEVEL-', level),
     startDate = start_date,
     endDate = end_date,
     timeout = timeout
   ) %>%
-    left_join(service_data, by = c('dx' = 'element_id'), relationship = 'many-to-many') %>%
-    left_join(organization_units, by = c('ou' = 'id', 'iso3')) %>%
+    left_join(service_data, join_by(dx == element_id), relationship = 'many-to-many') %>%
+    left_join(org_units, join_by(ou == id)) %>%
     mutate(
       pe = ym(pe),
-      year = year(pe),
-      month = month(pe, label = TRUE, abbr = FALSE),
-      year = as.integer(year),
-      month = factor(month, levels = month.name)
+      year = as.integer(year(pe)),
+      month = factor(month(pe, label = TRUE, abbr = FALSE), levels = month.name)
     ) %>%
-    select(-dx, -ou, -pe, -iso3, -element_name) %>%
-    relocate(district, year, month, hfd_id, hfd_title, hfd_sheet) %>%
-    arrange(year, district, month) %>%
+    select(-dx, -ou, -pe, -element_name) %>%
+    relocate(all_of(org_units_headers), year, month, hfd_id, hfd_title, hfd_sheet) %>%
+    arrange(across(all_of(c(org_units_headers, 'year', 'month')))) %>%
     append_missing_columns(service_data)
-
-  if (country_iso3 == 'KEN') {
-    csection <- data %>%
-      filter(hfd_id == 'Csection') %>%
-      mutate(
-        hfd_id = 'Instdelivery',
-        hfd_title = 'Total number of  deliveries in health facilities'
-      )
-
-    data <- bind_rows(data, csection)
-  }
 
   return(data)
 }
 
 #' Retrieve Reporting Completeness Data from DHIS2
 #'
-#' `get_completeness_data` retrieves completeness data from the DHIS2 API for a
-#' specified country and date range.
+#' Retrieves health facility reporting completeness data from the DHIS2 API
+#' for a specified country and date range.
 #'
-#' @param country_iso3 Character. ISO3 code of the country.
 #' @param start_date Character. Start date in "YYYY-MM-DD" format.
 #' @param end_date Character. End date in "YYYY-MM-DD" format.
-#' @param timeout Numeric. Timeout for API calls in seconds. Default is 60.
+#' @param hfd_map Tibble. Data element map for health facility reporting.
+#' @param org_units Tibble. DHIS2 organisation units metadata including.
+#' @param org_units_headers Character vector. Column names to retain and display for organisation units (e.g., c("district")).
+#' @param level Integer. Organisation unit level in DHIS2 (default: 3).
+#' @param timeout Numeric. Timeout in seconds for API calls (default: 3600).
 #'
-#' @return A data frame containing completeness data, with columns:
-#' \describe{
-#'   \item{district}{District name.}
-#'   \item{year}{Year of the data.}
-#'   \item{month}{Month of the data.}
-#'   \item{hfd_id}{Health facility data identifier.}
-#'   \item{hfd_title}{Title or description of the data element.}
-#'   \item{hfd_sheet}{Category or sheet name for the data.}
-#'   \item{hfd_subtitle}{Subtitle for the data column.}
-#'   \item{value}{Value of the data element.}
-#' }
+#' @return A `tibble` with completeness data including the following columns:
+#'   - `district`: Name of the subnational unit
+#'   - `year`: Calendar year
+#'   - `month`: Calendar month (as factor)
+#'   - `hfd_id`: Unique identifier for the data element + completeness metric
+#'   - `hfd_title`: Description of the data element
+#'   - `hfd_sheet`: Source category or data sheet name
+#'   - `hfd_subtitle`: Label for the completeness metric
+#'   - `value`: Numeric value for the completeness metric
 #'
 #' @examples
 #' \dontrun{
@@ -148,14 +145,16 @@ get_service_data <- function(country_iso3, start_date, end_date, timeout = 60) {
 #' }
 #'
 #' @noRd
-get_completeness_data <- function(country_iso3, start_date, end_date, timeout = 60) {
+get_completeness_data <- function(start_date, end_date, hfd_map, org_units, org_units_headers, level = 3, timeout = 3600) {
 
-  hfd_sheet = iso3 = element_id = Var1 = Var2 = combined = dx = pe = ou = year =
-    month  = element_name = district = hfd_id = hfd_title = dataset = NULL
+  hfd_sheet = element_id = Var1 = Var2 = combined = dx = pe = ou = year =
+    month  = element_name = hfd_id = hfd_title = dataset = NULL
 
-  completeness_data <- data_elements %>%
-    filter(hfd_sheet == 'Reporting_completeness', iso3 == country_iso3)
+  # Filter only reporting completeness for the specified country
+  completeness_data <- hfd_map %>%
+    filter(hfd_sheet == 'Reporting_completeness')
 
+  # Build list of data element combinations
   dt_element_ids <- completeness_data %>%
     filter(!is.na(element_id)) %>%
     pull(element_id)
@@ -167,37 +166,26 @@ get_completeness_data <- function(country_iso3, start_date, end_date, timeout = 
 
   periods <- format(seq(ymd(start_date), ymd(end_date), by = "month"),"%Y%m")
 
+  # Retrieve data from DHIS2
   data <- get_analytics(
     dx %.d% completeness_values,
     pe %.d% periods,
-    ou %.d% 'LEVEL-2'
+    ou %.d% paste0('LEVEL-', level)
   ) %>%
     separate_wider_delim(dx, delim = '.', names = c('dx', 'dataset')) %>%
-    left_join(completeness_data, by = c('dx' = 'element_id'), relationship = 'many-to-many') %>%
-    left_join(organization_units, by = c('ou' = 'id', 'iso3')) %>%
+    left_join(completeness_data, join_by(dx == element_id), relationship = 'many-to-many') %>%
+    left_join(org_units, join_by(ou == id)) %>%
     mutate(
       pe = ym(pe),
-      year = year(pe),
-      month = month(pe, label = TRUE, abbr = FALSE),
-      year = as.integer(year),
-      month = factor(month, levels = month.name)
+      year = as.integer(year(pe)),
+      month = factor(month(pe, label = TRUE, abbr = FALSE), levels = month.name)
     ) %>%
-    select(-dx, -ou, -pe, -iso3, -element_name,) %>%
-    relocate(district, year, month, hfd_id, hfd_title, hfd_sheet) %>%
-    arrange(district, year, month) # %>%
+    select(-dx, -ou, -pe, -element_name) %>%
+    relocate(all_of(org_units_headers), year, month, hfd_id, hfd_title, hfd_sheet) %>%
+    arrange(across(all_of(c(org_units_headers, 'year', 'month')))) # %>%
   # append_missing_columns(completeness_data)
 
-  if (country_iso3 == 'KEN') {
-    # The generation in code for Reporting_completeness since ANC and instdelivery share common reporting
-    anc <- data %>%
-      filter(hfd_id == 'ANC') %>%
-      mutate(
-        hfd_id = 'Instdelivey',
-        hfd_title = 'Institutional delivery reporting'
-      )
-    data <- bind_rows(data, anc)
-  }
-
+  # Add suffixes and subtitles
   data <- data %>%
     mutate(
       hfd_id = case_match(dataset,
