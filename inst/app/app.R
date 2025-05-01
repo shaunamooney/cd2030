@@ -84,7 +84,7 @@ i18n$set_translation_language('fr')
 
 ui <- dashboardPage(
   skin = 'green',
-  header = dashboardHeader(title = 'cd2030'),
+  header = dashboardHeader(title = HTML(paste0('cd2030 <sup>v', packageVersion('cd2030'), '</sup>'))),
   sidebar = dashboardSidebar(
     usei18n(i18n),
     selectInput(
@@ -300,7 +300,7 @@ server <- function(input, output, session) {
     # Dynamically update the header
     header <- htmltools::tagQuery(
       dashboardHeader(
-        title = 'cd2030',
+        title = HTML(paste0('cd2030 <sup>v', packageVersion('cd2030'), '</sup>')),
         saveCacheUI('save_cache'),
         downloadReportUI('download_report', i18n)
       )
