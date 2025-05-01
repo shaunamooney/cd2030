@@ -46,7 +46,7 @@ calculateRatiosServer <- function(id, cache, i18n) {
       })
 
       ratio_summary <- reactive({
-        req(cache(), all(!is.na(survey_estimates())))
+        req(cache(), all(!is.na(survey_estimates()[c('anc1', 'penta1', 'penta3')])))
         calculate_ratios_summary(cache()$countdown_data,
                                  survey_coverage = survey_estimates())
       })
@@ -89,7 +89,7 @@ calculateRatiosServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'ratio_plot_download',
-        filename = 'ratio_plot',
+        filename = reactive('ratio_plot'),
         data = ratio_summary,
         i18n = i18n,
         plot_function = function() {

@@ -63,7 +63,7 @@ denominatorAssessmentServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'population_plot',
-        filename = 'population_plot',
+        filename = reactive('population_plot'),
         data = denominators,
         i18n = i18n,
         plot_function = function() {
@@ -73,7 +73,7 @@ denominatorAssessmentServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'births_plot',
-        filename = 'births_plot',
+        filename = reactive('births_plot'),
         data = denominators,
         i18n = i18n,
         plot_function = function() {

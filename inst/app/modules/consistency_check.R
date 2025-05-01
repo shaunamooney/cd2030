@@ -87,7 +87,7 @@ consistencyCheckServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'anc1_penta1_plot',
-        filename = 'anc1_penta1_plot',
+        filename = reactive('anc1_penta1_plot'),
         data = data,
         i18n = i18n,
         plot_function = function() {
@@ -97,7 +97,7 @@ consistencyCheckServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'penta1_penta3_plot',
-        filename = 'penta1_penta3_plot',
+        filename = reactive('penta1_penta3_plot'),
         data = data,
         i18n = i18n,
         plot_function = function() {
@@ -107,7 +107,7 @@ consistencyCheckServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'opv1_opv3_plot',
-        filename = 'opv1_opv3_plot',
+        filename = reactive('opv1_opv3_plot'),
         data = data,
         i18n = i18n,
         plot_function = function() {
@@ -117,7 +117,7 @@ consistencyCheckServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'custom_graph_plot',
-        filename = paste0(input$x_axis, '_', input$y_axis, '_plot'),
+        filename = reactive(paste0(input$x_axis, '_', input$y_axis, '_plot')),
         data = data,
         i18n = i18n,
         plot_function = function() {

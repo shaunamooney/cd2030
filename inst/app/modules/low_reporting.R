@@ -160,7 +160,7 @@ lowReportingServer <- function(id, cache, i18n) {
 
       downloadExcel(
         id = 'download_regions',
-        filename = paste0('district_high_coverage_rate', input$year),
+        filename = reactive(paste0('district_high_coverage_rate', input$year)),
         data = district_coverage_rate,
         i18n = i18n,
         excel_write_function = function(wb) {

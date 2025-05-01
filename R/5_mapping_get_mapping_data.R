@@ -100,8 +100,14 @@ get_country_shapefile <- function(country_iso, level = c('admin_level_1', 'distr
   check_required(country_iso)
   level <- arg_match(level)
 
-  shapefile_path <- system.file(file.path('shapefiles', country_iso, paste0(country_iso, '_', level, '.shp')), package = 'cd2030')
+  # shapefile_path <- system.file(file.path('shapefiles', paste0(level, '.gpkg')), package = 'cd2030')
+  shapefile_path <- system.file(file.path('shapefiles', 'admin_level_1.gpkg'), package = 'cd2030')
   check_file_path(shapefile_path)
 
-  st_read(shapefile_path, quiet = TRUE)
+  sf_data <- st_read(shapefile_path, layer = country_iso, quiet = TRUE)
+
+  # Validate geometry and reproject to WGS84 (EPSG:4326)
+  sf_data %>%
+    st_make_valid() %>%
+    st_transform(4326)
 }

@@ -212,7 +212,7 @@ dataCompletenessServer <- function(id, cache, i18n) {
 
       downloadExcel(
         id = 'download_data',
-        filename = 'checks_reporting_rate',
+        filename = reactive('checks_reporting_rate'),
         data = data,
         i18n = i18n,
         excel_write_function = function(wb) {
@@ -235,7 +235,7 @@ dataCompletenessServer <- function(id, cache, i18n) {
 
       downloadExcel(
         id = 'download_incompletes',
-        filename = paste0('checks_incomplete_districts_', input$indicator, '_', input$year),
+        filename = reactive(paste0('checks_incomplete_districts_', input$indicator, '_', input$year)),
         data = incomplete_district,
         i18n = i18n,
         excel_write_function = function(wb) {

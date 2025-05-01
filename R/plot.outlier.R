@@ -59,11 +59,13 @@ plot.cd_outlier <- function(x,
           value = !!sym(paste0(indicator, '_outlier5std'))
         )
     } else {
+      # TODO: To review later
+      cols <- intersect(c("year", "category"), names(x))
       x %>%
         pivot_longer(cols = ends_with('_outlier5std'),
                      names_to = 'category',
                      names_pattern = '^(.*)_outlier5std') %>%
-        summarise(value = mean(value, na.rm = TRUE), .by = c(year, category))
+        summarise(value = mean(value, na.rm = TRUE), .by = all_of(cols))
     }
 
     min_rr <- min(data_prepared$value, na.rm = TRUE)

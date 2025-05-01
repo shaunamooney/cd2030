@@ -123,7 +123,7 @@ adjustmentChangesServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'live_births_plot',
-        filename = 'live_births_plot',
+        filename = reactive('live_births_plot'),
         data = adjustments,
         i18n = i18n,
         plot_function = function() {
@@ -135,7 +135,7 @@ adjustmentChangesServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'penta1_plot',
-        filename = 'penta1_plot',
+        filename = reactive('penta1_plot'),
         data = adjustments,
         i18n = i18n,
         plot_function = function() {
@@ -147,7 +147,7 @@ adjustmentChangesServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'bcg_plot',
-        filename = 'bcg_plot',
+        filename = reactive('bcg_plot'),
         data = adjustments,
         i18n = i18n,
         plot_function = function() {
@@ -159,7 +159,7 @@ adjustmentChangesServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'measles1_plot',
-        filename = 'measles1_plot',
+        filename = reactive('measles1_plot'),
         data = adjustments,
         i18n = i18n,
         plot_function = function() {
@@ -171,7 +171,7 @@ adjustmentChangesServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'custom_check_plot',
-        filename = paste0(input$indicator, '_plot'),
+        filename = reactive(paste0(input$indicator, '_plot')),
         data = adjustments,
         i18n = i18n,
         plot_function = function() {
