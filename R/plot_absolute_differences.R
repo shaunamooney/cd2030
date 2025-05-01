@@ -40,7 +40,9 @@ plot_absolute_differences <- function(.data,
 
   # Match the selected indicator to ensure it is valid
   indicator <- arg_match(indicator)
-  check_scalar_integerish(survey_coverage)
+  if (is_scalar_double(survey_coverage)) {
+    cd_abort(c('x' = 'A scalar numeric is required.'))
+  }
 
   max_year <- robust_max(.data$year, 2024)
 

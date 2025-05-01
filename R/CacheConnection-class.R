@@ -372,6 +372,7 @@ CacheConnection <- R6::R6Class(
     #' @field data_with_excluded_years Get data with excluded years removed.
     data_with_excluded_years = function(value) {
       if (missing(value)) {
+        private$depend('excluded_years')
         excluded_years <- self$excluded_years
         data <- self$countdown_data %>%
           filter(if(length(excluded_years) > 0) !year %in% excluded_years else TRUE)
