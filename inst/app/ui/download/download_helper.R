@@ -2,7 +2,7 @@ downloadPlot <- function(id, filename, data, plot_function, i18n, label = 'btn_d
 
   downloadButtonServer(
     id = id,
-    filename = reactive(filename),
+    filename = filename,
     extension = reactive('png'),
     i18n = i18n,
     content = function(file) {
@@ -17,7 +17,7 @@ downloadPlot <- function(id, filename, data, plot_function, i18n, label = 'btn_d
 downloadExcel <- function(id, filename, data, excel_write_function, i18n, label = 'btn_download_data') {
   downloadButtonServer(
     id = id,
-    filename = reactive(filename),
+    filename = filename,
     extension = reactive('xlsx'),
     i18n = i18n,
     content = function(file) {

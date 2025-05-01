@@ -126,56 +126,56 @@ subnationalInequalityServer <- function(id, cache, i18n) {
       downloadCoverageServer(
         id = 'measles1_download',
         data = inequalities,
-        filename = paste0('measles1_', admin_level(), '_inequality_', denominator()),
+        filename = reactive(paste0('measles1_', admin_level(), '_inequality_', denominator())),
         indicator = reactive('measles1'),
         denominator = denominator,
         data_fn = filter_inequality,
         i18n = i18n,
-        sheet_name = i18n$t("title_mcv1_inequality")
+        sheet_name = reactive(i18n$t("title_mcv1_inequality"))
       )
 
       downloadCoverageServer(
         id = 'penta3_download',
         data = inequalities,
-        filename = paste0('penta3_', admin_level(), '_inequality_', denominator()),
+        filename = reactive(paste0('penta3_', admin_level(), '_inequality_', denominator())),
         indicator = reactive('penta3'),
         denominator =denominator,
         data_fn = filter_inequality,
         i18n = i18n,
-        sheet_name = i18n$t("title_penta3_inequality")
+        sheet_name = reactive(i18n$t("title_penta3_inequality"))
       )
 
       downloadCoverageServer(
         id = 'dropout_penta13_download',
         data = inequalities,
-        filename = paste0('dropout_penta13_', admin_level(), '_inequality_', denominator()),
+        filename = reactive(paste0('dropout_penta13_', admin_level(), '_inequality_', denominator())),
         indicator = reactive('dropout_penta13'),
         denominator = denominator,
         data_fn = filter_inequality,
         i18n = i18n,
-        sheet_name = i18n$t("title_penta13_inequality")
+        sheet_name = reactive(i18n$t("title_penta13_inequality"))
       )
 
       downloadCoverageServer(
         id = 'dropout_penta3mcv1_download',
         data = inequalities,
-        filename = paste0('dropout_penta3mcv1_', admin_level(), '_inequality_', denominator()),
+        filename = reactive(paste0('dropout_penta3mcv1_', admin_level(), '_inequality_', denominator())),
         indicator = reactive('dropout_penta3mcv1'),
         denominator = denominator,
         data_fn = filter_inequality,
         i18n = i18n,
-        sheet_name = i18n$t("title_penta3_mcv1_inequality")
+        sheet_name = reactive(i18n$t("title_penta3_mcv1_inequality"))
       )
 
       downloadCoverageServer(
         id = 'custom_download',
         data = inequalities,
-        filename = paste0(input$indicator, '_', admin_level(), '_inequality_', denominator()),
+        filename = reactive(paste0(input$indicator, '_', admin_level(), '_inequality_', denominator())),
         indicator = reactive(input$indicator),
         denominator = denominator,
         data_fn = filter_inequality,
         i18n = i18n,
-        sheet_name = paste0(input$indicator, ' Inequality')
+        sheet_name = reactive(paste0(input$indicator, ' Inequality'))
       )
 
       contentHeaderServer(

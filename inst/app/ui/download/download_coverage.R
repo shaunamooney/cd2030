@@ -7,11 +7,14 @@ downloadCoverageUI <- function(id) {
 }
 
 downloadCoverageServer <- function(id, data, filename, indicator, denominator,
-                                   data_fn, i18n, region = NULL, sheet_name = 'Coverage') {
+                                   data_fn, i18n, region = reactive(NULL), sheet_name = 'Coverage') {
   stopifnot(is.reactive(data))
+  stopifnot(is.reactive(filename))
   stopifnot(is.reactive(indicator))
   stopifnot(is.reactive(denominator))
   stopifnot(is.function(data_fn))
+  stopifnot(is.reactive(region))
+  stopifnot(is.reactive(sheet_name))
 
   moduleServer(
     id = id,
@@ -21,7 +24,7 @@ downloadCoverageServer <- function(id, data, filename, indicator, denominator,
         req(data(), indicator(), denominator())
 
         data() %>%
-          data_fn(indicator = indicator(), denominator = denominator(), region = region)
+          data_fn(indicator = indicator(), denominator = denominator(), region = region())
       })
 
       downloadPlot(
@@ -30,7 +33,7 @@ downloadCoverageServer <- function(id, data, filename, indicator, denominator,
         data = download_data,
         i18n = i18n,
         plot_function = function() {
-          plot(data(), indicator = indicator(), denominator = denominator(), region = region)
+          plot(data(), indicator = indicator(), denominator = denominator(), region = region())
         }
       )
 
@@ -42,8 +45,8 @@ downloadCoverageServer <- function(id, data, filename, indicator, denominator,
         excel_write_function = function(wb) {
           coverage <- download_data()
 
-          addWorksheet(wb, sheet_name)
-          writeData(wb, sheet = sheet_name, x = coverage, startCol = 1, startRow = 1)
+          addWorksheet(wb, sheet_name())
+          writeData(wb, sheet = sheet_name(), x = coverage, startCol = 1, startRow = 1)
         }
       )
 

@@ -164,7 +164,7 @@ derivedCoverageServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'penta1_plot',
-        filename = 'penta1_derived_coverage',
+        filename = reactive('penta1_derived_coverage'),
         data = penta1_data,
         i18n = i18n,
         plot_function = function() plot(penta1_data(), region = region())
@@ -172,7 +172,7 @@ derivedCoverageServer <- function(id, cache, i18n) {
 
       downloadExcel(
         id = 'penta1_data',
-        filename = 'penta1_derived_coverage',
+        filename = reactive('penta1_derived_coverage'),
         data = penta3_data,
         i18n = i18n,
         excel_write_function = function(wb) {
@@ -184,7 +184,7 @@ derivedCoverageServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'penta3_plot',
-        filename = 'penta3_derived_coverage',
+        filename = reactive('penta3_derived_coverage'),
         data = penta3_data,
         i18n = i18n,
         plot_function = function() plot(penta3_data(), region = region())
@@ -192,7 +192,7 @@ derivedCoverageServer <- function(id, cache, i18n) {
 
       downloadExcel(
         id = 'penta3_data',
-        filename = 'penta3_derived_coverage',
+        filename = reactive('penta3_derived_coverage'),
         data = penta3_data,
         i18n = i18n,
         excel_write_function = function(wb) {
@@ -204,7 +204,7 @@ derivedCoverageServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'measles1_plot',
-        filename = 'measles1_derived_coverage',
+        filename = reactive('measles1_derived_coverage'),
         data = measles1_data,
         i18n = i18n,
         plot_function = function() plot(measles1_data(), region = region())
@@ -212,7 +212,7 @@ derivedCoverageServer <- function(id, cache, i18n) {
 
       downloadExcel(
         id = 'measles1_data',
-        filename = 'measles1_derived_coverage',
+        filename = reactive('measles1_derived_coverage'),
         data = measles1_data,
         i18n = i18n,
         excel_write_function = function(wb) {
@@ -224,7 +224,7 @@ derivedCoverageServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'custom_plot',
-        filename = paste0(input$indicator, '_derived_coverage'),
+        filename = reactive(paste0(input$indicator, '_derived_coverage')),
         data = custom_data,
         i18n = i18n,
         plot_function = function() plot(custom_data(), region = region())
@@ -232,7 +232,7 @@ derivedCoverageServer <- function(id, cache, i18n) {
 
       downloadExcel(
         id = 'custom_data',
-        filename = paste0(input$indicator, '_derived_coverage'),
+        filename = reactive(paste0(input$indicator, '_derived_coverage')),
         data = custom_data,
         i18n = i18n,
         excel_write_function = function(wb) {

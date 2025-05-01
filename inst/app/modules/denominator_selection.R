@@ -112,7 +112,7 @@ denominatorSelectionServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'penta3_plot',
-        filename = 'penta3_plot',
+        filename = reactive('penta3_plot'),
         data = indicator_coverage,
         i18n = i18n,
         plot_function = function() {
@@ -123,7 +123,7 @@ denominatorSelectionServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'measles1_plot',
-        filename = 'measles1_plot',
+        filename = reactive('measles1_plot'),
         data = indicator_coverage,
         i18n = i18n,
         plot_function = function() {
@@ -134,7 +134,7 @@ denominatorSelectionServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'bcg_plot',
-        filename = 'bcg_plot',
+        filename = reactive('bcg_plot'),
         data = indicator_coverage,
         i18n = i18n,
         plot_function = function() {

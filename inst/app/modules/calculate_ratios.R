@@ -89,7 +89,7 @@ calculateRatiosServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'ratio_plot_download',
-        filename = 'ratio_plot',
+        filename = reactive('ratio_plot'),
         data = ratio_summary,
         i18n = i18n,
         plot_function = function() {

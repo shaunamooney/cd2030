@@ -191,7 +191,7 @@ reportingRateServer <- function(id, cache, i18n) {
 
       downloadExcel(
         id = 'download_data',
-        filename = 'checks_reporting_rate',
+        filename = reactive('checks_reporting_rate'),
         data = national_rr,
         i18n = i18n,
         excel_write_function = function(wb) {
@@ -213,7 +213,7 @@ reportingRateServer <- function(id, cache, i18n) {
 
       downloadExcel(
         id = 'download_districts',
-        filename = paste0('district_low_reporting_rate_', input$year),
+        filename = reactive(paste0('district_low_reporting_rate_', input$year)),
         data = district_low_rr,
         i18n = i18n,
         excel_write_function = function(wb) {

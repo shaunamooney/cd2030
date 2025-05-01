@@ -121,7 +121,7 @@ equityServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'penta3_download',
-        filename = paste0('penta3_', input$type, '_equity'),
+        filename = reactive(paste0('penta3_', input$type, '_equity')),
         data = penta3_equiplot,
         i18n = i18n,
         plot_function = function() {
@@ -134,7 +134,7 @@ equityServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'measles1_download',
-        filename = paste0('measles1_', input$type, '_equity'),
+        filename = reactive(paste0('measles1_', input$type, '_equity')),
         data = measles1_equiplot,
         i18n = i18n,
         plot_function = function() {
@@ -147,7 +147,7 @@ equityServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'custom_download',
-        filename = paste0(input$indicator, '_', input$type, '_equity'),
+        filename = reactive(paste0(input$indicator, '_', input$type, '_equity')),
         data = custom_equiplot,
         i18n = i18n,
         plot_function = function() {

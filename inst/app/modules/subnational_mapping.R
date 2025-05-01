@@ -205,7 +205,7 @@ subnationalMappingServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'penta3_download',
-        filename = paste0('penta3_', admin_level(), '_map_', denominator()),
+        filename = reactive(paste0('penta3_', admin_level(), '_map_', denominator())),
         data = dt,
         i18n = i18n,
         plot_function = function() {
@@ -219,7 +219,7 @@ subnationalMappingServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'mcv1_download',
-        filename = paste0('mcv1_', admin_level(), '_map_', denominator()),
+        filename = reactive(paste0('mcv1_', admin_level(), '_map_', denominator())),
         data = dt,
         i18n = i18n,
         plot_function = function() {
@@ -233,7 +233,7 @@ subnationalMappingServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'penta13_dropout_download',
-        filename = paste0('penta13_dropout_', admin_level(), '_map_', denominator()),
+        filename = reactive(paste0('penta13_dropout_', admin_level(), '_map_', denominator())),
         data = dt,
         i18n = i18n,
         plot_function = function() {
@@ -247,7 +247,7 @@ subnationalMappingServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'penta3mcv1_droput_download',
-        filename = paste0('penta3mcv1_droput_', admin_level(), '_map_', denominator()),
+        filename = reactive(paste0('penta3mcv1_droput_', admin_level(), '_map_', denominator())),
         data = dt,
         i18n = i18n,
         plot_function = function() {
@@ -261,7 +261,7 @@ subnationalMappingServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'custom_download',
-        filename = paste0(input$indicator, '_', admin_level(), '_map_', denominator()),
+        filename = reactive(paste0(input$indicator, '_', admin_level(), '_map_', denominator())),
         data = dt,
         i18n = i18n,
         plot_function = function() {

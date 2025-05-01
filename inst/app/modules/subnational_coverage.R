@@ -127,61 +127,61 @@ subnationalCoverageServer <- function(id, cache, i18n) {
       downloadCoverageServer(
         id = 'measles1_download',
         data = coverage,
-        filename = paste0('measles1_', region(), '_survey_', denominator()),
+        filename = reactive(paste0('measles1_', region(), '_survey_', denominator())),
         indicator = reactive('measles1'),
         denominator = denominator,
         data_fn = filter_coverage,
-        region = region(),
-        sheet_name = i18n$t('title_mcv1_coverage'),
+        region = region,
+        sheet_name = reactive(i18n$t('title_mcv1_coverage')),
         i18n = i18n
       )
 
       downloadCoverageServer(
         id = 'penta3_download',
         data = coverage,
-        filename = paste0('penta3_', region(), '_survey_', denominator()),
+        filename = reactive(paste0('penta3_', region(), '_survey_', denominator())),
         indicator = reactive('penta3'),
         denominator = denominator,
         data_fn = filter_coverage,
-        region = region(),
+        region = region,
         i18n = i18n,
-        sheet_name = i18n$t('title_penta3_coverage')
+        sheet_name = reactive(i18n$t('title_penta3_coverage'))
       )
 
       downloadCoverageServer(
         id = 'dropout_penta13_download',
         data = coverage,
-        filename = paste0('dropout_penta13_', region(), '_survey_', denominator()),
+        filename = reactive(paste0('dropout_penta13_', region(), '_survey_', denominator())),
         indicator = reactive('dropout_penta13'),
         denominator = denominator,
         data_fn = filter_coverage,
-        region = region(),
+        region = region,
         i18n = i18n,
-        sheet_name = i18n$t('title_penta13_dropout')
+        sheet_name = reactive(i18n$t('title_penta13_dropout'))
       )
 
       downloadCoverageServer(
         id = 'dropout_penta3mcv1_download',
         data = coverage,
-        filename = paste0('dropout_penta3mcv1_', region(), '_survey_', denominator()),
+        filename = reactive(paste0('dropout_penta3mcv1_', region(), '_survey_', denominator())),
         indicator = reactive('dropout_penta3mcv1'),
         denominator = denominator,
         data_fn = filter_coverage,
-        region = region(),
+        region = region,
         i18n = i18n,
-        sheet_name = i18n$t('title_penta3_mcv1_dropout')
+        sheet_name = reactive(i18n$t('title_penta3_mcv1_dropout'))
       )
 
       downloadCoverageServer(
         id = 'custom_download',
         data = coverage,
-        filename = paste0(input$indicator, '_', region(), '_survey_', denominator()),
+        filename = reactive(paste0(input$indicator, '_', region(), '_survey_', denominator())),
         indicator = reactive(input$indicator),
         denominator = denominator,
         data_fn = filter_coverage,
-        region = region(),
+        region = region,
         i18n = i18n,
-        sheet_name = paste(input$indicator, i18n$t('title_coverage'))
+        sheet_name = reactive(paste(input$indicator, i18n$t('title_coverage')))
       )
 
       contentHeaderServer(

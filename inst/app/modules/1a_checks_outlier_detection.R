@@ -152,7 +152,7 @@ outlierDetectionServer <- function(id, cache, i18n) {
 
       downloadExcel(
         id = 'download_data',
-        filename = 'checks_outlier_detection',
+        filename = reactive('checks_outlier_detection'),
         data = data,
         i18n = i18n,
         excel_write_function = function(wb) {
@@ -174,7 +174,7 @@ outlierDetectionServer <- function(id, cache, i18n) {
 
       downloadExcel(
         id = 'download_outliers',
-        filename = paste0('checks_outlier_districts_', input$indicator, '_', input$year),
+        filename = reactive(paste0('checks_outlier_districts_', input$indicator, '_', input$year)),
         data = outlier_districts,
         i18n = i18n,
         excel_write_function = function(wb) {
