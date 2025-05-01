@@ -46,7 +46,7 @@ calculateRatiosServer <- function(id, cache, i18n) {
       })
 
       ratio_summary <- reactive({
-        req(cache(), all(!is.na(survey_estimates())))
+        req(cache(), all(!is.na(survey_estimates()[, 'anc1', 'penta1', 'penta3'])))
         calculate_ratios_summary(cache()$countdown_data,
                                  survey_coverage = survey_estimates())
       })

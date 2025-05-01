@@ -181,7 +181,7 @@ reportingRateServer <- function(id, cache, i18n) {
 
       downloadPlot(
         id = 'download_plot',
-        filename = 'district_rr_plot',
+        filename = reactive('district_rr_plot'),
         data = district_rr,
         i18n = i18n,
         plot_function = function() {
