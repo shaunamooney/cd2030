@@ -173,7 +173,7 @@ get_top_bottom_table <- function(.data, indicator = c('penta3', 'measles1')) {
   indicator <- arg_match(indicator)
   indicator_col <- sym(paste0('cov_', indicator, '_penta1'))
   
-  max_year <- max(.data$year)
+  max_year <- max(.data$year, na.rm = TRUE)
 
   .data %>% 
     select(year, district, !!indicator_col) %>% 
