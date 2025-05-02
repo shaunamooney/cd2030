@@ -2,6 +2,7 @@
 #' @import dplyr
 #' @import ggplot2
 #' @import rlang
+#' @import khisr
 #' @import shiny
 #' @import tidyr
 "_PACKAGE"
@@ -12,6 +13,7 @@
 #' @importFrom haven is.labelled
 #' @importFrom haven read_dta
 #' @importFrom haven write_dta
+#' @importFrom janitor make_clean_names
 #' @importFrom khisr %.d%
 #' @importFrom khisr get_analytics
 #' @importFrom lubridate month
