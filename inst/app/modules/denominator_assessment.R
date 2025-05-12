@@ -1,14 +1,14 @@
-denominatorAssessmentUI <- function(id) {
+denominatorAssessmentUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('denominator_assessment'), 'Denominator Assessment'),
+    contentHeader(ns('denominator_assessment'), i18n$t("title_denominator_assessment"), i18n = i18n),
     contentBody(
       tabBox(
-        title = 'Denominator Assessment',
+        title = i18n$t("title_denominator_assessment"),
         width = 12,
         tabPanel(
-          title = 'Total Population',
+          title = i18n$t("opt_total_population"),
           fluidRow(
             column(12, plotCustomOutput(ns('population'))),
             column(4, downloadButtonUI(ns('population_plot')))
@@ -16,7 +16,7 @@ denominatorAssessmentUI <- function(id) {
         ),
 
         tabPanel(
-          title = 'Births',
+          title = i18n$t("opt_births"),
           fluidRow(
             column(12, plotCustomOutput(ns('births'))),
             column(4, downloadButtonUI(ns('births_plot')))
@@ -27,7 +27,7 @@ denominatorAssessmentUI <- function(id) {
   )
 }
 
-denominatorAssessmentServer <- function(id, cache) {
+denominatorAssessmentServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
@@ -63,8 +63,9 @@ denominatorAssessmentServer <- function(id, cache) {
 
       downloadPlot(
         id = 'population_plot',
-        filename = 'population_plot',
+        filename = reactive('population_plot'),
         data = denominators,
+        i18n = i18n,
         plot_function = function() {
           plot(denominators(), 'population')
         }
@@ -72,8 +73,9 @@ denominatorAssessmentServer <- function(id, cache) {
 
       downloadPlot(
         id = 'births_plot',
-        filename = 'births_plot',
+        filename = reactive('births_plot'),
         data = denominators,
+        i18n = i18n,
         plot_function = function() {
           plot(denominators(), 'births')
         }
@@ -83,8 +85,9 @@ denominatorAssessmentServer <- function(id, cache) {
         'denominator_assessment',
         cache = cache,
         objects = pageObjectsConfig(input),
-        md_title = 'Denominator Assessment',
-        md_file = '2_reporting_rate.md'
+        md_title = i18n$t("title_denominator_assessment"),
+        md_file = '2_reporting_rate.md',
+        i18n = i18n
       )
     }
   )

@@ -39,9 +39,9 @@ Any missing values are set to 0\%.
 }
 \examples{
 \dontrun{
-# Assuming `data` is a data frame with required columns:
-result <- calculate_indicator_threshold_coverage(data)
-print(result)
+  # Assuming `data` is a data frame with required columns:
+  result <- calculate_indicator_threshold_coverage(data)
+  result
 }
 
 }

@@ -35,9 +35,22 @@ plot.cd_ratios_summary <-  function(x, ...) {
     mutate(year = factor(year, levels = sort(unique(year))))
 
   # Generate color palette with unique colors for each combination of name and year
-  unique_names <- unique(plot_data$year)
-  colors <- c('darkgreen', 'darkgoldenrod3', 'firebrick4', 'springgreen3', 'darkolivegreen3', 'steelblue2')
-  color_mapping <- set_names(colors, unique_names)
+  # unique_names <- unique(plot_data$year)
+  # colors <- c('darkgreen', 'darkgoldenrod3', 'firebrick4', 'springgreen3', 'darkolivegreen3', 'steelblue2')
+  # color_mapping <- set_names(colors, unique_names)
+
+  years <- x %>% distinct(year) %>% pull(year)
+  base_colors <- c('darkgreen', 'darkgoldenrod3', 'firebrick4', 'springgreen3', 'darkolivegreen3', 'steelblue2')
+
+  extra_needed <- robust_max(c(0, length(years) - length(base_colors)))
+  extra_colors <- if (extra_needed > 0) {
+    scales::hue_pal()(extra_needed)
+  } else {
+    NULL
+  }
+
+  color_mapping <- c(base_colors, extra_colors)
+  names(color_mapping) <- years
 
   plot_data %>%
     ggplot(aes(name, value, fill = year)) +

@@ -7,8 +7,7 @@
 plot_absolute_differences(
   .data,
   indicator = c("penta3", "measles1", "bcg"),
-  survey_coverage = 88,
-  coverage_year = 2021
+  survey_coverage = 88
 )
 }
 \arguments{
@@ -20,9 +19,6 @@ for various denominators. Each indicator should have columns ending with suffixe
 
 \item{survey_coverage}{A numeric value representing the national survey coverage percentage
 to be displayed as a reference line on the plot. Default is \code{88}.}
-
-\item{coverage_year}{A single integer specifying the year of interest for the plot.
-Only data for this year will be plotted.}
 }
 \value{
 A \code{ggplot2} object showing the coverage percentages for the selected indicator

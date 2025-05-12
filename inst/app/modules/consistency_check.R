@@ -1,38 +1,38 @@
-consistencyCheckUI <- function(id) {
+consistencyCheckUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('consistency_checks'), 'Internal Consistency Checks'),
+    contentHeader(ns('consistency_checks'), i18n$t("title_consistency"), i18n = i18n),
     contentBody(
       tabBox(
-        title = 'Consistency Checks',
+        title = i18n$t("title_consistency_checks"),
         width = 12,
         tabPanel(
-          'ANC1 and Penta1',
+          i18n$t("opt_anc1_and_penta1"),
           fluidRow(
             column(12, plotCustomOutput(ns('anc1_penta1'))),
             column(4, downloadButtonUI(ns('anc1_penta1_plot')))
           )
         ),
         tabPanel(
-          'Penta1 and Penta3',
+          i18n$t("opt_penta1_and_penta3"),
           fluidRow(
             column(12, plotCustomOutput(ns('penta1_penta3'))),
             column(4, downloadButtonUI(ns('penta1_penta3_plot')))
           )
         ),
         tabPanel(
-          'OPV1 and OPV3',
+          i18n$t("opt_opv1_and_opv3"),
           fluidRow(
             column(12, plotCustomOutput(ns('opv1_opv3'))),
             column(4, downloadButtonUI(ns('opv1_opv3_plot')))
           )
         ),
         tabPanel(
-          'Custom Check',
+          i18n$t("opt_custom_check"),
           fluidRow(
-            column(3, selectizeInput(ns('x_axis'), label = 'X axis', choices = NULL)),
-            column(3, offset = 1, selectizeInput(ns('y_axis'), label = 'Y axis', choices = NULL)),
+            column(3, selectizeInput(ns('x_axis'), label = i18n$t("title_x_axis"), choices = NULL)),
+            column(3, offset = 1, selectizeInput(ns('y_axis'), label = i18n$t("title_y_axis"), choices = NULL)),
             column(12, plotCustomOutput(ns('custom_graph'))),
             column(4, downloadButtonUI(ns('custom_graph_plot')))
           )
@@ -42,7 +42,7 @@ consistencyCheckUI <- function(id) {
   )
 }
 
-consistencyCheckServer <- function(id, cache) {
+consistencyCheckServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
@@ -57,9 +57,7 @@ consistencyCheckServer <- function(id, cache) {
       observe({
         req(cache())
 
-        indicator_groups <-cache()$indicator_groups
-        all_indicators <- purrr::list_c(indicator_groups)
-        names(all_indicators) <- all_indicators
+        all_indicators <- list_vaccines()
         all_indicators <- c('Select' = '', all_indicators)
 
         updateSelectizeInput(session, 'x_axis', choices = all_indicators)
@@ -89,8 +87,9 @@ consistencyCheckServer <- function(id, cache) {
 
       downloadPlot(
         id = 'anc1_penta1_plot',
-        filename = 'anc1_penta1_plot',
+        filename = reactive('anc1_penta1_plot'),
         data = data,
+        i18n = i18n,
         plot_function = function() {
           plot_comparison_anc1_penta1(data())
         }
@@ -98,8 +97,9 @@ consistencyCheckServer <- function(id, cache) {
 
       downloadPlot(
         id = 'penta1_penta3_plot',
-        filename = 'penta1_penta3_plot',
+        filename = reactive('penta1_penta3_plot'),
         data = data,
+        i18n = i18n,
         plot_function = function() {
           plot_comparison_penta1_penta3(data())
         }
@@ -107,8 +107,9 @@ consistencyCheckServer <- function(id, cache) {
 
       downloadPlot(
         id = 'opv1_opv3_plot',
-        filename = 'opv1_opv3_plot',
+        filename = reactive('opv1_opv3_plot'),
         data = data,
+        i18n = i18n,
         plot_function = function() {
           plot_comparison_opv1_opv3(data())
         }
@@ -116,8 +117,9 @@ consistencyCheckServer <- function(id, cache) {
 
       downloadPlot(
         id = 'custom_graph_plot',
-        filename = paste0(input$x_axis, '_', input$y_axis, '_plot'),
+        filename = reactive(paste0(input$x_axis, '_', input$y_axis, '_plot')),
         data = data,
+        i18n = i18n,
         plot_function = function() {
           plot_comparison(data(), input$x_axis, input$y_axis)
         }
@@ -127,8 +129,9 @@ consistencyCheckServer <- function(id, cache) {
         'consistency_checks',
         cache = cache,
         objects = pageObjectsConfig(input),
-        md_title = 'Internal Consistency Checks',
-        md_file = 'quality_checks_internal_consistency.md'
+        md_title = i18n$t("title_consistency"),
+        md_file = 'quality_checks_internal_consistency.md',
+        i18n = i18n
       )
     }
   )

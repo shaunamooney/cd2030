@@ -61,10 +61,8 @@
 #'
 #' @export
 plot.cd_mapping <- function(x,
-                            indicator = c("anc1", "bcg", "measles1", "measles2", "measles3", "opv1", "opv2", "opv3",
-                                          "pcv1", "pcv2", "pcv3", "penta1", "penta2", "penta3", "rota1", "rota2", "instdeliveries",
-                                          "ipv1", "ipv2", "undervax", "zerodose", "dropout_measles12", "dropout_penta13", "dropout_penta3mcv1"),
-                            denominator = c('dhis2', 'anc1', 'penta1'),
+                            indicator = NULL,
+                            denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived'),
                             palette = c('Reds', 'Blues', 'Greens', 'Purples', 'YlGnBu'),
                             plot_year = NULL,
                             title = NULL,
@@ -75,7 +73,7 @@ plot.cd_mapping <- function(x,
   check_required(indicator)
   check_required(denominator)
 
-  indicator <- arg_match(indicator)
+  indicator <- arg_match(indicator, list_vaccine_indicators())
   denominator <- arg_match(denominator)
   palette <- arg_match(palette)
 

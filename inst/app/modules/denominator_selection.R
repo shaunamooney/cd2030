@@ -1,14 +1,21 @@
-denominatorSelectionUI <- function(id) {
+denominatorSelectionUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('denominator_selection'), 'Denominator Selection'),
+    contentHeader(ns('denominator_selection'), i18n$t("title_denominator_selection"), i18n = i18n),
     contentBody(
+      box(
+        title = i18n$t("title_analysis_options"),
+        status = 'success',
+        width = 12,
+        solidHeader = TRUE,
+        fluidRow(column(3, denominatorInputUI(ns('denominator'), i18n)))
+      ),
       tabBox(
-        title = 'Denominator Selection',
+        title = i18n$t("title_denominator_selection"),
         width = 12,
         tabPanel(
-          title = 'Penta 3',
+          title = i18n$t("opt_penta3"),
           fluidRow(
             column(12, plotCustomOutput(ns('penta3'))),
             column(3, downloadButtonUI(ns('penta3_plot')))
@@ -16,7 +23,7 @@ denominatorSelectionUI <- function(id) {
         ),
 
         tabPanel(
-          title = 'Measles 1',
+          title = i18n$t("opt_mcv1"),
           fluidRow(
             column(12, plotCustomOutput(ns('measles1'))),
             column(3, downloadButtonUI(ns('measles1_plot')))
@@ -24,7 +31,7 @@ denominatorSelectionUI <- function(id) {
         ),
 
         tabPanel(
-          title = 'BCG',
+          title = i18n$t("opt_bcg"),
           fluidRow(
             column(12, plotCustomOutput(ns('bcg'))),
             column(3, downloadButtonUI(ns('bcg_plot')))
@@ -35,12 +42,14 @@ denominatorSelectionUI <- function(id) {
   )
 }
 
-denominatorSelectionServer <- function(id, cache) {
+denominatorSelectionServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
+
+      denominatorInputServer('denominator', cache, allowInput = TRUE)
 
       data <- reactive({
         req(cache())
@@ -52,10 +61,20 @@ denominatorSelectionServer <- function(id, cache) {
         cache()$un_estimates
       })
 
-      indicator_coverage <- reactive({
-        req(data(), un_estimates())
+      national_estimates <- reactive({
+        req(cache())
+        cache()$national_estimates
+      })
 
-        rates <- cache()$national_estimates
+      survey_estimates <- reactive({
+        req(cache())
+        cache()$survey_estimates
+      })
+
+      indicator_coverage <- reactive({
+        req(data(), cache()$survey_year, un_estimates(), all(!is.na(national_estimates())))
+
+        rates <- national_estimates()
         data() %>%
           calculate_indicator_coverage(un_estimates = un_estimates(),
                                        sbr = rates$sbr,
@@ -64,31 +83,26 @@ denominatorSelectionServer <- function(id, cache) {
                                        twin = rates$twin_rate,
                                        preg_loss = rates$preg_loss,
                                        anc1survey = rates$anc1,
-                                       dpt1survey = rates$penta1)
-      })
-
-      observe({
-        req(data())
-
-        indicator_groups <- attr(data(), 'indicator_groups')
-        inds <- indicator_groups$vacc
-
-        updateSelectizeInput(session, 'indicator', choices = inds)
+                                       dpt1survey = rates$penta1,
+                                       survey_year = cache()$survey_year)
       })
 
       output$penta3 <- renderCustomPlot({
-        req(indicator_coverage())
-        plot_absolute_differences(indicator_coverage(), 'penta3')
+        req(indicator_coverage(), all(!is.na(survey_estimates())))
+        penta3_rate <- unname(survey_estimates()['penta3'])
+        plot_absolute_differences(indicator_coverage(), 'penta3', penta3_rate)
       })
 
       output$measles1 <- renderCustomPlot({
-        req(indicator_coverage())
-        plot_absolute_differences(indicator_coverage(), 'measles1')
+        req(indicator_coverage(), all(!is.na(survey_estimates())))
+        measles1_rate <- unname(survey_estimates()['measles1'])
+        plot_absolute_differences(indicator_coverage(), 'measles1', measles1_rate)
       })
 
       output$bcg <- renderCustomPlot({
-        req(indicator_coverage())
-        plot_absolute_differences(indicator_coverage(), 'bcg')
+        req(indicator_coverage(), all(!is.na(survey_estimates())))
+        bcg_rate <- unname(survey_estimates()['bcg'])
+        plot_absolute_differences(indicator_coverage(), 'bcg', bcg_rate)
       })
 
       output$custom_plot <- renderCustomPlot({
@@ -98,28 +112,34 @@ denominatorSelectionServer <- function(id, cache) {
 
       downloadPlot(
         id = 'penta3_plot',
-        filename = 'penta3_plot',
+        filename = reactive('penta3_plot'),
         data = indicator_coverage,
+        i18n = i18n,
         plot_function = function() {
-          plot_absolute_differences(indicator_coverage(), 'penta3')
+          penta3_rate <- unname(survey_estimates()['penta3'])
+          plot_absolute_differences(indicator_coverage(), 'penta3', penta3_rate)
         }
       )
 
       downloadPlot(
         id = 'measles1_plot',
-        filename = 'measles1_plot',
+        filename = reactive('measles1_plot'),
         data = indicator_coverage,
+        i18n = i18n,
         plot_function = function() {
-          plot_absolute_differences(indicator_coverage(), 'measles1')
+          measles1_rate <- unname(survey_estimates()['measles1'])
+          plot_absolute_differences(indicator_coverage(), 'measles1', measles1_rate)
         }
       )
 
       downloadPlot(
         id = 'bcg_plot',
-        filename = 'bcg_plot',
+        filename = reactive('bcg_plot'),
         data = indicator_coverage,
+        i18n = i18n,
         plot_function = function() {
-          plot_absolute_differences(indicator_coverage(), 'bcg')
+          bcg_rate <- unname(survey_estimates()['bcg'])
+          plot_absolute_differences(indicator_coverage(), 'bcg', bcg_rate)
         }
       )
 
@@ -127,8 +147,9 @@ denominatorSelectionServer <- function(id, cache) {
         'denominator_selection',
         cache = cache,
         object = pageObjectsConfig(input),
-        md_title = 'Denominator Selection',
-        md_file = '2_reporting_rate.md'
+        md_title = i18n$t("title_denominator_selection"),
+        md_file = '2_reporting_rate.md',
+        i18n = i18n
       )
     }
   )

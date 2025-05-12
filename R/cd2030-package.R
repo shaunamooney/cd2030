@@ -2,6 +2,7 @@
 #' @import dplyr
 #' @import ggplot2
 #' @import rlang
+#' @import khisr
 #' @import shiny
 #' @import tidyr
 "_PACKAGE"
@@ -12,6 +13,7 @@
 #' @importFrom haven is.labelled
 #' @importFrom haven read_dta
 #' @importFrom haven write_dta
+#' @importFrom janitor make_clean_names
 #' @importFrom khisr %.d%
 #' @importFrom khisr get_analytics
 #' @importFrom lubridate month
@@ -35,6 +37,7 @@
 #' @importFrom purrr imap_dfc
 #' @importFrom purrr keep
 #' @importFrom purrr list_c
+#' @importFrom purrr list_flatten
 #' @importFrom purrr map
 #' @importFrom purrr map_chr
 #' @importFrom purrr map_df
@@ -48,12 +51,14 @@
 #' @importFrom readxl read_excel
 #' @importFrom rmarkdown render
 #' @importFrom sf st_as_sf
+#' @importFrom sf st_make_valid
 #' @importFrom sf st_read
 #' @importFrom sf st_set_crs
 #' @importFrom sf st_transform
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_ends
 #' @importFrom stringr str_extract
+#' @importFrom stringr str_glue
 #' @importFrom stringr str_replace
 #' @importFrom stringr str_replace_all
 #' @importFrom stringr str_split

@@ -6,7 +6,7 @@ saveCacheUI <- function(id) {
   uiOutput(ns('button'), container = tags$li, class = 'dropdown')
 }
 
-saveCacheServe <- function(id, cache) {
+saveCacheServe <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
@@ -19,14 +19,14 @@ saveCacheServe <- function(id, cache) {
         if (is.null(cache()$cache_path) || !file.exists(cache()$cache_path)) {
           shinyDirLink(
             session$ns('choose_dir'),
-            label = 'Set Cache Directory',
+            label = i18n$t("btn_cache_set"),
             title = '',
             icon = icon('folder-open')
           )
         } else {
           actionLink(
             inputId = session$ns('save'),
-            label = 'Save Cache',
+            label = i18n$t("btn_cache_save"),
             icon = icon('save')
           )
         }
@@ -44,22 +44,28 @@ saveCacheServe <- function(id, cache) {
         req(cache())
 
         path <- selected_dir()
-        print(path)
         if (is.null(path) || length(path) == 0 || nchar(path) == 0) {
-          showNotification("Invalid directory selected. Try again.", type = "error")
+          # showNotification('Invalid directory selected. Try again.', type = 'error')
           return()
         }
 
         # Set the cache path
-        cache()$set_cache_path(file.path(path, paste0(cache()$country, '_', format(Sys.time(), '%Y%m%d%H%M'), ".rds")))
-        print(cache()$cache_path)
-        showNotification("Directory set successfully!", type = "message")
+        tryCatch({
+          cache()$set_cache_path(file.path(path, paste0(cache()$country, '_', format(Sys.time(), '%Y%m%d%H%M'), '.rds')))
+          showNotification(i18n$t("msg_cache_directory_set"), type = 'message')
+        },
+        error = function(e) {
+          error_message <- clean_error_message(e)
+          translated_template <- i18n$t("error_permission")
+
+          showNotification(str_glue(translated_template), type = 'error')
+        })
       })
 
       observeEvent(input$save, {
         req(cache())
         cache()$save_to_disk()
-        showNotification("Cache saved successfully!", type = "message")
+        showNotification(i18n$t("msg_cache_saved_success"), type = 'message')
       })
 
     }

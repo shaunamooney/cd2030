@@ -50,7 +50,8 @@ add_outlier5std_column <- function(.data, indicators, group_by = 'district') {
 
   district = NULL
 
-  check_cd_data(.data)
+  # check_cd_data(.data)
+  check_required(.data)
   check_required(indicators)
   check_required(group_by)
 
@@ -115,14 +116,15 @@ add_outlier5std_column <- function(.data, indicators, group_by = 'district') {
 #' @export
 add_mad_med_columns <- function(.data, indicators, group_by = 'district') {
   # Check that the input data and required columns are valid
-  check_cd_data(.data)
+  # check_cd_data(.data)
+  check_required(.data)
   check_required(indicators)
 
   # Validate group_by, year, and indicators columns
-  if (!group_by %in% colnames(.data) ||
+  if ((!is.null(group_by) && !group_by %in% colnames(.data)) ||
       !'year' %in% colnames(.data) ||
       !all(indicators %in% colnames(.data))) {
-    cd_abort(c('x' = '{.arg {.data} must contain the columns specified by {.arg group_by} and {.field indicators}'))
+    cd_abort(c('x' = '{.arg .data} must contain the columns specified by {.arg group_by} and {.field indicators}'))
   }
 
   # Determine the last year in the data
@@ -190,7 +192,8 @@ add_missing_column <- function(.data, indicators) {
   district = year = NULL
 
   # Check that the data is valid
-  check_cd_data(.data)
+  # check_cd_data(.data)
+  check_required(.data)
   check_required(indicators)
 
   if (!all(indicators %in% colnames(.data))) {

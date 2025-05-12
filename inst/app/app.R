@@ -1,6 +1,6 @@
 # increase the uploading file size limit to 2000M, now our upload is not just about hfd file, it also include the saved data.
-options(shiny.maxRequestSize = 2000*1024^2)
-options(future.globals.maxSize = 1 * 1024 * 1024^2) # 1 GB
+options(shiny.maxRequestSize = 2 * 1024*1024^2)
+options(future.globals.maxSize = 2 * 1024 * 1024^2) # 2 GB
 options(shiny.fullstacktrace = TRUE)
 # options(shiny.error = browser)
 
@@ -30,16 +30,20 @@ pacman::p_load(
   tidyr,
   markdown,
   # sf,
+  shiny.i18n,
   stringr ,
   officer,
-  officedown
+  officedown,
+  waiter
   # update = TRUE
 )
 
 source('modules/page_objects_config.R')
 
+source('ui/admin-level-input.R')
 source('ui/content_body.R')
 source('ui/content_header.R')
+source('ui/denominator-input.R')
 source('ui/documentation_button.R')
 source('ui/download/download_button.R')
 source('ui/download/download_coverage.R')
@@ -48,23 +52,26 @@ source('ui/download_report.R')
 source('ui/help_button.R')
 source('ui/message_box.R')
 source('ui/render-plot.R')
+source('ui/region-input.R')
 source('ui/report_button.R')
 source('ui/save_cache.R')
 
+source('modules/1a_checks_reporting_rate.R')
+source('modules/1a_checks_outlier_detection.R')
 source('modules/calculate_ratios.R')
 source('modules/consistency_check.R')
 source('modules/data_adjustment_changes.R')
 source('modules/data_adjustment.R')
 source('modules/data_completeness.R')
+source('modules/derived_coverage.R')
 source('modules/denominator_assessment.R')
 source('modules/denominator_selection.R')
 source('modules/equity.R')
 source('modules/introduction.R')
 source('modules/national_coverage.R')
-source('modules/outlier_detection.R')
 source('modules/overall_score.R')
 source('modules/remove_years.R')
-source('modules/reporting_rate.R')
+
 source('modules/setup.R')
 source('modules/subnational_coverage.R')
 source('modules/subnational_inequality.R')
@@ -72,158 +79,230 @@ source('modules/subnational_mapping.R')
 source('modules/upload_data.R')
 source('modules/low_reporting.R')
 
+i18n <- init_i18n(translation_json_path = 'translation/translation.json')
+i18n$set_translation_language('fr')
+
 ui <- dashboardPage(
   skin = 'green',
-  header = dashboardHeader(title = 'cd2030'),
+  header = dashboardHeader(title = HTML(paste0('cd2030 <sup>v', packageVersion('cd2030'), '</sup>'))),
   sidebar = dashboardSidebar(
+    usei18n(i18n),
+    selectInput(
+      inputId = 'selected_language',
+      label = i18n$t('change_language'),
+      choices = c('English' = 'en', 'French' = 'fr'),
+      selected = i18n$get_key_translation()
+    ),
     sidebarMenu(
       id = 'tabs',
-      menuItem('Introduction', tabName = 'introduction', icon = icon('info-circle')),
-      menuItem('Load Data', tabName = 'upload_data', icon = icon('upload')),
-      menuItem('Quality Checks',
+      menuItem(i18n$t('title_intro'), tabName = 'introduction', icon = icon('info-circle')),
+      menuItem(i18n$t('title_load_data'), tabName = 'upload_data', icon = icon('upload')),
+      menuItem(i18n$t('title_quality'),
                tabName = 'quality_checks',
                icon = icon('check-circle'),
                startExpanded  = TRUE,
-               menuSubItem('Reporting Rate',
+               menuSubItem(i18n$t('title_reporting'),
                            tabName = 'reporting_rate',
                            icon = icon('chart-bar')),
-               menuSubItem('Outlier Detection',
+               menuSubItem(i18n$t('title_outlier'),
                            tabName = 'outlier_detection',
                            icon = icon('exclamation-triangle')),
-               menuSubItem('Consistency Check',
+               menuSubItem(i18n$t('title_consistency'),
                            tabName = 'consistency_check',
                            icon = icon('tasks')),
-               menuSubItem('Data Completeness',
+               menuSubItem(i18n$t('title_completeness'),
                            tabName = 'data_completeness',
                            icon = icon('check-square')),
-               menuSubItem('Calculate Ratios',
+               menuSubItem(i18n$t('title_calculate_ratios'),
                            tabName = 'calculate_ratios',
                            icon = icon('percent')),
-               menuSubItem('Overall Score',
+               menuSubItem(i18n$t('title_overall'),
                            tabName = 'overall_score',
                            icon = icon('star'))
                ),
-      menuItem('Remove Years', tabName = 'remove_years', icon = icon('trash')),
-      menuItem('Data Adjustment', tabName = 'data_adjustment', icon = icon('adjust')),
-      menuItem('Data Adjustment Changes', tabName = 'data_adjustment_changes', icon = icon('adjust')),
-      menuItem('Analysis Setup', tabName = 'setup', icon = icon('sliders-h')),
-      menuItem('Denominator Selection',
+      menuItem(i18n$t('btn_remove_years'), tabName = 'remove_years', icon = icon('trash')),
+      menuItem(i18n$t('title_adjustment'),
+               tabName = 'data_adjustment_1',
+               icon = icon('adjust'),
+               menuSubItem(i18n$t('title_adjustment'),
+                           tabName = 'data_adjustment',
+                           icon = icon('adjust')),
+               menuSubItem(i18n$t('title_adjustment_changes'),
+                           tabName = 'data_adjustment_changes',
+                           icon = icon('adjust'))
+      ),
+      menuItem(i18n$t('title_setup'), tabName = 'setup', icon = icon('sliders-h')),
+      menuItem(i18n$t('title_denominator_selection'),
                tabName = 'denom_assess',
                icon = icon('calculator'),
-               menuSubItem('Denominator Assessment',
+               menuSubItem(i18n$t('title_derived_coverage'),
+                           tabName = 'derived_coverage',
+                           icon = icon('chart-line')),
+               menuSubItem(i18n$t('title_denominator_assessment'),
                            tabName = 'denominator_assessment',
                            icon = icon('calculator')),
-               menuSubItem('Denominator Selection',
+               menuSubItem(i18n$t('title_denominator_selection'),
                            tabName = 'denominator_selection',
                            icon = icon('filter'))
                ),
-      menuItem('National Analysis',
-               tabName = 'national_analysis',
-               icon = icon('flag'),
-               menuSubItem('National Coverage',
-                           tabName = 'national_coverage',
-                           icon = icon('map-marked-alt'))
-               ),
-      menuItem('Subnational Analysis',
+      menuItem(i18n$t('title_national_coverage'), tabName = 'national_coverage', icon = icon('flag')),
+      menuItem(i18n$t('title_subnational_analysis'),
                tabName = 'subnational_analysis',
-               icon = icon('flag'),
-               menuSubItem('Subational Coverage',
+               icon = icon('globe-africa'),
+               menuSubItem(i18n$t('title_subnational_coverage'),
                            tabName = 'subnational_coverage',
                            icon = icon('map-marked')),
-               menuSubItem('Sub-National Inequality',
+               menuSubItem(i18n$t('title_subnational_inequality'),
                            tabName = 'subnational_inequality',
                            icon = icon('balance-scale-right')),
-               menuSubItem('Global Vaccination Coverage',
+               menuSubItem(i18n$t('title_vaccination_coverage'),
                            tabName = 'low_reporting',
                            icon = icon('user-slash')),
-               menuSubItem('Sub-National Mapping',
+               menuSubItem(i18n$t('title_subnational_mapping'),
                            tabName = 'subnational_mapping',
                            icon = icon('map'))
                ),
-      menuItem('Equity Assessment', tabName = 'equity_assessment', icon = icon('balance-scale'))
+      menuItem(i18n$t('title_equity_assessment'), tabName = 'equity_assessment', icon = icon('balance-scale'))
     )
   ),
   body = dashboardBody(
     useShinyjs(),
+
+    useWaiter(),
+    useHostess(),
+
+    waiterShowOnLoad(
+      color = '#f2f8ee',
+      html = tagList(
+        hostess_loader(
+          'loader',
+          preset = 'bubble',
+          text_color = '#7bc148',
+          class = 'label-center',
+          center_page = TRUE,
+          stroke_color  = "#7bc148"
+        ),
+        br(),
+        tagAppendAttributes(
+          style = 'margin-left: -75px',
+          p(
+            style = "color: #000000; font-weight: bold;",
+            sample(
+              c(
+                'We are loading the app. Fetching stardust...',
+                'The app is almost ready. Summoning unicorns...',
+                'Hold on, the app is being loaded! Chasing rainbows...',
+                'We are loading the app: teaching squirrels to water ski...',
+                'App is loading! Counting clouds...'
+                ),
+              1
+            )
+          )
+        )
+      )
+    ),
+
     tags$head(
       tags$link(rel = 'stylesheet', type = 'text/css', href = 'styles.css'),
       tags$link(rel = 'stylesheet', type = 'text/css', href = 'rmd-styles.css'),
-      tags$link(rel = "stylesheet", type = 'text/css', href = "bootstrap-icons.css")
+      tags$link(rel = 'stylesheet', type = 'text/css', href = 'bootstrap-icons.css')
     ),
     tabItems(
-      tabItem(tabName = 'introduction', introductionUI('introduction')),
-      tabItem(tabName = 'upload_data', uploadDataUI('upload_data')),
-      tabItem(tabName = 'reporting_rate', reportingRateUI('reporting_rate')),
-      tabItem(tabName = 'data_completeness', dataCompletenessUI('data_completeness')),
-      tabItem(tabName = 'consistency_check', consistencyCheckUI('consistency_check')),
-      tabItem(tabName = 'outlier_detection', outlierDetectionUI('outlier_detection')),
-      tabItem(tabName = 'calculate_ratios', calculateRatiosUI('calculate_ratios')),
-      tabItem(tabName = 'overall_score', overallScoreUI('overall_score')),
-      tabItem(tabName = 'remove_years', removeYearsUI('remove_years')),
-      tabItem(tabName = 'data_adjustment', dataAjustmentUI('data_adjustment')),
-      tabItem(tabName = 'data_adjustment_changes', adjustmentChangesUI('data_adjustment_changes')),
-      tabItem(tabName = 'setup', setupUI('setup')),
-      tabItem(tabName = 'denominator_assessment', denominatorAssessmentUI('denominator_assessment')),
-      tabItem(tabName = 'denominator_selection', denominatorSelectionUI('denominator_selection')),
-      tabItem(tabName = 'national_coverage', nationalCoverageUI('national_coverage')),
-      tabItem(tabName = 'subnational_coverage', subnationalCoverageUI('subnational_coverage')),
-      tabItem(tabName = 'subnational_inequality', subnationalInequalityUI('subnational_inequality')),
-      tabItem(tabName = 'low_reporting', lowReportingUI('low_reporting')),
-      tabItem(tabName = 'subnational_mapping', subnationalMappingUI('subnational_mapping')),
-      tabItem(tabName = 'equity_assessment', equityUI('equity_assessment'))
+      tabItem(tabName = 'introduction', introductionUI('introduction', i18n = i18n)),
+      tabItem(tabName = 'upload_data', uploadDataUI('upload_data', i18n = i18n)),
+      tabItem(tabName = 'reporting_rate', reportingRateUI('reporting_rate', i18n = i18n)),
+      tabItem(tabName = 'data_completeness', dataCompletenessUI('data_completeness', i18n = i18n)),
+      tabItem(tabName = 'consistency_check', consistencyCheckUI('consistency_check', i18n = i18n)),
+      tabItem(tabName = 'outlier_detection', outlierDetectionUI('outlier_detection', i18n = i18n)),
+      tabItem(tabName = 'calculate_ratios', calculateRatiosUI('calculate_ratios', i18n = i18n)),
+      tabItem(tabName = 'overall_score', overallScoreUI('overall_score', i18n = i18n)),
+      tabItem(tabName = 'remove_years', removeYearsUI('remove_years', i18n = i18n)),
+      tabItem(tabName = 'data_adjustment', dataAjustmentUI('data_adjustment', i18n = i18n)),
+      tabItem(tabName = 'data_adjustment_changes', adjustmentChangesUI('data_adjustment_changes', i18n = i18n)),
+      tabItem(tabName = 'setup', setupUI('setup', i18n = i18n)),
+      tabItem(tabName = 'derived_coverage', derivedCoverageUI('derived_coverage', i18n = i18n)),
+      tabItem(tabName = 'denominator_assessment', denominatorAssessmentUI('denominator_assessment', i18n = i18n)),
+      tabItem(tabName = 'denominator_selection', denominatorSelectionUI('denominator_selection', i18n = i18n)),
+      tabItem(tabName = 'national_coverage', nationalCoverageUI('national_coverage', i18n = i18n)),
+      tabItem(tabName = 'subnational_coverage', subnationalCoverageUI('subnational_coverage', i18n = i18n)),
+      tabItem(tabName = 'subnational_inequality', subnationalInequalityUI('subnational_inequality', i18n = i18n)),
+      tabItem(tabName = 'low_reporting', lowReportingUI('low_reporting', i18n = i18n)),
+      tabItem(tabName = 'subnational_mapping', subnationalMappingUI('subnational_mapping', i18n = i18n)),
+      tabItem(tabName = 'equity_assessment', equityUI('equity_assessment', i18n = i18n))
     ),
     tags$script(src = 'script.js')
   )
 )
 
 server <- function(input, output, session) {
+  hostess <- Hostess$new('loader', infinite = TRUE)
+  hostess$start()
 
-  introductionServer('introduction')
-  cache <- uploadDataServer('upload_data')
-  observeEvent(cache(), {
+  introductionServer('introduction', selected_language = reactive(input$selected_language))
+  cache <- uploadDataServer('upload_data', i18n)
+  observeEvent(c(cache(), cache()$language), {
     req(cache())
 
-    shinyjs::delay(500, {
-      updateHeader(cache()$country)
-      shinyjs::addClass(selector = 'body', class = 'fixed')
-    })
+    update_lang(cache()$language)
+
+    # shinyjs::delay(500, {
+    updateHeader(cache()$country, i18n)
+    shinyjs::addClass(selector = 'body', class = 'fixed')
+    # })
   })
 
-  reportingRateServer('reporting_rate', cache)
-  dataCompletenessServer('data_completeness', cache)
-  consistencyCheckServer('consistency_check', cache)
-  outlierDetectionServer('outlier_detection', cache)
-  calculateRatiosServer('calculate_ratios', cache)
-  overallScoreServer('overall_score', cache)
-  removeYearsServer('remove_years', cache)
-  dataAdjustmentServer('data_adjustment', cache)
-  adjustmentChangesServer('data_adjustment_changes', cache)
-  setupServer('setup', cache)
-  denominatorAssessmentServer('denominator_assessment', cache)
-  denominatorSelectionServer('denominator_selection', cache)
-  nationalCoverageServer('national_coverage', cache)
-  subnationalCoverageServer('subnational_coverage', cache)
-  subnationalInequalityServer('subnational_inequality', cache)
-  lowReportingServer('low_reporting', cache)
-  subnationalMappingServer('subnational_mapping', cache)
-  equityServer('equity_assessment', cache)
-  downloadReportServer('download_report', cache)
-  saveCacheServe('save_cache', cache)
+  observeEvent(input$selected_language, {
+    if (!isTruthy(cache())) {
+      update_lang(input$selected_language)
+      updateSelectizeInput(session, input$selected_language)
+    } else {
+      cache()$set_language(input$selected_language)
+      updateSelectizeInput(session, cache()$language)
+    }
+  })
+
+  reportingRateServer('reporting_rate', cache, i18n)
+  dataCompletenessServer('data_completeness', cache, i18n)
+  consistencyCheckServer('consistency_check', cache, i18n)
+  outlierDetectionServer('outlier_detection', cache, i18n)
+  calculateRatiosServer('calculate_ratios', cache, i18n)
+  overallScoreServer('overall_score', cache, i18n)
+  removeYearsServer('remove_years', cache, i18n)
+  dataAdjustmentServer('data_adjustment', cache, i18n)
+  adjustmentChangesServer('data_adjustment_changes', cache, i18n)
+  setupServer('setup', cache, i18n)
+  derivedCoverageServer('derived_coverage', cache, i18n)
+  denominatorAssessmentServer('denominator_assessment', cache, i18n)
+  denominatorSelectionServer('denominator_selection', cache, i18n)
+  nationalCoverageServer('national_coverage', cache, i18n)
+  subnationalCoverageServer('subnational_coverage', cache, i18n)
+  subnationalInequalityServer('subnational_inequality', cache, i18n)
+  lowReportingServer('low_reporting', cache, i18n)
+  subnationalMappingServer('subnational_mapping', cache, i18n)
+  equityServer('equity_assessment', cache, i18n)
+  downloadReportServer('download_report', cache, i18n)
+  saveCacheServe('save_cache', cache, i18n)
 
   # session$onSessionEnded(stopApp)
 
-  updateHeader <- function(country) {
+  onFlushed(function() {
+    hostess$close()
+    waiter_hide()
+  }, once = TRUE)
+
+  updateHeader <- function(country, i18n) {
+
     header_title <- div(
       class = 'navbar-header',
-      h4(HTML(paste0(country, ' &mdash; Countdown Analysis')), class = 'navbar-brand')
+      h4(HTML(paste0(country, ' &mdash; ', i18n$t('title_countdown'))), class = 'navbar-brand')
     )
 
     # Dynamically update the header
     header <- htmltools::tagQuery(
       dashboardHeader(
-        title = 'cd2030',
+        title = HTML(paste0('cd2030 <sup>v', packageVersion('cd2030'), '</sup>')),
         saveCacheUI('save_cache'),
-        downloadReportUI('download_report')
+        downloadReportUI('download_report', i18n)
       )
     )
     header <- header$

@@ -1,15 +1,17 @@
-reportButtonUI <- function(id) {
+reportButtonUI <- function(id, label) {
   ns <- NS(id)
   actionButton(
     inputId = ns('generate_report'),
-    label = 'Generate Report',
+    label = label,
     icon = icon('file-alt'),
     class ='btn bg-olive btn-flat btn-sm'
   )
 }
 
-reportButtonServer <- function(id, cache, report_name) {
+reportButtonServer <- function(id, cache, report_name, i18n, adminlevel_1) {
   stopifnot(is.reactive(cache))
+  stopifnot(is.reactive(report_name))
+  stopifnot(is.reactive(adminlevel_1))
 
   moduleServer(
     id = id,
@@ -23,8 +25,8 @@ reportButtonServer <- function(id, cache, report_name) {
       })
 
       report_file_name <- reactive({
-        req(country(), report_name)
-        paste0(country(), '_', report_name, '_countdown_report')
+        req(country(), report_name())
+        paste0(country(), '_', report_name(), '_countdown_report')
       })
 
       extension <- reactive({
@@ -41,14 +43,14 @@ reportButtonServer <- function(id, cache, report_name) {
 
         showModal(
           modalDialog(
-            title = 'Download Options',
+            title = i18n$t("title_download_options"),
             selectizeInput(
-              ns('format'), 'Select Format:',
+              ns('format'), i18n$t("title_select_format"),
               choices = c('Word' = 'word_document', 'PDF' = 'pdf_document')
             ),
             footer = tagList(
-              modalButton('Cancel'),
-              actionButton(ns("start_generate"), "Generate Report", class = 'btn bg-olive btn-flat')
+              modalButton(i18n$t("btn_cancel")),
+              actionButton(ns('start_generate'), i18n$t("btn_generate_report"), class = 'btn bg-olive btn-flat')
             )
           )
         )
@@ -66,15 +68,15 @@ reportButtonServer <- function(id, cache, report_name) {
           modalDialog(
             title = tagList(
               div(
-                class = "text-center",
-                h4("Generating Report")
+                class = 'text-center',
+                h4(i18n$t("msg_generating_report"))
               )
             ),
             div(
-              class = "text-center",
-              icon("file-alt", class = "fa-5x text-primary mb-3"), # Add a large icon
-              p("Your report is being generated. This might take a few moments.", class = "lead"),
-              div(class = "spinner-border text-primary", role = "status", span(class = "sr-only", "Loading..."))
+              class = 'text-center',
+              icon('file-alt', class = 'fa-5x text-primary mb-3'), # Add a large icon
+              p(i18n$t("msg_report_generating"), class = 'lead'),
+              div(class = 'spinner-border text-primary', role = 'status', span(class = 'sr-only', i18n$t("msg_loading")))
             ),
             footer = NULL,
             easyClose = FALSE
@@ -83,15 +85,17 @@ reportButtonServer <- function(id, cache, report_name) {
 
         rv$generating <- TRUE
         rv$future <- future({
-          temp_file <- tempfile(fileext = paste0(".", extension()))
+          temp_file <- tempfile(fileext = paste0('.', extension()))
           generate_report(
-            cache = cache(),  # Use the minimized data
+            cache = cache(),
             output_file = temp_file,
-            report_name = report_name,
+            report_name = report_name(),
+            adminlevel_1 = adminlevel_1(),
             output_format = params$format
           )
           temp_file
-        }, globals = list(cache = cache, params = params, generate_report = generate_report))
+        }, globals = list(cache = cache, params = params, generate_report = generate_report,
+                          extension = extension, adminlevel_1 = adminlevel_1, report_name = report_name))
 
         rv$future %...>% {
           rv$generating <- FALSE
@@ -101,18 +105,18 @@ reportButtonServer <- function(id, cache, report_name) {
           # Update modal to show download button
           showModal(
             modalDialog(
-              title = "Download Ready",
+              title = i18n$t("msg_download_ready"),
               div(
-                class = "text-center",
-                icon("check-circle", class = "fa-5x text-success mb-3"),
-                h4("Success!"),
-                p("The report has been successfully generated. Click below to download it."),
-                p("This dialog will remain open until you download the report or click 'Dismiss.'")
+                class = 'text-center',
+                icon('check-circle', class = 'fa-5x text-success mb-3'),
+                h4(paste0(i18n$t("msg_success"), '!')),
+                p(i18n$t("msg_report_generated")),
+                p(i18n$t("msg_report_generated_dialog"))
               ),
               footer = tagList(
                 fluidRow(
-                  column(6, downloadButtonUI(ns("download_data"), "Download Report")),
-                  column(6, modalButton("Dismiss"))
+                  column(6, downloadButtonUI(ns('download_data'))),
+                  column(6, modalButton(i18n$t("btn_dismiss")))
                 )
               ),
               easyClose = FALSE # Prevent accidental dismissal by clicking outside the modal
@@ -125,10 +129,10 @@ reportButtonServer <- function(id, cache, report_name) {
           removeModal()
           showModal(
             modalDialog(
-              title = "Error",
-              "An error occurred while generating the report. Please try again.",
+              title = i18n$t("msg_error"),
+              i18n$t("error_report_generation"),
               easyClose = TRUE,
-              footer = modalButton("OK")
+              footer = modalButton(i18n$t("btn_ok"))
             )
           )
         }
@@ -138,13 +142,14 @@ reportButtonServer <- function(id, cache, report_name) {
         id = 'download_data',
         filename = report_file_name,
         extension = extension,
+        i18n = i18n,
         content = function(file) {
           req(rv$file_path)
           file.copy(rv$file_path, file)
         },
         data = cache,
-        label = 'Download Report',
-        message = 'Generating report ...'
+        label = "btn_download_report",
+        message = "msg_generating_report"
       )
     }
   )

@@ -29,12 +29,12 @@ renderCustomPlot <- function(expr) {
         (is.vector(check_data) && length(check_data) == 0) ||
         (is.matrix(check_data) && nrow(check_data) == 0)) { #Added matrix check
 
-      print(check_data)
       message <- clean_error_message(check_data)
 
-      if (length(message) == 0 || message == '') {
+      if (nchar(message) == 0 || message == '') {
         generate_error_plot('No data available', 'gray')
       } else {
+        print(check_data)
         generate_error_plot(message, 'red')
       }
       return() # Return early, no progress or further processing
@@ -49,6 +49,7 @@ renderCustomPlot <- function(expr) {
       }
     },
     error = function(e) {
+      print(e)
       # if (inherits(e, 'shiny.silent.error')) return()
       generate_error_plot(paste('Error:', clean_error_message(e)))
     })

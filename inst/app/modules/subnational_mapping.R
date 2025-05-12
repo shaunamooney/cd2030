@@ -1,34 +1,30 @@
-subnationalMappingUI <- function(id) {
+subnationalMappingUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('subnational_mapping'), 'Mapping'),
+    contentHeader(ns('subnational_mapping'), i18n$t("title_subnational_mapping"), i18n = i18n),
     contentBody(
       box(
-        title = 'Analysis Options',
+        title = i18n$t("title_analysis_options"),
         status = 'success',
         width = 12,
         solidHeader = TRUE,
         fluidRow(
-          column(3, selectizeInput(ns('level'), label = 'Subnational Level',
-                                   choices = c('Admin Level 1' = 'adminlevel_1'))),
+          column(3, adminLevelInputUI(ns('admin_level'), i18n)),
                                                #'District' = 'district'))), # District is not support now
-          column(3, selectizeInput(ns('denominator'), label = 'Denominator',
-                                   choices = c('DHIS2' = 'dhis2',
-                                               'ANC 1' = 'anc1',
-                                               'Penta 1' = 'penta1'))),
-          column(3, selectizeInput(ns('years'), label = 'Select Years', choice = NULL, multiple = TRUE)),
-          column(3, selectizeInput(ns('palette'), label = 'Palette', choices = NULL))
+          column(3, denominatorInputUI(ns('denominator'), i18n)),
+          column(3, selectizeInput(ns('years'), label = i18n$t("title_select_years"), choice = NULL, multiple = TRUE)),
+          column(3, selectizeInput(ns('palette'), label = i18n$t("title_palette"), choices = NULL))
         )
       ),
 
       tabBox(
         id = ns('coverage'),
-        title = 'Coverage/Utilization Level',
+        title = i18n$t("title_coverage_level"),
         width = 12,
 
         tabPanel(
-          'Penta 3 Coverage',
+          i18n$t("title_penta3_coverage"),
           fluidRow(
             column(12, plotCustomOutput(ns('penta3_coverage'))),
             column(3, downloadButtonUI(ns('penta3_download'))),
@@ -36,7 +32,7 @@ subnationalMappingUI <- function(id) {
         ),
 
         tabPanel(
-          'Measles 1 Coverage',
+          i18n$t("title_mcv1_coverage"),
           fluidRow(
             column(12, plotCustomOutput(ns('mcv1_coverage'))),
             column(3, downloadButtonUI(ns('mcv1_download'))),
@@ -44,7 +40,7 @@ subnationalMappingUI <- function(id) {
         ),
 
         tabPanel(
-          'Penta1 - Penta3 dropout',
+          i18n$t("title_penta13_dropout"),
           fluidRow(
             column(12, plotCustomOutput(ns('penta13_dropout'))),
             column(3, downloadButtonUI(ns('penta13_dropout_download'))),
@@ -52,7 +48,7 @@ subnationalMappingUI <- function(id) {
         ),
 
         tabPanel(
-          'Penta3 - MCV3 dropout',
+          i18n$t("title_penta3_mcv1_dropout"),
           fluidRow(
             column(12, plotCustomOutput(ns('penta3mcv1_dropout'))),
             column(3, downloadButtonUI(ns('penta3mcv1_droput_download'))),
@@ -60,12 +56,10 @@ subnationalMappingUI <- function(id) {
         ),
 
         tabPanel(
-          'Custom Check',
+          i18n$t("opt_custom_check"),
           fluidRow(
-            column(3, selectizeInput(ns('indicator'), label = 'Indicator',
-                                     choices = c('Select' = '0', "anc1", "bcg", "measles2", "measles3", "opv1", "opv2", "opv3",
-                                                 "pcv1", "pcv2", "pcv3", "penta1", "penta2", "rota1", "rota2", "instdeliveries",
-                                                 "ipv1", "ipv2", "undervax", "zerodose", "dropout_measles12")))
+            column(3, selectizeInput(ns('indicator'), label = i18n$t("title_indicator"),
+                                     choices = c('Select' = '0', list_vaccine_indicators())))
           ),
           fluidRow(
             column(12, plotCustomOutput(ns('custom'))),
@@ -77,12 +71,15 @@ subnationalMappingUI <- function(id) {
   )
 }
 
-subnationalMappingServer <- function(id, cache) {
+subnationalMappingServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
+
+      admin_level <- adminLevelInputServer('admin_level')
+      denominator <- denominatorInputServer('denominator', cache)
 
       data <- reactive({
         req(cache())
@@ -100,25 +97,19 @@ subnationalMappingServer <- function(id, cache) {
       })
 
       dt <- reactive({
-        req(data(), un_estimates(), input$denominator, input$palette)
+        req(data(), cache()$survey_year, un_estimates(), all(!is.na(cache()$national_estimates)))
+
 
         data() %>%
-          get_mapping_data(un_estimates(), cache()$national_estimates, cache()$map_mapping)
+          get_mapping_data(un_estimates = un_estimates(),
+                           rates = cache()$national_estimates,
+                           survey_year = cache()$survey_year,
+                           subnational_map = cache()$map_mapping)
       })
 
       years <- reactive({
         req(cache())
         cache()$mapping_years
-      })
-
-      observe({
-        req(cache())
-        updateSelectInput(session, 'denominator', selected = cache()$denominator)
-      })
-
-      observeEvent(input$denominator, {
-        req(cache(), input$denominator)
-        cache()$set_denominator(input$denominator)
       })
 
       observe({
@@ -159,9 +150,9 @@ subnationalMappingServer <- function(id, cache) {
       output$penta13_dropout <- renderCustomPlot({
         req(dt())
 
-        title <- paste("Distribution of Penta1 to Penta3 dropout in ", country(), "by Regions")
+        title <- str_glue(i18n$t("title_distribution_of_penta13_dropout"))
         plot(dt(), indicator = 'dropout_penta13',
-             denominator = input$denominator,
+             denominator = denominator(),
              palette = input$palette,
              title = title,
              plot_year = years())
@@ -170,9 +161,9 @@ subnationalMappingServer <- function(id, cache) {
       output$penta3mcv1_dropout <- renderCustomPlot({
         req(dt())
 
-        title <- paste("Distribution of Penta1 to Measles3 dropout in ", country(), "by Regions")
+        title <- str_glue(i18n$t("title_distribution_of_penta3_mcv1_dropout"))
         plot(dt(), indicator = 'dropout_penta3mcv1',
-             denominator = input$denominator,
+             denominator = denominator(),
              palette = input$palette,
              title = title,
              plot_year = years())
@@ -181,9 +172,9 @@ subnationalMappingServer <- function(id, cache) {
       output$penta3_coverage <- renderCustomPlot({
         req(dt())
 
-        title <- paste("Distribution of Penta3 Coverage in ", country(), "by Regions")
+        title <- str_glue(i18n$t("title_distribution_of_penta3"))
         plot(dt(), indicator = 'penta3',
-             denominator = input$denominator,
+             denominator = denominator(),
              palette = input$palette,
              title = title,
              plot_year = years())
@@ -193,9 +184,9 @@ subnationalMappingServer <- function(id, cache) {
       output$mcv1_coverage <- renderCustomPlot({
         req(dt())
 
-        title <- paste("Distribution of Measles 1 Coverage in ", country(), "by Regions")
+        title <- str_glue(i18n$t("title_distribution_of_measles1"))
         plot(dt(), indicator = 'measles1',
-             denominator = input$denominator,
+             denominator = denominator(),
              palette = input$palette,
              title = title,
              plot_year = years())
@@ -204,9 +195,9 @@ subnationalMappingServer <- function(id, cache) {
       output$custom <- renderCustomPlot({
         req(dt(), input$indicator != '0')
 
-        title <- paste('Distribution of ', input$indicator,' Coverage in ', country(), 'by Regions')
+        title <- str_glue(i18n$t("title_distribution_of_indicator"))
         plot(dt(), indicator = input$indicator,
-             denominator = input$denominator,
+             denominator = denominator(),
              palette = input$palette,
              title = title,
              plot_year = years())
@@ -214,65 +205,70 @@ subnationalMappingServer <- function(id, cache) {
 
       downloadPlot(
         id = 'penta3_download',
-        filename = paste0('penta3_', input$level, '_map_', input$denominator),
+        filename = reactive(paste0('penta3_', admin_level(), '_map_', denominator())),
         data = dt,
+        i18n = i18n,
         plot_function = function() {
           plot(dt(), indicator = 'penta3',
-               denominator = input$denominator,
+               denominator = denominator(),
                palette = input$palette,
-               title = paste("Distribution of Penta3 Coverage in ", country(), "by Regions"),
+               title = str_glue(i18n$t("title_distribution_of_penta3")),
                plot_year = years())
         }
       )
 
       downloadPlot(
         id = 'mcv1_download',
-        filename = paste0('mcv1_', input$level, '_map_', input$denominator),
+        filename = reactive(paste0('mcv1_', admin_level(), '_map_', denominator())),
         data = dt,
+        i18n = i18n,
         plot_function = function() {
           plot(dt(), indicator = 'measles1',
-               denominator = input$denominator,
+               denominator = denominator(),
                palette = input$palette,
-               title = paste("Distribution of Measles 1 Coverage in ", country(), "by Regions"),
+               title = str_glue(i18n$t("title_distribution_of_measles1")),
                plot_year = years())
         }
       )
 
       downloadPlot(
         id = 'penta13_dropout_download',
-        filename = paste0('penta13_dropout_', input$level, '_map_', input$denominator),
+        filename = reactive(paste0('penta13_dropout_', admin_level(), '_map_', denominator())),
         data = dt,
+        i18n = i18n,
         plot_function = function() {
           plot(dt(), indicator = 'dropout_penta13',
-               denominator = input$denominator,
+               denominator = denominator(),
                palette = input$palette,
-               title = paste("Distribution of Penta1 to Penta3 dropout Coverage in ", country(), "by Regions"),
+               title = str_glue(i18n$t("title_distribution_of_penta13_dropout")),
                plot_year = years())
         }
       )
 
       downloadPlot(
         id = 'penta3mcv1_droput_download',
-        filename = paste0('penta3mcv1_droput_', input$level, '_map_', input$denominator),
+        filename = reactive(paste0('penta3mcv1_droput_', admin_level(), '_map_', denominator())),
         data = dt,
+        i18n = i18n,
         plot_function = function() {
           plot(dt(), indicator = 'dropout_penta3mcv1',
-               denominator = input$denominator,
+               denominator = denominator(),
                palette = input$palette,
-               title = paste("Distribution of Penta1 to Measles3 dropout in ", country(), "by Regions"),
+               title = str_glue(i18n$t("title_distribution_of_penta3_mcv1_dropout")),
                plot_year = years())
         }
       )
 
       downloadPlot(
         id = 'custom_download',
-        filename = paste0(input$indicator, '_', input$level, '_map_', input$denominator),
+        filename = reactive(paste0(input$indicator, '_', admin_level(), '_map_', denominator())),
         data = dt,
+        i18n = i18n,
         plot_function = function() {
           plot(dt(), indicator = input$indicator,
-               denominator = input$denominator,
+               denominator = denominator(),
                palette = input$palette,
-               title = paste('Distribution of ', input$indicator,' Coverage in ', country(), 'by Regions'),
+               title = str_glue(i18n$t("title_distribution_of_indicator")),
                plot_year = years())
         }
       )
@@ -281,8 +277,9 @@ subnationalMappingServer <- function(id, cache) {
         'subnational_mapping',
         cache = cache,
         objects = pageObjectsConfig(input),
-        md_title = 'Mapping',
-        md_file = '2_reporting_rate.md'
+        md_title = i18n$t("title_subnational_mapping"),
+        md_file = '2_reporting_rate.md',
+        i18n = i18n
       )
     }
   )

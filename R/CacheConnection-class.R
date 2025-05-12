@@ -1,11 +1,13 @@
-#' Create a CacheConnection
+#' Create a CacheConnection Object
 #'
-#' Constructor function for objects of class [CacheConnection].
+#' `init_CacheConnection` initializes a `CacheConnection` either from a provided `.rds` file path
+#' or directly from a `cd_data` object. Only one of the arguments should be non-NULL.
 #'
-#' @param rds_path Path to the RDS file (NULL for in-memory only).
-#' @param countdown_data Countdown data (class `cd_data`).
+#' @param rds_path Optional character. Path to an RDS file to load the cache from.
+#' @param countdown_data Optional `cd_data` object to initialize in-memory cache.
 #'
-#' @return An object of class [CacheConnection]
+#' @return An instance of the `CacheConnection` class.
+#'
 #' @export
 init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL) {
   CacheConnection$new(
@@ -58,19 +60,25 @@ print_notes <- function(cache, page_id, object_id = NULL, parameters = NULL) {
   }
 }
 
-#' CacheConnection R6 Class
+#' CacheConnection Class
 #'
-#' An R6 class for handling RDS caching for data analysis and report generation.
+#' @description
+#' An R6 class that handles persistent or in-memory caching of data used in the Countdown 2030
+#' analysis and reporting workflows. It supports tracking of various internal data objects,
+#' reactive updates (for Shiny apps), note-taking for report annotations, and saving/loading
+#' from `.rds` files.
 #'
+#' @docType class
+#' @name CacheConnection
+#' @format An [R6::R6Class] generator object.
 #' @keywords internal
 CacheConnection <- R6::R6Class(
   'CacheConnection',
   public = list(
 
-    #' Initialize the CacheConnection class
-    #'
-    #' @param rds_path Path to the RDS file (NULL for in-memory only).
-    #' @param countdown_data Countdown data (class `cd_data`).
+    #' @description Initialize a CacheConnection instance.
+    #' @param rds_path Path to the RDS file (can be NULL).
+    #' @param countdown_data Countdown data of class `cd_data`.
     initialize = function(rds_path = NULL, countdown_data = NULL) {
 
       if (is.null(rds_path) && is.null(countdown_data)) {
@@ -95,8 +103,8 @@ CacheConnection <- R6::R6Class(
       }
     },
 
-    #' Load data from RDS file
-    #' @return None
+    #' Load data from disk.
+    #' @return None. Updates internal state.
     load_from_disk = function() {
       check_file_path(private$.in_memory_data$rds_path)
 
@@ -111,7 +119,7 @@ CacheConnection <- R6::R6Class(
     },
 
     #' Save data to disk (only if changed and RDS path is not NULL)
-    #' @return None
+    #' @return None. Updates file.
     save_to_disk = function() {
       if (private$.has_changed && !is.null(private$.in_memory_data$rds_path)) { # Key change here
         saveRDS(private$.in_memory_data, private$.in_memory_data$rds_path)
@@ -119,6 +127,14 @@ CacheConnection <- R6::R6Class(
       }
     },
 
+    #' @description Append a note to a page.
+    #' @param page_id Page ID.
+    #' @param object_id Object ID.
+    #' @param note Note text.
+    #' @param parameters Named list of parameters.
+    #' @param include_in_report Logical flag.
+    #' @param include_plot_table Logical flag.
+    #' @param single_entry Logical flag for uniqueness.
     append_page_note = function(page_id, object_id, note, parameters = list(), include_in_report = FALSE, include_plot_table = FALSE, single_entry = FALSE) {
       # Validate inputs
       stopifnot(is.character(page_id), is.character(object_id), is.character(note))
@@ -153,14 +169,17 @@ CacheConnection <- R6::R6Class(
       self$save_to_disk()
     },
 
+    #' @description Retrieve notes for a given page/object.
+    #' @param page_id Page ID.
+    #' @param object_id Object ID.
+    #' @param parameters Named list of parameters.
     get_notes = function(page_id, object_id = NULL, parameters = NULL) {
       private$.in_memory_data$page_notes %>%
         filter(if (is.null(!!object_id)) TRUE else object_id == !!object_id) %>%
         filter(if (is.null(!!parameters)) TRUE else map_lgl(parameters, ~ identical(.x, !!parameters)))
     },
 
-    #' Reactive method for the CacheConnection object
-    #' @return A Shiny reactive expression tracking changes
+    #' @description Return a reactive wrapper (for Shiny).
     reactive = function() {
       # Ensure the reactive stuff is initialized.
       if (is.null(private$.reactiveDep)) {
@@ -175,87 +194,170 @@ CacheConnection <- R6::R6Class(
       })
     },
 
-    set_cache_path = function(value) private$setter('rds_path', value, ~ !is.null(.x) && length(.x) > 0),
+    #' @description Set the language.
+    #' @param value A scalar string representing 2 digit string.
+    set_language = function(value)  private$setter('language', value, ~ is_scalar_character(.x) && nchar(.x) == 2),
+
+    #' @description Set cache RDS file path.
+    #' @param value New file path.
+    set_cache_path = function(value) {
+      path_set <- private$setter('rds_path', value, ~ !is.null(.x) && length(.x) > 0)
+      if (path_set) {
+        private$.has_changed <- TRUE
+        self$save_to_disk()
+      }
+    },
+
+    #' @description Set the countdown data.
+    #' @param value A `cd_data` object.
     set_countdown_data = function(value) private$setter('countdown_data', value, check_cd_data),
 
+    #' @description Set adjusted data.
+    #' @param value A `cd_data` object.
     set_adjusted_data = function(value) {
       check_cd_data(value)
       private$.adjusted_data <- value
     },
 
+    #' @description Set performance threshold.
+    #' @param value A numeric scalar.
     set_performance_threshold = function(value) private$setter('performance_threshold', value, is_scalar_integerish),
+
+    #' @description Set years to exclude.
+    #' @param value Numeric vector.
     set_excluded_years = function(value) private$setter('excluded_years', value, is.numeric),
+
+    #' @description Set K-factors.
+    #' @param value Named numeric vector.
+
     set_k_factors = function(value) private$setter('k_factors', value, ~ is.numeric(.x) && all(c('anc', 'idelv', 'vacc') %in% names(.x))),
+
+    #' @description Set adjusted flag.
+    #' @param value Logical scalar.
     set_adjusted_flag = function(value) private$setter('adjusted_flag', value, ~ is.logical(.x) && length(.x) == 1),
+
+    #' @description Set survey estimates.
+    #' @param value Named numeric vector.
     set_survey_estimates = function(value) {
-      if (!is.numeric(value) || !all(c('anc1', 'penta1') %in% names(value))) {
+      if (!is.numeric(value) || !all(c('anc1', 'penta1', 'penta3', 'measles1', 'bcg') %in% names(value))) {
         cd_abort(c('x' = 'Survey must be a numeric vector containing {.val anc1}, {.val penta1} and {.val penta3}'))
-      }
-      if (!'penta3' %in% value) {
-        value['penta3'] <- private$.in_memory_data$survey_estimates['penta3']
       }
       private$update_field('survey_estimates', value)
     },
 
+    #' @description Set national estimates.
+    #' @param value Named list.
     set_national_estimates = function(value) private$setter('national_estimates', value, is.list),
+
+    #' @description Set year of survey estimates.
+    #' @param value Character scalar.
+    set_survey_source = function(value) private$setter('survey_source', value, is_scalar_character),
+
+    #' @description Set year of survey estimates.
+    #' @param value Integer year.
+    set_survey_year = function(value) private$setter('survey_year', value, is_scalar_integerish),
+
+    #' @description Set start year of surveys.
+    #' @param value Integer year.
     set_start_survey_year = function(value) private$setter('start_survey_year', value, is_scalar_integerish),
+
+    #' @description Set denominator type.
+    #' @param value Character scalar.
     set_denominator = function(value) private$setter('denominator', value, is_scalar_character),
+
+    #' @description Set selected region.
+    #' @param value Character scalar.
     set_selected_admin_level_1 = function(value) private$setter('selected_admin_level_1', value, is_scalar_character),
+
+    #' @description Set selected district.
+    #' @param value Character scalar.
     set_selected_district = function(value) private$setter('selected_district', value, is_scalar_character),
+
+    #' @description Set mapping years.
+    #' @param value Integer vector.
     set_mapping_years = function(value) private$setter('selected_mapping_years', value, is_integerish),
+
+    #' @description Set UN estimates.
+    #' @param value Data frame.
     set_un_estimates = function(value) private$setter('un_estimates', value, check_un_estimates_data),
+
+    #' @description Set WUENIC estimates.
+    #' @param value Data frame.
     set_wuenic_estimates = function(value) private$setter('wuenic_estimates', value, check_wuenic_data),
+
+    #' @description Set national survey.
+    #' @param value Data frame.
     set_national_survey = function(value) private$setter('national_survey', value, check_survey_data),
+
+    #' @description Set regional survey.
+    #' @param value Data frame.
     set_regional_survey = function(value) private$setter('regional_survey', value, ~ check_survey_data(.x, 'adminlevel_1')),
+
+    #' @description Set WIQ survey.
+    #' @param value Data frame.
     set_wiq_survey = function(value) private$setter('wiq_survey', value, check_equity_data),
+
+    #' @description Set area-level survey.
+    #' @param value Data frame.
     set_area_survey = function(value) private$setter('area_survey', value, check_equity_data),
+
+    #' @description Set education-level survey.
+    #' @param value Data frame.
     set_education_survey = function(value) private$setter('education_survey', value, check_equity_data),
+
+    #' @description Set survey mapping table.
+    #' @param value Data frame.
     set_survey_mapping = function(value) private$setter('survey_mapping', value, is.data.frame),
+
+    #' @description Set map overlay mapping.
+    #' @param value Data frame.
     set_map_mapping = function(value) private$setter('map_mapping', value, is.data.frame)
   ),
 
   active = list(
+    #' @field language Get the UI language.
+    language = function(value) private$getter('language', value),
+
+    #' @field cache_path Get cache path.
     cache_path = function(value) private$getter('rds_path', value),
+
+    #' @field countdown_data Get countdown data.
     countdown_data = function(value) private$getter('countdown_data', value),
+
+    #' @field country Get country name.
     country = function(value) {
       if (missing(value)) {
         if (is.null(self$countdown_data)) return(NULL)
 
-        return(attr(self$countdown_data, 'country'))
+        return(attr_or_abort(self$countdown_data, 'country'))
       }
 
       cd_abort(c('x' = '{.field country} is readonly.'))
     },
 
+    #' @field country_iso Get country ISO3 code.
     country_iso = function(value) {
       if (missing(value)) {
         if (is.null(self$countdown_data)) return(NULL)
 
-        return(attr(self$countdown_data, 'iso3'))
+        return(attr_or_abort(self$countdown_data, 'iso3'))
       }
 
       cd_abort(c('x' = '{.field iso3} is readonly.'))
     },
 
-    indicator_groups = function(value) {
+    #' @field default_national_estimates Get the national rates.
+    default_national_estimates = function(value) {
       if (missing(value)) {
         if (is.null(self$countdown_data)) return(NULL)
 
-        return(attr(self$countdown_data, 'indicator_groups'))
-      }
-      cd_abort(c('x' = '{.field indicator_groups} is readonly.'))
-    },
-
-    vaccine_indicators = function(value) {
-      if (missing(value)) {
-        if (is.null(self$indicator_groups)) return(NULL)
-
-        return(self$indicator_groups$vacc)
+        return(attr_or_abort(self$countdown_data, 'national_rates'))
       }
 
-      cd_abort(c('x' = '{.field vaccine_indicators} is readonly.'))
+      cd_abort(c('x' = '{.field default_national_estimates} is readonly.'))
     },
 
+    #' @field adjusted_data Gets adjusted data.
     adjusted_data = function(value) {
       if (missing(value)) {
         if (self$adjusted_flag && !is.null(private$.adjusted_data)) {
@@ -267,8 +369,10 @@ CacheConnection <- R6::R6Class(
       private$.adjusted_data <- value
     },
 
+    #' @field data_with_excluded_years Get data with excluded years removed.
     data_with_excluded_years = function(value) {
       if (missing(value)) {
+        private$depend('excluded_years')
         excluded_years <- self$excluded_years
         data <- self$countdown_data %>%
           filter(if(length(excluded_years) > 0) !year %in% excluded_years else TRUE)
@@ -278,28 +382,24 @@ CacheConnection <- R6::R6Class(
       cd_abort(c('x' = '{.field data_with_excluded_years} is readonly.'))
     },
 
+    #' @field performance_threshold Gets performance threshold.
     performance_threshold = function(value) private$getter('performance_threshold', value),
+
+    #'@field excluded_years Gets excluded years.
     excluded_years = function(value) private$getter('excluded_years', value),
+
+    #' @field k_factors Gets k-factors.
     k_factors = function(value) private$getter('k_factors', value),
+
+    #' @field adjusted_flag Gets adjusted flag.
     adjusted_flag = function(value) private$getter('adjusted_flag', value),
-    survey_estimates = function(value) {
-      if (missing(value)) {
-        private$depend('survey_estimates')
-        return(private$.in_memory_data$survey_estimates)
-      }
 
-      if (!is.numeric(value) || !all(c('anc1', 'penta1') %in% names(value))) {
-        cd_abort(c('x' = 'Survey must be a numeric vector containing {.val anc1}, {.val penta1} and {.val penta3}'))
-      }
-      if (!'penta3' %in% value) {
-        value['penta3'] <- private$.in_memory_data$survey_estimates['penta3']
-      }
-      private$update_field('survey_estimates', value)
-    },
+    #' @field survey_estimates Gets survey estimates.
+    survey_estimates = function(value) private$getter('survey_estimates', value),
 
+    #' @field national_estimates Gets national estimates.
     national_estimates = function(value) {
       if (missing(value)) {
-        private$depend('survey_estimates')
         private$depend('national_estimates')
         survey <- self$survey_estimates
         return(c(
@@ -317,37 +417,105 @@ CacheConnection <- R6::R6Class(
       private$update_field('national_estimates', value)
     },
 
+    #' @field survey_years Get survey years.
+    survey_years = function(value) {
+      survey <- private$getter('national_survey', value)
+      if (is.null(survey)) return(NULL)
+      survey %>%
+        distinct(year) %>%
+        arrange(year) %>%
+        pull(year)
+    },
+
+    #' @field survey_source Gets survey source of information.
+    survey_source = function(value) private$getter('survey_source', value),
+
+    #' @field survey_year Gets survey year of survey estimates.
+    survey_year = function(value) private$getter('survey_year', value),
+
+    #' @field start_survey_year Gets start survey year.
     start_survey_year = function(value) private$getter('start_survey_year', value),
+
+    #' @field denominator Gets denominator.
     denominator = function(value) private$getter('denominator', value),
+
+    #' @field selected_admin_level_1 Gets selected region.
     selected_admin_level_1 = function(value) private$getter('selected_admin_level_1', value),
+
+    #' @field selected_district Gets selected district.
     selected_district = function(value) private$getter('selected_district', value),
+
+    #' @field mapping_years Gets mapping years.
     mapping_years = function(value) private$getter('selected_mapping_years', value),
+
+    #' @field un_estimates Gets UN estimates.
     un_estimates = function(value) private$getter('un_estimates', value),
+
+    #' @field wuenic_estimates Gets WUENIC estimates.
     wuenic_estimates = function(value) private$getter('wuenic_estimates', value),
-    national_survey = function(value) private$getter('national_survey', value),
-    regional_survey = function(value) private$getter('regional_survey', value),
-    wiq_survey = function(value) private$getter('wiq_survey', value),
-    area_survey = function(value) private$getter('area_survey', value),
-    education_survey = function(value) private$getter('education_survey', value),
+
+    #' @field national_survey Gets national survey.
+    national_survey = function(value) {
+      survey <- private$getter('national_survey', value)
+      if (is.null(survey)) return(NULL)
+
+      private$filter_survey(survey)
+    },
+
+    #' @field regional_survey Gets regional survey.
+    regional_survey = function(value) {
+      survey <- private$getter('regional_survey', value)
+      if (is.null(survey)) return(NULL)
+
+      private$filter_survey(survey)
+    },
+
+    #' @field wiq_survey Gets WIQ survey.
+    wiq_survey = function(value) {
+      survey <- private$getter('wiq_survey', value)
+      if (is.null(survey)) return(NULL)
+
+      private$filter_survey(survey)
+    },
+
+    #' @field area_survey Gets area survey.
+    area_survey = function(value) {
+      survey <- private$getter('area_survey', value)
+      if (is.null(survey)) return(NULL)
+
+      private$filter_survey(survey)
+    },
+
+    #' @field education_survey Gets  education survey.
+    education_survey = function(value) {
+      survey <- private$getter('education_survey', value)
+      if (is.null(survey)) return(NULL)
+
+      private$filter_survey(survey)
+    },
+
+    #' @field survey_mapping Gets survey mapping.
     survey_mapping = function(value) private$getter('survey_mapping', value),
+
+    #' @field map_mapping Gets map mapping.
     map_mapping = function(value) private$getter('map_mapping', value)
   ),
 
   private = list(
     .data_template = list(
+      language = 'en',
       rds_path = NULL,
       countdown_data = NULL,
       performance_threshold = 90,
       excluded_years = numeric(),
       k_factors = c(anc = 0, idelv = 0, vacc = 0),
       adjusted_flag = FALSE,
-      survey_estimates = c(anc1 = 98, penta1 = 97, penta3 = 89),
-      national_estimates  = list(
-        nmr = NA_real_, pnmr = NA_real_, twin_rate = NA_real_,preg_loss = NA_real_,
-        sbr = NA_real_, penta1_mort_rate = NA_real_
-      ),
+      survey_year = NULL,
+      survey_estimates = c(anc1 = NA, penta1 = NA, penta3 = NA, measles1 = NA, bcg = NA),
+      national_estimates  = list(nmr = NA, pnmr = NA, twin_rate = NA,preg_loss = NA, sbr = NA),
       start_survey_year = NULL,
-      denominator = 'dhis2',
+      survey_source = NULL,
+      denominator = 'penta1',
       selected_admin_level_1 = NULL,
       selected_district = NULL,
       selected_mapping_years = NULL,
@@ -389,6 +557,13 @@ CacheConnection <- R6::R6Class(
       }
 
       cd_abort(c('x' = '{.field field_name} is readonly'))
+    },
+
+    filter_survey = function(survey) {
+      check_required(survey)
+      start_year <- self$start_survey_year
+      survey %>%
+        filter(if (is.null(start_year)) TRUE else year >= start_year)
     },
 
     setter = function(field_name, value, validation_exp = NULL) {

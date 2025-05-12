@@ -8,6 +8,7 @@ generate_report(
   cache,
   output_file,
   report_name,
+  adminlevel_1 = NULL,
   output_format = c("word_document", "pdf_document", "html_document")
 )
 }

@@ -22,6 +22,7 @@
 generate_report <- function(cache,
                             output_file,
                             report_name,
+                            adminlevel_1 = NULL,
                             output_format = c('word_document', 'pdf_document', 'html_document')) {
 
   # check_cd_data(.data)
@@ -51,7 +52,7 @@ generate_report <- function(cache,
     input = file.path(system.file(package = 'cd2030'), 'rmd', paste0(report_name, '_template.Rmd')),
     output_format = format,
     output_file = output_path,
-    params = list(cache = cache, country = cache$country),
+    params = list(cache = cache, country = cache$country, adminlevel_1 = adminlevel_1),
     encoding = 'UTF-8',
     runtime = 'auto',
     intermediates_dir = temp_dir,    # Set unique temp directory

@@ -12,12 +12,34 @@ check_file_path <- function(path, call = caller_env()) {
   invisible(TRUE)
 }
 
+check_cd_population_metrics <- function(.data, arg = caller_arg(.data), call = caller_env()) {
+
+  check_required(.data, arg = arg, call = call)
+
+  if (!inherits(.data, 'cd_population_metrics')) {
+    cd_abort(c('x' = 'The data object must be of class {.field cd_population_metrics}.'), call = call)
+  }
+
+  invisible(TRUE)
+}
+
 check_cd_indicator_coverage <- function(.data, arg = caller_arg(.data), call = caller_env()) {
 
   check_required(.data, arg = arg, call = call)
 
   if (!inherits(.data, 'cd_indicator_coverage')) {
     cd_abort(c('x' = 'The data object must be of class {.field cd_indicator_coverage}.'), call = call)
+  }
+
+  invisible(TRUE)
+}
+
+check_cd_population <- function(.data, arg = caller_arg(.data), call = caller_env()) {
+
+  check_required(.data, arg = arg, call = call)
+
+  if (!inherits(.data, 'cd_population')) {
+    cd_abort(c('x' = 'The data object must be of class {.field cd_population}.'), call = call)
   }
 
   invisible(TRUE)
@@ -109,7 +131,7 @@ check_survey_data <- function(.data,
     cd_abort(c('x' = 'National survey data used in subnational level'), call = call)
   }
 
-  if (!all(c('iso', 'year') %in% colnames(.data))) {
+  if (!all(c('iso3', 'year') %in% colnames(.data))) {
     cd_abort(c('x' = 'Survey data must contain {.field iso} and {.field year} columns.'), call = call)
   }
 
@@ -121,7 +143,7 @@ check_equity_data <- function(.data, arg = caller_arg(.data), call = caller_env(
   check_required(.data, arg = arg, call = call)
 
   if (!inherits(.data, 'cd_equity_data')) {
-    cd_abort(c('x' = 'The data object must be of class {.cls cd_equity_estimates}.'), call = call)
+    cd_abort(c('x' = 'The data object must be of class {.cls cd_equity_data}.'), call = call)
   }
 
   invisible(TRUE)

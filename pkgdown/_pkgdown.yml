@@ -30,17 +30,19 @@ reference:
 
   - subtitle: "Reporting Rate"
     contents:
-    - calculate_average_reporting_rate
+    - calculate_reporting_rate
     - calculate_district_reporting_rate
-    - district_low_reporting
+    - plot.cd_reporting_rate
     - plot.cd_district_reporting_rate
+    - tbl_sum.cd_reporting_rate
     - tbl_sum.cd_district_reporting_rate
-    - tbl_sum.cd_average_reporting_rate
+
 
   - subtitle: "Date Completeness"
     contents:
     - calculate_completeness_summary
     - calculate_district_completeness_summary
+    - plot.cd_completeness_summary
     - tbl_sum.cd_completeness_summary
     - tbl_sum.cd_district_completeness_summary
 
@@ -56,6 +58,9 @@ reference:
     contents:
     - calculate_outliers_summary
     - calculate_district_outlier_summary
+    - list_outlier_units
+    - plot.cd_outlier
+    - plot.cd_outlier_list
     - tbl_sum.cd_outliers_summary
     - tbl_sum.cd_district_outliers_summary
 
@@ -89,11 +94,13 @@ reference:
     - prepare_population_metrics
     - calculate_indicator_coverage
     - calculate_indicator_threshold_coverage
-    - calculate_dropout
+    - calculate_threshold
+    - calculate_derived_coverage
     - plot_line_graph
     - plot_absolute_differences
     - plot.cd_indicator_coverage
     - plot.cd_population_metrics
+    - plot.cd_derived_coverage
     - tbl_sum.cd_indicator_coverage
     - tbl_sum.cd_national_denominators
 
@@ -127,6 +134,17 @@ reference:
     - add_outlier5std_column
     - add_mad_med_columns
     - add_missing_column
+    - get_all_indicators
+    - get_country_iso3
+    - get_country_name
+    - get_indicator_groups
+    - get_indicator_group_names
+    - get_named_indicators
+    - get_population_column
+    - get_admin_columns
+    - list_tracer_vaccines
+    - list_vaccines
+    - list_vaccine_indicators
     - robust_max
     - new_countdown
     - print.cd_data

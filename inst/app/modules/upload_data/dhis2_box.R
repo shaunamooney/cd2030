@@ -1,33 +1,32 @@
-dhis2BoxUI <- function(id) {
+dhis2BoxUI <- function(id, i18n) {
   ns <- NS(id)
 
-  box(title = 'Import from DHIS2',
+  box(title = i18n$t("title_dhis2_import"),
       status = 'info',
       solidHeader = TRUE,
       width = 12,
       fluidRow(
-        column(2, offset = 10, helpButtonUI(ns('dhis2_download')), align = 'right')
+        column(2, offset = 10, helpButtonUI(ns('dhis2_download'), name = i18n$t('btn_help')), align = 'right')
       ),
       fluidRow(
-        column(6, selectizeInput(ns('country'), 'Country', choices = NULL)),
+        column(6, selectizeInput(ns('country'), i18n$t("title_country"), choices = NULL)),
       ),
       fluidRow(
-        column(12, dateRangeInput(ns('date'), 'Period',
+        column(12, dateRangeInput(ns('date'), i18n$t("title_period"),
                                   start = Sys.Date()-1825,
                                   end = Sys.Date(),
                                   format = 'MM yyyy',
-                                  separator = ' to ',
-                                  startview = "year"))
+                                  separator = i18n$t('title_to'),
+                                  startview = 'year'))
       ),
       fluidRow(
         column(6, textInput(ns('username'), label = NULL, placeholder = 'DHIS2 User Name')),
         column(6, passwordInput(ns('password'), label = NULL, placeholder = 'DHIS2 Password'))
       ),
       fluidRow(
-        column(4, actionButton(ns('login'), 'Login', icon = icon('sign-in-alt'),
+        column(4, actionButton(ns('login'), i18n$t("btn_login"), icon = icon('sign-in-alt'),
                                style = 'background-color: #FFEB3B;font-weight: 500;width:100%;')),
-
-        column(12, uiOutput(ns("enhanced_feedback")))
+        column(12, messageBoxUI(ns('feedback')))
       ),
       fluidRow(
         column(4, downloadButtonUI(ns('master_file'))),
@@ -36,12 +35,12 @@ dhis2BoxUI <- function(id) {
   )
 }
 
-dhis2BoxServer <- function(id) {
+dhis2BoxServer <- function(id, i18n) {
   moduleServer(
     id = id,
     module = function(input, output, session) {
 
-      file_status <- reactiveVal(list(message = "Waiting ...", color = "gray"))
+      messageBox <- messageBoxServer('feedback', i18n = i18n)
 
       dhis2_data <- reactiveVal()
 
@@ -54,42 +53,30 @@ dhis2BoxServer <- function(id) {
         countries <- countries_df()$iso3
         names(countries) <- countries_df()$country
 
-        countries <- c('Select Country' = '0', countries)
+        countries <- c(set_names('0', i18n$t("opt_select_country")), countries)
         updateSelectizeInput(session, 'country', choices = countries)
       })
 
       cache <- eventReactive(input$login, {
 
         if (input$country == '0' || length(input$country) == 0) {
-          file_status(list(
-            message = paste0('Error: Country must be selected'),
-            color = "red"
-          ))
+          messageBox$update_message('error_country', 'error')
           return(NULL)
         }
 
         if (input$username == '' || length(input$username) == 0) {
-          file_status(list(
-            message = paste0('Error: Username must be provided'),
-            color = "red"
-          ))
+          messageBox$update_message('error_username', 'error')
           return(NULL)
         }
 
         if (input$password == '' || length(input$password) == 0) {
-          file_status(list(
-            message = paste0('Error: Password must be provided'),
-            color = "red"
-          ))
+          messageBox$update_message('error_password', 'error')
           return(NULL)
         }
 
         # updateActionButton(session, 'login', disabled = TRUE)
 
-        file_status(list(
-          message = "Connecting to DHIS2...",
-          color = "blue"
-        ))
+        messageBox$update_message('msg_dhis2_connect', 'info')
 
         server <- countries_df() %>%
           filter(iso3 == input$country) %>%
@@ -98,10 +85,7 @@ dhis2BoxServer <- function(id) {
         merged_data <- tryCatch({
           khis_cred(username = input$username, password = input$password, server = server)
 
-          file_status(list(
-            message = "Fetching data...",
-            color = "blue"
-          ))
+          messageBox$update_message('msg_fetching_data', 'info')
 
           start_date <- input$date[1]
           end_date <- input$date[2]
@@ -110,10 +94,7 @@ dhis2BoxServer <- function(id) {
 
           khis_cred_clear()
 
-          file_status(list(
-            message = "Saving data...",
-            color = "blue"
-          ))
+          messageBox$update_message('msg_saving_data', 'info')
 
           dhis2_data(dt)
 
@@ -124,18 +105,13 @@ dhis2BoxServer <- function(id) {
             countdown_data = NULL
           )$reactive()
 
-          file_status(list(
-            message = "Data successfully downloaded!",
-            color = "green"
-          ))
+          messageBox$update_message('msg_download_success', 'success')
 
           return(cache_instance())
         },
         error = function(e) {
-          file_status(list(
-            message = paste0("Download Error: ", e$message),
-            color = "red"
-          ))
+          clean_meesage <- clean_error_message(e)
+          messageBox$update_message('error_download_error', 'success', list(clean_message = clean_message))
 
           return(NULL)
         })
@@ -145,41 +121,33 @@ dhis2BoxServer <- function(id) {
         return(merged_data)
       })
 
-      output$enhanced_feedback <- renderUI({
-        status <- file_status()
-        tags$div(
-          style = paste("color:", status$color, "; font-weight: bold;",
-                        'border: 1px solid ', status$color, ';',
-                        'padding: 10px; margin-top: 10px; border-radius: 5px;'),
-          status$message
-        )
-      })
-
       downloadButtonServer(
         id = 'master_file',
         filename = reactive('master_dataset'),
         extension = reactive('dta'),
+        i18n = i18n,
         content = function(file) {
           save_data(cache()$countdown_data, file)
         },
         data = cache,
-        label = 'Download Master File'
+        label = "btn_download_master_file"
       )
 
       downloadButtonServer(
         id = 'excel_file',
         filename = reactive('master_dataset'),
         extension = reactive('xlsx'),
+        i18n = i18n,
         content = function(file) {
           save_dhis2_excel(dhis2_data(), file)
         },
         data = dhis2_data,
-        label = 'Download Excel File'
+        label = "btn_download_excel_file"
       )
 
       helpButtonServer(
         id = 'dhis2_download',
-        title = 'DHIS2 Download',
+        title = i18n$t("title_dhis2_download"),
         md_file = 'load_data_dhis2_download.md'
       )
 

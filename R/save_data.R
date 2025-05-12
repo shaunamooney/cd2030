@@ -69,7 +69,7 @@ save_data <- function(.data, file = 'master_dataset.dta') {
 #' }
 #'
 #' @export
-save_dhis2_excel <- function(.data, filename) {
+save_dhis2_excel <- function(.data, filename, last_org) {
 
   admin_instrunction <- 'This sheet serves to map Health districts (C) to administrative units (D) and other health system data. Please fill in the information for each column starting from Column C. Health division units name (districts) in Column C should be unique, while it is possible that a set of districts (C) correspond to the same administrative unit (D).
     CAUTION: The order and names of health division units (districts) entered in this sheet SHOULD BE the same across all the sheets. And ensure that health division units (districts) in column C match with the Coverage data into the sheets "Service_data", "Reporting_completeness" & "Population_data". Do not enter any data beyond the total number of health subnational units (districts) in your country. "Yellow cells" are "Drop-down list" options. Please use "PASTE SPECIAL" and paste "ONLY VALUES" when you copy/paste data. Do not create new columns, remove or displace existing columns.'
@@ -81,20 +81,20 @@ save_dhis2_excel <- function(.data, filename) {
   wb <- createWorkbook()
 
   create_admin_sheet(
-    wb = wb, .data$admin,  header_rows = c('district'), instruction = admin_instrunction
+    wb = wb, .data$admin,  header_rows = last_org, instruction = admin_instrunction
   )
 
   create_sheets(
-    wb = wb, .data = .data$population, header_rows = c('district', 'year'),
+    wb = wb, .data = .data$population, header_rows = c(last_org, 'year'),
     freeze_col = 3, instruction = population_instruction, instruction_row_height = 120
   )
 
   create_sheets(
-    wb = wb, .data = .data$completeness, header_rows = c('district', 'year', 'month')
+    wb = wb, .data = .data$completeness, header_rows = c(last_org, 'year', 'month')
   )
 
   create_sheets(
-    wb = wb, .data = .data$service, header_rows = c('district', 'year', 'month'),
+    wb = wb, .data = .data$service, header_rows = c(last_org, 'year', 'month'),
     instruction = service_instruction, instruction_row_height = 140
   )
 

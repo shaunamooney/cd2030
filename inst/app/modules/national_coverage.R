@@ -1,30 +1,24 @@
-nationalCoverageUI <- function(id) {
+nationalCoverageUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('national_coverage'), 'National Coverage'),
+    contentHeader(ns('national_coverage'), i18n$t("title_national_coverage"), i18n = i18n),
     contentBody(
       box(
-        title = 'Analysis Options',
+        title = i18n$t("title_analysis_options"),
         status = 'success',
         width = 12,
         solidHeader = TRUE,
-        fluidRow(
-          column(3, selectizeInput(ns('denominator'), label = 'Denominator',
-                                   choices = c('DHIS2' = 'dhis2',
-                                               'ANC 1' = 'anc1',
-                                               'Penta 1' = 'penta1'))),
-          column(3, selectizeInput(ns('year'), label = 'Survey Start Year', choices = NULL))
-        )
+        fluidRow(column(3, denominatorInputUI(ns('denominator'), i18n)))
       ),
 
       tabBox(
-        title = 'National Coverage Trend',
+        title = i18n$t("title_national_coverage_trend"),
         id = 'national_trend',
         width = 12,
 
         tabPanel(
-          title = 'Measles 1',
+          title = i18n$t("opt_mcv1"),
           fluidRow(
             column(12, plotCustomOutput(ns('measles1'))),
             downloadCoverageUI(ns('measles1_download'))
@@ -32,7 +26,7 @@ nationalCoverageUI <- function(id) {
         ),
 
         tabPanel(
-          title = 'Penta 3',
+          title = i18n$t("opt_penta3"),
           fluidRow(
             column(12, plotCustomOutput(ns('penta3'))),
             downloadCoverageUI(ns('penta3_download'))
@@ -40,7 +34,7 @@ nationalCoverageUI <- function(id) {
         ),
 
         tabPanel(
-          title = 'Penta 3 to Measles 1 Dropout',
+          title = i18n$t("title_penta3_mcv1_dropout"),
           fluidRow(
             column(12, plotCustomOutput(ns('dropout_penta3mcv1'))),
             downloadCoverageUI(ns('dropout_penta3mcv1_download'))
@@ -48,7 +42,7 @@ nationalCoverageUI <- function(id) {
         ),
 
         tabPanel(
-          title = 'Penta 1 to Penta 3 Droput',
+          title = i18n$t("title_penta13_dropout"),
           fluidRow(
             column(12, plotCustomOutput(ns('dropout_penta13'))),
             downloadCoverageUI(ns('dropout_penta13_download'))
@@ -56,13 +50,10 @@ nationalCoverageUI <- function(id) {
         ),
 
         tabPanel(
-          'Custom Check',
+          i18n$t("opt_custom_check"),
           fluidRow(
-            column(3, selectizeInput(ns('indicator'), label = 'Indicator',
-                                     choices = c('Select' = '', "bcg", "anc1", "opv1", "opv2", "opv3", "penta2", "pcv1", "pcv2", "pcv3",
-                                                 "penta1", "penta2",  "rota1", "rota2", "instdeliveries", "measles2",
-                                                 "ipv1", "ipv2", "undervax", "dropout_penta13", "zerodose", "dropout_measles12",
-                                                 "dropout_penta3mcv1")))
+            column(3, selectizeInput(ns('indicator'), label = i18n$t("title_indicator"),
+                                     choices = c('Select' = '', list_vaccine_indicators())))
           ),
           fluidRow(
             column(12, plotCustomOutput(ns('custom_check'))),
@@ -74,12 +65,14 @@ nationalCoverageUI <- function(id) {
   )
 }
 
-nationalCoverageServer <- function(id, cache) {
+nationalCoverageServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
     id = id,
     module = function(input, output, session) {
+
+      denominator <- denominatorInputServer('denominator', cache)
 
       survey_data <- reactive({
         req(cache())
@@ -87,15 +80,14 @@ nationalCoverageServer <- function(id, cache) {
       })
 
       coverage <- reactive({
-        req(cache(), cache()$un_estimates, survey_data(), cache()$wuenic_estimates)
+        req(cache(), cache()$survey_year, cache()$un_estimates, survey_data(),
+            cache()$wuenic_estimates, all(!is.na(cache()$national_estimates)))
 
         rates <- cache()$national_estimates
-        filtered_survey_data <- survey_data() %>%
-          filter(year >= as.numeric(input$year))
 
         cache()$adjusted_data %>%
           calculate_coverage(
-            survey_data = filtered_survey_data,
+            survey_data = survey_data(),
             wuenic_data = cache()$wuenic_estimates,
             un_estimates = cache()$un_estimates,
             sbr = rates$sbr,
@@ -104,39 +96,9 @@ nationalCoverageServer <- function(id, cache) {
             twin = rates$twin_rate,
             preg_loss = rates$preg_loss,
             anc1survey = rates$anc1,
-            dpt1survey = rates$penta1
+            dpt1survey = rates$penta1,
+            survey_year = cache()$survey_year
           )
-      })
-
-      denominator <- reactive({
-        req(cache())
-        cache()$denominator
-      })
-
-      observe({
-        req(survey_data())
-
-        years <- survey_data() %>%
-          distinct(year) %>%
-          arrange(year) %>%
-          pull(year)
-
-        updateSelectInput(session, 'year', choices = years, selected = cache()$start_survey_year)
-      })
-
-      observe({
-        req(cache())
-        updateSelectInput(session, 'denominator', selected = denominator())
-      })
-
-      observeEvent(input$year, {
-        req(cache(), input$year)
-        cache()$set_start_survey_year(as.numeric(input$year))
-      })
-
-      observeEvent(input$denominator, {
-        req(cache())
-        cache()$set_denominator(input$denominator)
       })
 
       output$measles1 <- renderCustomPlot({
@@ -167,59 +129,65 @@ nationalCoverageServer <- function(id, cache) {
       downloadCoverageServer(
         id = 'measles1_download',
         data = coverage,
-        filename = paste0('measles1_survey_', input$denominator),
+        filename = reactive(paste0('measles1_survey_', denominator())),
         indicator = reactive('measles1'),
         denominator = denominator,
         data_fn = filter_coverage,
-        sheet_name = 'Measles 1 Coverage'
+        sheet_name = reactive(i18n$t("title_mcv1_coverage")),
+        i18n = i18n
       )
 
       downloadCoverageServer(
         id = 'penta3_download',
         data = coverage,
-        filename = paste0('penta3_survey_', input$denominator),
+        filename = reactive(paste0('penta3_survey_', denominator())),
         indicator = reactive('penta3'),
         denominator = denominator,
         data_fn = filter_coverage,
-        sheet_name = 'Penta 3 Coverage'
+        sheet_name = reactive(i18n$t("title_penta3_coverage")),
+        i18n = i18n
       )
 
       downloadCoverageServer(
         id = 'dropout_penta13_download',
         data = coverage,
-        filename = paste0('dropout_penta13_survey_', input$denominator),
+        filename = reactive(paste0('dropout_penta13_survey_', denominator())),
         indicator = reactive('dropout_penta13'),
         denominator = denominator,
         data_fn = filter_coverage,
-        sheet_name = 'Penta 1 to Penta 3 Dropout'
+        sheet_name = reactive(i18n$t("title_penta13_dropout")),
+        i18n = i18n
       )
 
       downloadCoverageServer(
         id = 'dropout_penta3mcv1_download',
         data = coverage,
-        filename = paste0('dropout_penta3mcv1_survey_', input$denominator),
+        filename = reactive(paste0('dropout_penta3mcv1_survey_', denominator())),
         indicator = reactive('dropout_penta3mcv1'),
         denominator = denominator,
         data_fn = filter_coverage,
-        sheet_name = 'Penta 3 to Measles 1 Dropout'
+        sheet_name = reactive(i18n$t("title_penta3_mcv1_dropout")),
+        i18n = i18n
       )
 
       downloadCoverageServer(
         id = 'custom_download',
         data = coverage,
-        filename = paste0(input$indicator, '_survey_', input$denominator),
+        filename = reactive(paste0(input$indicator, '_survey_', denominator())),
         indicator = reactive(input$indicator),
         denominator = denominator,
         data_fn = filter_coverage,
-        sheet_name = paste0(input$indicator, ' Coverage')
+        sheet_name = reactive(paste(input$indicator, i18n$t("title_coverage"))),
+        i18n = i18n
       )
 
       contentHeaderServer(
         'national_coverage',
         cache = cache,
         objects = pageObjectsConfig(input),
-        md_title = 'National Coverage',
-        md_file = '2_reporting_rate.md'
+        md_title = i18n$t("title_national_coverage"),
+        md_file = '2_reporting_rate.md',
+        i18n = i18n
       )
     }
   )

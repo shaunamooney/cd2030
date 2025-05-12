@@ -14,6 +14,7 @@ output:
     latex_engine: lualatex
 params:
   cache: NULL
+  adminlevel_1: NULL
   country: NULL
 ---
 
@@ -44,15 +45,15 @@ country <- cache$country
 threshold <- cache$performance_threshold
 k_factors <- cache$k_factors
 rates <- cache$national_estimates
+survey_estimates <- cache$survey_estimates
 denominator <- cache$denominator
 mapping_years <- cache$mapping_years
 un_estimates <- cache$un_estimates
 wuenic_estimates <- cache$wuenic_estimates
 survey_start_year <- cache$start_survey_year
-survdata <- cache$national_survey %>% 
-  filter(if(is.null(survey_start_year)) TRUE else year >= survey_start_year)
-gregion <- cache$regional_survey %>% 
-  filter(if(is.null(survey_start_year)) TRUE else year >= survey_start_year)
+survey_year <- cache$survey_year
+survdata <- cache$national_survey
+gregion <- cache$regional_survey
 subnational_map <- cache$survey_mapping
 map_mapping <- cache$map_mapping
 meduc <- cache$education_survey
@@ -373,9 +374,11 @@ indicator_coverage <- adjusted_data %>%
                                twin = rates$twin_rate,
                                preg_loss = rates$preg_loss,
                                anc1survey = rates$anc1,
-                               dpt1survey = rates$penta1)
+                               dpt1survey = rates$penta1,
+                               survey_year = survey_year)
 
-plot_absolute_differences(indicator_coverage, 'penta3') +
+plot_absolute_differences(indicator_coverage, indicator = 'penta3',
+                          survey_coverage = unname(survey_estimates['penta3'])) +
   cd_report_theme()
 
 ```
@@ -398,7 +401,9 @@ print_notes(cache, 'denominator_selection', 'Penta 3')
 ### Denominator selection based on Measles 1 Coverage
 
 ```{r}
-plot_absolute_differences(indicator_coverage, 'measles1') +
+plot_absolute_differences(indicator_coverage, 
+                          indicator = 'measles1',
+                          survey_coverage = unname(survey_estimates['measles1'])) +
   cd_report_theme()
 ```
 
@@ -420,7 +425,9 @@ print_notes(cache, 'denominator_selection', 'Measles 1')
 
 
 ```{r}
-plot_absolute_differences(indicator_coverage, 'bcg') +
+plot_absolute_differences(indicator_coverage, 
+                          indicator = 'bcg',
+                          survey_coverage = unname(survey_estimates['bcg'])) +
   cd_report_theme()
 ```
 
@@ -464,7 +471,8 @@ national_coverage <- adjusted_data %>%
     twin = rates$twin_rate,
     preg_loss = rates$preg_loss,
     anc1survey = rates$anc1,
-    dpt1survey = rates$penta1
+    dpt1survey = rates$penta1,
+    survey_year = survey_year
   )
 
 plot(national_coverage, indicator = 'measles1', denominator = denominator) +
@@ -575,6 +583,7 @@ subnational_coverage <- adjusted_data %>%
     preg_loss = rates$preg_loss,
     anc1survey = rates$anc1,
     dpt1survey = rates$penta1,
+    survey_year = survey_year,
     subnational_map = subnational_map
   )
 
@@ -597,6 +606,7 @@ admin_level_1_inequality <- adjusted_data %>%
     pnmr = rates$pnmr,
     anc1survey = rates$anc1,
     dpt1survey = rates$penta1,
+    survey_year = survey_year,
     twin = rates$twin_rate,
     preg_loss = rates$preg_loss
   )
@@ -606,7 +616,11 @@ plot(admin_level_1_inequality, 'dropout_penta13', denominator) +
 ```
 
 ```{r}
-mapping_data <- get_mapping_data(adjusted_data, un_estimates, rates, map_mapping)
+mapping_data <- get_mapping_data(adjusted_data, 
+                                 un_estimates = un_estimates, 
+                                 rates = rates, 
+                                 survey_year = survey_year,
+                                 subnational_map = map_mapping)
 
 plot(mapping_data, 
      indicator = 'dropout_penta13',

@@ -1,22 +1,22 @@
-overallScoreUI <- function(id) {
+overallScoreUI <- function(id, i18n) {
   ns <- NS(id)
 
   tagList(
-    contentHeader(ns('overall_scoring'), 'Overall Score', include_buttons = FALSE),
+    contentHeader(ns('overall_scoring'), i18n$t("title_overall"), include_buttons = FALSE),
     contentBody(
       box(
-        title = 'Overall Score',
+        title = i18n$t("title_overall"),
         status = 'success',
         width = 12,
         fluidRow(
-          column(12, uiOutput(ns('overall_score')))
+          column(12, withSpinner(uiOutput(ns('overall_score'))))
         )
       )
     )
   )
 }
 
-overallScoreServer <- function(id, cache) {
+overallScoreServer <- function(id, cache, i18n) {
   stopifnot(is.reactive(cache))
 
   moduleServer(
@@ -34,15 +34,17 @@ overallScoreServer <- function(id, cache) {
         years <- unique(data()$year)
         threshold <- cache()$performance_threshold
 
-        data() %>%
+        dt <- data() %>%
           calculate_overall_score(threshold) %>%
           mutate(
             type = case_when(
-              no %in% c("1a", "1b", "1c") ~ '1. Completeness of monthly facility reporting (Immunization)',
-              no %in% c("2a", "2b") ~ '2. Extreme outliers (Common Vaccine antigens)',
-              no %in% c("3a", "3b",'3f', '3g') ~ '3. Consistency of annual reporting'
+              no %in% c("1a", "1b", "1c") ~ i18n$t("title_monthly_completeness"),
+              no %in% c("2a", "2b") ~ i18n$t("title_extreme_outliers"),
+              no %in% c("3a", "3b",'3f', '3g') ~ i18n$t("title_consistency_annual_reporting")
             )
-          ) %>%
+          )
+
+        dt_html <- dt %>%
           as_grouped_data(groups = 'type') %>%
           as_flextable() %>%
           bold(j = 1, i = ~ !is.na(type), bold = TRUE, part = "body") %>%
@@ -72,13 +74,15 @@ overallScoreServer <- function(id, cache) {
           ) %>%
           theme_vanilla() %>%
           autofit() %>%
-          htmltools_value()
+          htmltools_value(ft.align = 'center')
+
+        HTML(as.character(dt_html))
       })
 
       contentHeaderServer(
         'overall_scoring',
         cache = cache,
-        md_title = 'Overall Score',
+        md_title = i18n$t("title_overall"),
         md_file = '2_reporting_rate.md'
       )
 

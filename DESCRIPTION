@@ -1,6 +1,6 @@
 Package: cd2030
 Title: Data Loading, Validation, and Reporting for Countdown 2030
-Version: 1.0.0.9000
+Version: 1.0.9.9000
 Authors@R: c(
       person("David", "Kariuki", , "hello@damurka.com", role = c("aut", "cre"), 
              comment = c(ORCID = "0009-0003-6159-1107")),
@@ -25,6 +25,7 @@ Imports:
     forcats,
     ggplot2,
     haven,
+    janitor,
     khisr,
     lubridate,
     openxlsx,
@@ -44,7 +45,8 @@ Imports:
     withr
 Suggests:
     knitr,
-    spelling
+    spelling,
+    testthat (>= 3.0.0)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
@@ -52,3 +54,4 @@ Depends:
     R (>= 3.5)
 LazyData: true
 BugReports: https://github.com/damurka/cd2030/issues
+Config/testthat/edition: 3
