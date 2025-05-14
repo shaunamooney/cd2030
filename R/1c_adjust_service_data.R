@@ -15,6 +15,8 @@
 #' @param k_factors A named numeric vector of custom k-factor values between 0 and 1
 #'   for each indicator group (e.g., `c(anc = 0.3, idelv = 0.2, ...)`). Used only if
 #'   `adjustment = "custom"`.
+#' @param include_uncertainty Logical. If `TRUE`, the function applies a sampling-bases
+#'    approach to adjustments and imputations.
 #'
 #' @details
 #' This function prepares service data through a series of steps to ensure data quality and consistency:
@@ -63,7 +65,8 @@
 #' @export
 adjust_service_data <- function(.data,
                                 adjustment = c("default", "custom", "none"),
-                                k_factors = NULL) {
+                                k_factors = NULL,
+                                include_uncertainty = FALSE) {
 
   district = year = month = NULL
 
@@ -91,14 +94,27 @@ adjust_service_data <- function(.data,
   all_indicators <- get_all_indicators()
   last_year <- robust_max(.data$year)
 
-  merged_data <- .data %>%
+  base_data <- .data %>%
     mutate(
       across(
         all_of(all_indicators),
         ~ get(paste0(names(keep(indicator_groups, ~ cur_column() %in% .x)), '_rr')),
         .names = '{.col}_rr'
       ),
-    ) %>%
+
+      # Add a column for each indicator with the k_value
+      across(
+        all_of(all_indicators),
+        ~ {
+          group <- names(keep(indicator_groups, ~ cur_column() %in% .x))
+          k_defaults[[group]]
+        },
+        .names = "{.col}_k_value"
+      )
+    )
+
+  imputed_rr_data <- base_data %>%
+    mutate(impute_rr = if_any(all_of(paste0(all_indicators, '_rr')), ~ . < 75 | is.na(.)),) %>%
     mutate(
       across(
         all_of(paste0(all_indicators, '_rr')),
@@ -107,58 +123,71 @@ adjust_service_data <- function(.data,
 
       .by = district
     ) %>%
-    arrange(district, year, month) %>%
-    mutate(
-      across(
-        all_of(all_indicators),
-        ~ {
-          # Identify the main indicator group for the current sub-indicator
-          group <- names(keep(indicator_groups, ~ cur_column() %in% .x))
+    arrange(district, year, month)
 
-          # Retrieve the rate column for the current group directly within cur_data()
-          rate <- get(paste0(cur_column(), '_rr'))
+  if(include_uncertainty){
+    summary_data <- adjust_with_uncertainty(imputed_rr_data)
+  }
 
-          # Retrieve the k-value from the k_defaults list based on the group
-          k_value <- k_defaults[[group]]
+  else {
+    adjusted_data <- imputed_rr_data %>%
+      mutate(
+        across(
+          all_of(all_indicators),
+          ~ {
+            # Identify the main indicator group for the current sub-indicator
+            group <- names(keep(indicator_groups, ~ cur_column() %in% .x))
 
-          # Apply the adjustment formula if the rate is not missing or zero
-          if_else(
-            !is.na(rate) & rate != 0,
-            round(. * (1 + (1 / (rate / 100) - 1) * k_value), 0),
-            .
-          )
-        }
+            # Retrieve the rate column for the current group directly within cur_data()
+            rate <- get(paste0(cur_column(), '_rr'))
+
+            # Retrieve the k-value from the k_defaults list based on the group
+            k_value <- k_defaults[[group]]
+
+            # Apply the adjustment formula if the rate is not missing or zero
+            if_else(
+              !is.na(rate) & rate != 0,
+              round(. * (1 + (1 / (rate / 100) - 1) * k_value), 0),
+              .
+            )
+          }
+        )
       )
-    ) %>%
-    add_outlier5std_column(all_indicators) %>%
-    mutate(
 
-      across(
-        all_of(all_indicators),
-        ~ {
-          outlier <- get(paste0(cur_column(), '_outlier5std'))
-          med <- round(median(if_else(outlier != 1, ., NA_real_), na.rm = TRUE), 0)
 
-          if_else(outlier == 1, robust_max(med), .)
-        }
-      ),
+    summary_data <- adjusted_data %>%
+      add_outlier5std_column(all_indicators) %>%
+      mutate(
 
-      across(
-        all_of(all_indicators),
-        ~ {
-          med <- round(median(if_else(!is.na(.), ., NA_real_), na.rm = TRUE), 0)
-          max_med <- robust_max(med)
-          if_else(
-            is.na(.) & !is.na(max_med),
-            max_med,
-            .
-          )
-        }
-      ),
+        across(
+          all_of(all_indicators),
+          ~ {
+            outlier <- get(paste0(cur_column(), '_outlier5std'))
+            med <- round(median(if_else(outlier != 1, ., NA_real_), na.rm = TRUE), 0)
 
-      .by = c(district, year)
-    ) %>%
-    select(-any_of(paste0(all_indicators, '_rr')))
+            if_else(outlier == 1,  robust_max(med), .)
+          }
+        ),
 
-  new_countdown(merged_data, 'cd_adjusted_data')
+        across(
+          all_of(all_indicators),
+          ~ {
+            med <- round(median(if_else(!is.na(.), ., NA_real_), na.rm = TRUE), 0)
+            max_med <- robust_max(med)
+            if_else(
+              is.na(.) & !is.na(max_med), max_med,
+              .
+            )
+          }
+        ),
+
+        .by = c(district, year)
+      ) %>%
+      select(-any_of(paste0(all_indicators, '_rr')))
+
+
+  }
+
+
+  new_countdown(summary_data, 'cd_adjusted_data')
 }
