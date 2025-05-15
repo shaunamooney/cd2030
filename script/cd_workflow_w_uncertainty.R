@@ -7,8 +7,8 @@ devtools::load_all()
 # load in bf data
 bf_data <- load_excel_data("~/private/Burkina Faso/Burkina_Faso.xlsx")
 
-# adjust the data - use k = 0.25 default as we don't know exact k values used
-adjusted_data <- adjust_service_data(bf_data)
+# adjust the data include_uncertainty = TRUE uses updated functionality here - use k = 0.25 default as we don't know exact k values used
+adjusted_data <- adjust_service_data(bf_data, include_uncertainty = TRUE)
 
 # load in un estimates
 un_estimates_data <- load_un_estimates("~/private/Burkina Faso/UN_Estimates_Workshop.dta", country_iso = "BFA", start_year = 2019, end_year = 2023)
@@ -27,6 +27,8 @@ survey_data <- load_survey_data('~/private/Burkina Faso/Survdata_Survdata_Burkin
 # plot(coverage, plot ='delivery_coverage_penta1')
 
 # calculate indicator coverage using adjusted data and un estimates, wuenic estimates and survey data at national level
+
+### This function has not been edited to deal with adjusted data with uncertainty ####
 coverage <- calculate_coverage(adjusted_data,
                                admin_level = "national",
                                un_estimates = un_estimates_data,
