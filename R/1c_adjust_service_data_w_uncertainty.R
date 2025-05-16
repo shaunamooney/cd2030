@@ -92,6 +92,9 @@ adjust_with_uncertainty <- function(data, n_samples = 10){
     ) %>%
     select(-any_of(paste0(all_indicators, '_rr')))
 
+
+  # TO DO - get back the cols lost when summarising eg. tot_pop_ etc. as
+  # losing these causes issues in the calculate_coverage function
   summary_data <- impute_data %>%
     group_by(country, adminlevel_1, district, month, year) %>%
     summarise(
